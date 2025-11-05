@@ -1,3 +1,4 @@
+// resources/js/components/CoordinatorSidebar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -60,6 +61,7 @@ export default function Sidebar() {
             className={`submenu collapse-transition ${openDocs ? "show" : ""}`}
           >
             <ul className="nav flex-column ms-3">
+              
               <li className="nav-item">
                 <NavLink className="nav-link" to="/coordinator-documents/gestionar">
                   Gestión de documentos
