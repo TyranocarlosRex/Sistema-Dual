@@ -12,12 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('coordinators', function (Blueprint $table) {
-            // Ajusta Telefono a VARCHAR(20)
-            // Por qué: garantizar formato corto y consistente en BD.
-            if (Schema::hasColumn('coordinators', 'Telefono')) {
-                $table->string('Telefono', 20)->change();
-            }
-
             // Agrega enum carrera si no existe
             if (!Schema::hasColumn('coordinators', 'Carrera')) {
                 $table->enum('Carrera', [
@@ -32,7 +26,7 @@ return new class extends Migration
                     'Ingenieria Informatica',
                     'Ingenieria en Gestion Empresarial',
                     'Ingenieria Aeronautica',
-                ])->after('Telefono')->index();
+                ])->after('Apellidos')->index();
             }
         });
     }
@@ -42,12 +36,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('coordinators', function (Blueprint $table) {
-            // Revertir Telefono a VARCHAR(255) (ajusta si tu tamaño anterior era otro)
-            if (Schema::hasColumn('coordinators', 'Telefono')) {
-                $table->string('Telefono', 255)->change();
-            }
-
+        Schema::table('coordinators', function (Blueprint $table) { 
             // Quitar enum carrera si existe
             if (Schema::hasColumn('coordinators', 'Carrera')) {
                 $table->dropIndex('coordinators_Carrera_index');

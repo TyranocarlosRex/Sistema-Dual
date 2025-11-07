@@ -17,7 +17,6 @@ return new class extends Migration
         }
         if (!Schema::hasColumn('admins', 'nombre'))    $table->string('nombre');
         if (!Schema::hasColumn('admins', 'apellidos')) $table->string('apellidos');
-        if (!Schema::hasColumn('admins', 'telefono'))  $table->string('telefono', 20);
     });
 }
 public function down(): void {}

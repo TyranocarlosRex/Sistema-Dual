@@ -18,6 +18,8 @@ class Student extends Model
         'Semestre',
         'Direccion',
         'Telefono',
+        'Estatus',
+        'Carrera',
         'Correo_institucional',
     ];
 

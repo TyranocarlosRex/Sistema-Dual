@@ -3,19 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Admin extends Model
 {
+    use HasFactory;
+
     protected $table = 'admins';
 
     protected $fillable = [
-        'Nombre',
-        'Apellidos',
-        'Telefono',
         'user_id',
+        'nombre',
+        'apellidos',
     ];
 
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }

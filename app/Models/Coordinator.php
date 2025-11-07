@@ -11,8 +11,8 @@ class Coordinator extends Model
     protected $fillable = [
         'Nombre',
         'Apellidos',
-        'Telefono',
         'user_id',
+        'Carrera',
     ];
 
     public function user(): BelongsTo
