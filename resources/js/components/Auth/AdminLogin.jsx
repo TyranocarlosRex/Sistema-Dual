@@ -36,7 +36,7 @@ localStorage.setItem('admin', JSON.stringify(
   data.admin ?? data.user?.admin ?? null
 ));
 
-navigate('/admin-home', { replace: true });
+navigate('/administrator-home', { replace: true });
     } catch (err) {
       // API puede devolver distintos formatos; cubrimos mensaje general y errores de campos
       if (err.response?.data?.errors?.name) {

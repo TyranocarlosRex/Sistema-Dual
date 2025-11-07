@@ -1,5 +1,5 @@
-import Navbar from "../AdminPage/Bars/AdminNavbar";
-import Sidebar from "../AdminPage/Bars/AdminSidebar";
+import Navbar from "../AdministratorPage/Bars/AdministratorNavbar";
+import Sidebar from "../AdministratorPage/Bars/AdministratorSidebar";
 import { Outlet } from "react-router-dom";
 
 export default function AdminLayout() {

@@ -27,16 +27,16 @@ export default function Navbar() {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("role");
-      localStorage.removeItem("admin");
-      navigate("/"); // ruta de login de administrador
+      localStorage.removeItem("coordinator");
+      navigate("/"); // tu ruta de login de estudiante
     }
   };
 
   return (
     <nav className="navbar navbar-expand bg-light border-bottom">
       <div className="container">
-        <NavLink className="navbar-brand" to="/admin-home">
-          Educacion Dual
+        <NavLink className="navbar-brand" to="/administrator-home">
+          Educación Dual - Administrador
         </NavLink>
 
         {isAuthed && (

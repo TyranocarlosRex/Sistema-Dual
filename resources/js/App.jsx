@@ -23,7 +23,7 @@ import StudentsList from "./components/CoordinatorPage/Documents/StudentsList";
 import DocumentsManager from "./components/CoordinatorPage/Documents/DocumentsManager";
 import UtilitiesLetterhead from "./components/CoordinatorPage/Documents/Utilities/UtilitiesLetterhead";
 import AdminLayout from './components/Layout/AdminLayout';
-import AdminHome from './components/AdminPage/AdminHome';
+import AdminHome from "./components/AdministratorPage/AdministratorHome";
 
 
 const root = document.getElementById('root');
@@ -58,7 +58,15 @@ if (root) {
           </Route>
           {/* Administrador */}
           <Route element={<AdminLayout/>}>
-            <Route path="/admin-home" element={<AdminHome />} />
+            <Route path="/administrator-home" element={<AdminHome />} />
+            <Route path="/administrator-users" element={<CoordinatorUsers />} />
+            <Route path="/administrator-reports" element={<CoordinatorReports />} />
+            <Route path="/administrator-documents/otros" element={<Otros />} />
+            <Route path="/administrator-documents/revision" element={<RevisionDocumentos />} />
+            <Route path="/administrator-documents/revision/:id" element={<DetalleRevisionEstudiante />} />
+            <Route path="/administrator-students" element={<StudentsList />} />
+            <Route path="/administrator-documents/gestionar" element={<DocumentsManager />} />
+            <Route path="/administrator-utilities/letterhead" element={<UtilitiesLetterhead />} />
           </Route>
         </Routes>
       </Router>

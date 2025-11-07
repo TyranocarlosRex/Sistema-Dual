@@ -1,3 +1,4 @@
+// resources/js/components/AdministratorSidebar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -8,7 +9,7 @@ export default function Sidebar() {
 
   // Abrir submenú si estás en rutas de documentos
   useEffect(() => {
-    if (location.pathname.startsWith("/admin-documents")) {
+    if (location.pathname.startsWith("/administrator-documents")) {
       setOpenDocs(true);
     }
   }, [location.pathname]);
@@ -19,20 +20,19 @@ export default function Sidebar() {
     <div className="bg-light border-end vh-100" style={{ width: "150px" }}>
       <ul className="nav flex-column p-3">
         <li className="nav-item mb-2">
-          <NavLink className="nav-link" to="/admin-users">
+          <NavLink className="nav-link" to="/administrator-users">
             Usuarios
           </NavLink>
         </li>
 
         <li className="nav-item mb-2">
-          <NavLink className="nav-link" to="/admin-reports">
+          <NavLink className="nav-link" to="/administrator-reports">
             Reportes
           </NavLink>
         </li>
 
-        {/* === NUEVO: enlace top-level a Estudiantes === */}
         <li className="nav-item mb-2">
-          <NavLink className="nav-link" to="/admin-students">
+          <NavLink className="nav-link" to="/administrator-students">
             Estudiantes
           </NavLink>
         </li>
@@ -62,13 +62,13 @@ export default function Sidebar() {
             <ul className="nav flex-column ms-3">
               
               <li className="nav-item">
-                <NavLink className="nav-link" to="/admin-documents/gestionar">
+                <NavLink className="nav-link" to="/administrator-documents/gestionar">
                   Gestión de documentos
                 </NavLink>
               </li>
 
               <li className="nav-item">
-                <NavLink className="nav-link" to="/admin-documents/revision">
+                <NavLink className="nav-link" to="/administrator-documents/revision">
                   Revisar Documentos
                 </NavLink>
               </li>
@@ -78,7 +78,7 @@ export default function Sidebar() {
 
         {/* === NUEVO: Utilerías top-level === */}
         <li className="nav-item mb-2">
-          <NavLink className="nav-link" to="/admin-utilities/letterhead">
+          <NavLink className="nav-link" to="/administrator-utilities/letterhead">
             Utilerías
           </NavLink>
         </li>
