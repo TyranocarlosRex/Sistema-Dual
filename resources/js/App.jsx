@@ -22,6 +22,8 @@ import DetalleRevisionEstudiante from './components/CoordinatorPage/Documents/De
 import StudentsList from "./components/CoordinatorPage/Documents/StudentsList";
 import DocumentsManager from "./components/CoordinatorPage/Documents/DocumentsManager";
 import UtilitiesLetterhead from "./components/CoordinatorPage/Documents/Utilities/UtilitiesLetterhead";
+import AdminLayout from './components/Layout/AdminLayout';
+import AdminHome from './components/AdminPage/AdminHome';
 
 
 const root = document.getElementById('root');
@@ -53,7 +55,10 @@ if (root) {
             <Route path="/coordinator-students" element={<StudentsList />} />
             <Route path="/coordinator-documents/gestionar" element={<DocumentsManager />} />
             <Route path="/coordinator-utilities/letterhead" element={<UtilitiesLetterhead />} />
-
+          </Route>
+          {/* Administrador */}
+          <Route element={<AdminLayout/>}>
+            <Route path="/admin-home" element={<AdminHome />} />
           </Route>
         </Routes>
       </Router>

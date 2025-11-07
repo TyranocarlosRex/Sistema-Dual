@@ -1,8 +1,8 @@
-import Navbar from "../CoordinatorPage/Bars/CoordinatorNavbar";
-import Sidebar from "../CoordinatorPage/Bars/CoordinatorSidebar";
+import Navbar from "../AdminPage/Bars/AdminNavbar";
+import Sidebar from "../AdminPage/Bars/AdminSidebar";
 import { Outlet } from "react-router-dom";
 
-export default function CoordinatorLayout() {
+export default function AdminLayout() {
   return (
     <>
       <Navbar />
