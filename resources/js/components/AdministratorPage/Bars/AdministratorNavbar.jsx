@@ -36,7 +36,7 @@ export default function Navbar() {
     <nav className="navbar navbar-expand bg-light border-bottom">
       <div className="container">
         <NavLink className="navbar-brand" to="/administrator-home">
-          Educación Dual - Administrador
+          Educación Dual
         </NavLink>
 
         {isAuthed && (

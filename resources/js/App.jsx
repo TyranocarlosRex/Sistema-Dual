@@ -24,6 +24,7 @@ import DocumentsManager from "./components/CoordinatorPage/Documents/DocumentsMa
 import UtilitiesLetterhead from "./components/CoordinatorPage/Documents/Utilities/UtilitiesLetterhead";
 import AdminLayout from './components/Layout/AdminLayout';
 import AdminHome from "./components/AdministratorPage/AdministratorHome";
+import AdministratorUsers from "./components/AdministratorPage/Users/AdministratorUsers";
 
 
 const root = document.getElementById('root');
@@ -59,7 +60,7 @@ if (root) {
           {/* Administrador */}
           <Route element={<AdminLayout/>}>
             <Route path="/administrator-home" element={<AdminHome />} />
-            <Route path="/administrator-users" element={<CoordinatorUsers />} />
+            <Route path="/administrator-users" element={<AdministratorUsers />} />
             <Route path="/administrator-reports" element={<CoordinatorReports />} />
             <Route path="/administrator-documents/otros" element={<Otros />} />
             <Route path="/administrator-documents/revision" element={<RevisionDocumentos />} />

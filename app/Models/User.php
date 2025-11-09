@@ -10,6 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\Student;
 use App\Models\Coordinator;
 use App\Models\Admin;
+use App\Models\Candidate;
 
 
 class User extends Authenticatable
@@ -66,5 +67,10 @@ class User extends Authenticatable
     public function admin()
     {
         return $this->hasOne(Admin::class, 'user_id');
+    }
+
+    public function candidate()
+    {
+        return $this->hasOne(Candidate::class, 'user_id');
     }
 }

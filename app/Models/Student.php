@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Candidate;
 
 class Student extends Model
 {
@@ -26,5 +27,10 @@ class Student extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function candidate()
+    {
+        return $this->hasOne(Candidate::class, 'student_id');
     }
 }

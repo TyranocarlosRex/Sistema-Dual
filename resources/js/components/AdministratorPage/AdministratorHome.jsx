@@ -38,9 +38,6 @@ const AdministratorHome = () => {
 
   return (
     <div className="p-6 max-w-lg mx-auto space-y-4">
-      <h1 className="text-3xl">
-        Panel de Administración
-      </h1>
       <h2 className="text-xl">
         Bienvenido, {admin.name || 'Administrador'}
       </h2>
