@@ -33,13 +33,13 @@ const AdministratorHome = () => {
   }, []);
 
   if (!admin) {
-    return <div className="p-6">No se encontraron datos del administrador.</div>;
+    return <div className="p-6"> </div>;
   }
 
   return (
     <div className="p-6 max-w-lg mx-auto space-y-4">
       <h2 className="text-xl">
-        Bienvenido, {admin.name || 'Administrador'}
+        Bienvenido, {admin.name}
       </h2>
 
       <div>
@@ -53,12 +53,7 @@ const AdministratorHome = () => {
       </div>
 
       <div className="mt-4 p-4 bg-gray-50 rounded">
-        <h3 className="font-bold mb-2">Acciones disponibles:</h3>
-        <ul className="list-disc pl-5">
-          <li>Gestión de usuarios</li>
-          <li>Visualización de reportes</li>
-          <li>Gestión de documentos</li>
-        </ul>
+        
       </div>
     </div>
   );
