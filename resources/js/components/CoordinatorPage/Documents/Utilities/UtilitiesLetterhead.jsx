@@ -3,8 +3,7 @@ import React, { useState } from "react";
 export default function UtilitiesLetterhead() {
   const [empresa, setEmpresa] = useState({
     nombre: "",
-    representante: "",
-    puesto: ""
+    representante: ""
   });
 
   const generarPDF = (evento) => {
@@ -44,16 +43,6 @@ export default function UtilitiesLetterhead() {
                 className="form-control" 
                 value={empresa.representante}
                 onChange={(e) => actualizarCampo('representante', e.target.value)}
-              />
-            </div>
-            
-            <div className="mb-3">
-              <label className="form-label">Puesto del Representante</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                value={empresa.puesto}
-                onChange={(e) => actualizarCampo('puesto', e.target.value)}
               />
             </div>
             
