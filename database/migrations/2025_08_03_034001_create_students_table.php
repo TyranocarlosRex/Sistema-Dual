@@ -12,32 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('students', function (Blueprint $table) {
-            $table->id();
-
-            // Quien inició sesión (1 a 1)
-            $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
-
-            // Si tu User está ligado a Student, puedes guardar el id:
-            $table->foreignId('student_id')->nullable()->constrained('students')->nullOnDelete();
-
-            // Copias para filtros rápidos (opcional pero práctico)
-            $table->string('no_control')->nullable()->index();
-            $table->string('apellidos')->nullable()->index();
-            $table->string('nombre')->nullable();
-            $table->string('correo')->nullable()->index();
-            $table->string('carrera')->nullable()->index();
-            $table->tinyInteger('semestre')->nullable()->index();
-
-            // Estatus binario que pediste
-            $table->enum('estatus', ['inactivo','activo'])->default('inactivo')->index();
-
-            $table->timestamp('first_login_at')->nullable();
-            $table->timestamp('last_login_at')->nullable();
-
-            // Origen (por si más adelante agregas otra forma)
-            $table->string('origen')->default('login');
-
-            $table->timestamps();
+           $table->id(); 
+           $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); 
+           $table->string('Nombre'); 
+           $table->string('Apellidos'); 
+           $table->integer('No_control');
+           $table->text('Semestre'); 
+           $table->string('Direccion')->nullable(); 
+           $table->integer('Telefono')->nullable(); 
+           $table->string('Correo_institucional')->nullable(); 
+           $table->timestamps();
         });
     }
 
