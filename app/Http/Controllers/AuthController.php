@@ -6,6 +6,7 @@ use App\Http\Requests\Auth\LoginAdminRequest;
 use App\Services\Auth\StudentLogin;
 use App\Services\Auth\CoordinatorLogin;
 use App\Services\Auth\AdminLogin;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller {
     public function loginStudent(LoginStudentRequest $request, StudentLogin $service) {

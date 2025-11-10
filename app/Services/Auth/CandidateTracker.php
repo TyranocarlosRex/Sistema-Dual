@@ -2,14 +2,18 @@
 
 namespace App\Services\Auth;
 
-use App\Models\Candidate;
 use App\Models\User;
+use App\Models\Candidate;
 use Illuminate\Support\Carbon;
 
 class CandidateTracker
 {
     public function track(User $user): void
     {
+        if (!$this->shouldTrack($user)) {
+            return;
+        }
+
         $student = method_exists($user, 'student') ? $user->student : null;
 
         $payload = [
@@ -27,9 +31,20 @@ class CandidateTracker
         $rec = Candidate::firstOrNew(['user_id' => $user->id]);
         if (!$rec->exists) {
             $payload['first_login_at'] = Carbon::now();
-            $payload['Estatus'] = 'Inactivo'; // o 'Activo' si quieres auto-activar
+            $payload['Estatus'] = 'Inactivo'; // o 'Activo'
         }
-
         $rec->fill($payload)->save();
+    }
+
+    private function shouldTrack(User $user): bool
+    {
+        if (isset($user->rol) && strtolower($user->rol) !== 'student') {
+            return false;
+        }
+        if (method_exists($user, 'student') && !$user->student) {
+            return false;
+        }
+        // if ($user->student && (int)$user->student->Semestre !== 8) return false;
+        return true;
     }
 }

@@ -1,9 +1,10 @@
 <?php
 
+
 use Illuminate\Support\Facades\Route;
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\StudentIndexController;
+use App\Http\Controllers\Api\CoordinatorIndexController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/login/student', [AuthController::class, 'loginStudent']);
@@ -11,14 +12,18 @@ Route::prefix('auth')->group(function () {
     Route::post('/login/admin', [AuthController::class, 'loginAdmin']);
 });
 
+// (Opcional) grupos por rol si luego agregas más rutas por rol
 Route::middleware(['auth:sanctum','ability:student'])->group(function () {
-    // rutas de estudiante...
+    // rutas exclusivas de estudiante...
 });
 
 Route::middleware(['auth:sanctum','ability:coordinator'])->group(function () {
-    // rutas de coordinador
+    // rutas exclusivas de coordinador...
 });
 
-Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
-    // rutas de admin
+Route::middleware(['auth:sanctum','ability:admin'])->group(function () {
+    // rutas exclusivas de admin...
 });
+
+Route::get('/students', [StudentIndexController::class, 'index']);
+Route::get('/coordinators', [CoordinatorIndexController::class, 'index']);

@@ -77,12 +77,9 @@ export default function AdministratorUsers() {
 
     // id
     const id =
-      u?.id ??
-      `${email || "sin-correo"}-${(n || "").trim()}-${(a || "").trim()}`.replaceAll(
-        " ",
-        "_"
-      );
-
+    u?.id ??
+    `${(email || "sin-correo")}-${(n || "").trim()}-${(a || "").trim()}`.replaceAll(" ", "_");
+    
     return {
       id,
       nombre: n || "-",
@@ -119,18 +116,17 @@ export default function AdministratorUsers() {
     setError("");
     try {
       const url = endpointPorTipo();
-      const { data } = await axios.get(url, {
-        params: {
-          // Si usas un único endpoint /api/users, agrega aquí: rol: tipo === 'students' ? 'student' : 'coordinator'
-          nombre: nombre || undefined,
-          correo: correo || undefined,
-          carrera: carrera || undefined,
-          page: 1,
-          per_page: 10,
-        },
-        withCredentials: true,
-        headers: { Accept: "application/json" },
-      });
+      const { data } = await axios.get(url, {params: {
+        rol: tipo === 'students' ? 'student' : 'coordinator',
+        nombre: nombre || undefined,
+        correo: correo || undefined,
+        carrera: carrera || undefined,
+        page: 1,
+        per_page: 10,
+      },
+      withCredentials: true,
+      headers: { Accept: 'application/json' },
+    });
 
       const listaCruda = Array.isArray(data?.data)
         ? data.data
