@@ -23,6 +23,7 @@ import StudentsList from "./components/CoordinatorPage/Documents/StudentsList";
 import GestionDocumentos from "./components/CoordinatorPage/Documents/GestionDocumentos";
 import DocumentsManager from "./components/CoordinatorPage/Documents/DocumentsManager";
 import UtilitiesLetterhead from "./components/CoordinatorPage/Documents/Utilities/UtilitiesLetterhead";
+import ListaProcesos from "./components/CoordinatorPage/Procesos/ListaProcesos";
 import AdminLayout from './components/Layout/AdminLayout';
 import AdminHome from "./components/AdministratorPage/AdministratorHome";
 import AdministratorUsers from "./components/AdministratorPage/Users/AdministratorUsers";
@@ -56,6 +57,11 @@ if (root) {
             <Route path="/coordinator-documents/revision/:id" element={<DetalleRevisionEstudiante />} />
             <Route path="/coordinator-students" element={<StudentsList />} />
             <Route path="/coordinator-documents/gestion" element={<GestionDocumentos />} />
+            
+            {/* Módulo de Procesos */}
+            {/* Módulo de Procesos */}
+            <Route path="/procesos" element={<ListaProcesos />} />
+            <Route path="/coordinator-processes" element={<ListaProcesos />} />
             <Route path="/coordinator-documents/gestionar" element={<DocumentsManager />} />
             <Route path="/coordinator-utilities/letterhead" element={<UtilitiesLetterhead />} />
           </Route>
@@ -71,6 +77,7 @@ if (root) {
             <Route path="/administrator-documents/gestion" element={<GestionDocumentos />} />
             <Route path="/administrator-documents/gestionar" element={<DocumentsManager />} />
             <Route path="/administrator-utilities/letterhead" element={<UtilitiesLetterhead />} />
+            <Route path="/administrador/procesos" element={<ListaProcesos />} />
           </Route>
         </Routes>
       </Router>

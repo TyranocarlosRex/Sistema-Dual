@@ -39,6 +39,12 @@ export default function Sidebar() {
         </li>
 
         <li className="nav-item mb-2">
+          <NavLink className="nav-link" to="/procesos">
+            <i className="bi bi-diagram-3 me-1"></i> Procesos
+          </NavLink>
+        </li>
+
+        <li className="nav-item mb-2">
           <button
             className="btn btn-link nav-link d-flex justify-content-between align-items-center w-100 text-start"
             onClick={toggleDocs}
@@ -75,6 +81,13 @@ export default function Sidebar() {
               <li className="nav-item">
                 <NavLink className="nav-link" to="/coordinator-documents/otros">
                   Otros Documentos
+                </NavLink>
+              </li>
+              {/* Módulo de Procesos */}
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/coordinator-processes">
+                  <i className="bi bi-gear me-2"></i>
+                  Procesos
                 </NavLink>
               </li>
             </ul>
