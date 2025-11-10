@@ -1,28 +1,72 @@
 import React, { useState } from "react";
 
-export default function UtilitiesLetterhead(){
-  const [empresa, setEmpresa] = useState({ nombre:"", representante:"", puesto:"" });
+export default function UtilitiesLetterhead() {
+  // Estados para guardar la información de la empresa
+  const [empresa, setEmpresa] = useState({
+    nombre: "",
+    representante: "",
+    puesto: ""
+  });
 
-  const generar = (e)=>{
-    e.preventDefault();
-    // why: descarga un “PDF” simulado para validar el flujo
-    const blob = new Blob([`Carta membretada\nEmpresa: ${empresa.nombre}\nRepresentante: ${empresa.representante}\nPuesto: ${empresa.puesto}`], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "carta_membretada.pdf"; a.click();
-    URL.revokeObjectURL(url);
+  // Función que se ejecuta al enviar el formulario
+  const generarPDF = (evento) => {
+    evento.preventDefault();
+    // Función deshabilitada temporalmente
+    console.log('Función de generación de PDF deshabilitada temporalmente');
+  };
+
+  // Función para actualizar los valores del formulario
+  const actualizarCampo = (campo, valor) => {
+    setEmpresa({
+      ...empresa,
+      [campo]: valor
+    });
   };
 
   return (
-    <div className="container">
-      <h2 className="mb-3">Utilerías: Membretar carta</h2>
-      <form className="card p-3" onSubmit={generar}>
-        <div className="row g-2">
-          <div className="col"><input className="form-control" placeholder="Empresa" value={empresa.nombre} onChange={e=>setEmpresa({...empresa, nombre:e.target.value})}/></div>
-          <div className="col"><input className="form-control" placeholder="Representante" value={empresa.representante} onChange={e=>setEmpresa({...empresa, representante:e.target.value})}/></div>
-          <div className="col"><input className="form-control" placeholder="Puesto" value={empresa.puesto} onChange={e=>setEmpresa({...empresa, puesto:e.target.value})}/></div>
-          <div className="col-auto"><button className="btn btn-primary">Generar PDF</button></div>
+    <div className="container mt-4">
+      <div className="card">
+        <div className="card-header bg-primary text-white">
+          <h2 className="h4 mb-0">Generar Carta Membretada</h2>
         </div>
-      </form>
+        <div className="card-body">
+          <form onSubmit={generarPDF} className="needs-validation" noValidate>
+            <div className="mb-3">
+              <label className="form-label">Nombre de la Empresa</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                value={empresa.nombre}
+                onChange={(e) => actualizarCampo('nombre', e.target.value)}
+              />
+            </div>
+            
+            <div className="mb-3">
+              <label className="form-label">Nombre del Representante</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                value={empresa.representante}
+                onChange={(e) => actualizarCampo('representante', e.target.value)}
+              />
+            </div>
+            
+            <div className="mb-3">
+              <label className="form-label">Puesto del Representante</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                value={empresa.puesto}
+                onChange={(e) => actualizarCampo('puesto', e.target.value)}
+              />
+            </div>
+            
+            <button type="submit" className="btn btn-primary">
+              Generar Carta
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
