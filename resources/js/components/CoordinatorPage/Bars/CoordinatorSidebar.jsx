@@ -63,14 +63,18 @@ export default function Sidebar() {
             <ul className="nav flex-column ms-3">
               
               <li className="nav-item">
-                <NavLink className="nav-link" to="/coordinator-documents/gestionar">
-                  Gestión de documentos
+                <NavLink className="nav-link" to="/coordinator-documents/gestion">
+                  Gestión de Documentos
                 </NavLink>
               </li>
-
               <li className="nav-item">
                 <NavLink className="nav-link" to="/coordinator-documents/revision">
-                  Revisar Documentos
+                  Revisión de Documentos
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/coordinator-documents/otros">
+                  Otros Documentos
                 </NavLink>
               </li>
             </ul>

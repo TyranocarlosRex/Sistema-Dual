@@ -99,8 +99,8 @@ export default function StudentsList() {
   });
   const [estudiantes, setEstudiantes] = useState(INICIALES);
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [estudianteSeleccionado, setEstudianteSeleccionado] = useState(null);
   const [notificacion, setNotificacion] = useState({ mensaje: '', tipo: '' });
+  const [estudianteSeleccionado, setEstudianteSeleccionado] = useState(null);
   const navigate = useNavigate();
   
   // Cerrar notificación después de 3 segundos
@@ -474,11 +474,11 @@ export default function StudentsList() {
               <div className="modal-body">
                 <div className="mb-3">
                   <label className="form-label">Nombre completo</label>
-                  <input type="text" className="form-control" placeholder="Ej. Juan Pérez López" />
+                  <input type="text" className="form-control" placeholder="Ejemplo: Carlos Eduardo Muñoz Castillo" />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Número de control</label>
-                  <input type="text" className="form-control" placeholder="Ej. A001" />
+                  <input type="text" className="form-control" placeholder="22331234" />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Carrera</label>
@@ -505,7 +505,7 @@ export default function StudentsList() {
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Correo electrónico</label>
-                  <input type="email" className="form-control" placeholder="ejemplo@dominio.com" />
+                  <input type="email" className="form-control" placeholder="ejemplo@hermosillo.tecnm.mx" />
                 </div>
               </div>
               <div className="modal-footer">
@@ -521,8 +521,10 @@ export default function StudentsList() {
                   className="btn btn-primary"
                   onClick={() => {
                     // En una implementación real, aquí iría la lógica para guardar
-                    alert('Estudiante agregado correctamente');
+                    setNotificacion({ mensaje: 'Estudiante agregado correctamente', tipo: 'exito' });
                     setMostrarModal(false);
+                    // Limpiar notificación después de 3 segundos
+                    setTimeout(() => setNotificacion({ mensaje: '', tipo: '' }), 3000);
                   }}
                 >
                   Guardar Estudiante
