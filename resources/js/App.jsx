@@ -15,9 +15,6 @@ import AdminLogin from './components/Auth/AdminLogin';
 /* Nuevas importaciones */
 import CoordinatorUsers from './components/CoordinatorPage/Users/CoordinatorUsers';
 import CoordinatorReports from './components/CoordinatorPage/Reports/CoordinatorReports';
-import Otros from './components/CoordinatorPage/Documents/Otros';
-import RevisionDocumentos from './components/CoordinatorPage/Documents/RevisionDocumentos';
-import DetalleRevisionEstudiante from './components/CoordinatorPage/Documents/DetalleRevisionEstudiante';
 
 import StudentsList from "./components/CoordinatorPage/Documents/StudentsList";
 import GestionDocumentos from "./components/CoordinatorPage/Documents/GestionDocumentos";
@@ -52,16 +49,11 @@ if (root) {
             <Route path="/coordinator-home" element={<CoordinatorHome />} />
             <Route path="/coordinator-users" element={<CoordinatorUsers />} />
             <Route path="/coordinator-reports" element={<CoordinatorReports />} />
-            <Route path="/coordinator-documents/otros" element={<Otros />} />
-            <Route path="/coordinator-documents/revision" element={<RevisionDocumentos />} />
-            <Route path="/coordinator-documents/revision/:id" element={<DetalleRevisionEstudiante />} />
             <Route path="/coordinator-students" element={<StudentsList />} />
             <Route path="/coordinator-documents/gestion" element={<GestionDocumentos />} />
             
             {/* Módulo de Procesos */}
-            {/* Módulo de Procesos */}
             <Route path="/procesos" element={<ListaProcesos />} />
-            <Route path="/coordinator-processes" element={<ListaProcesos />} />
             <Route path="/coordinator-documents/gestionar" element={<DocumentsManager />} />
             <Route path="/coordinator-utilities/letterhead" element={<UtilitiesLetterhead />} />
           </Route>
@@ -70,9 +62,6 @@ if (root) {
             <Route path="/administrator-home" element={<AdminHome />} />
             <Route path="/administrator-users" element={<AdministratorUsers />} />
             <Route path="/administrator-reports" element={<CoordinatorReports />} />
-            <Route path="/administrator-documents/otros" element={<Otros />} />
-            <Route path="/administrator-documents/revision" element={<RevisionDocumentos />} />
-            <Route path="/administrator-documents/revision/:id" element={<DetalleRevisionEstudiante />} />
             <Route path="/administrator-students" element={<StudentsList />} />
             <Route path="/administrator-documents/gestion" element={<GestionDocumentos />} />
             <Route path="/administrator-documents/gestionar" element={<DocumentsManager />} />

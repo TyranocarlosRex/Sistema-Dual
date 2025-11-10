@@ -45,53 +45,9 @@ export default function Sidebar() {
         </li>
 
         <li className="nav-item mb-2">
-          <button
-            className="btn btn-link nav-link d-flex justify-content-between align-items-center w-100 text-start"
-            onClick={toggleDocs}
-            aria-expanded={openDocs}
-            aria-controls="docs-submenu"
-            style={{ textDecoration: "none" }}
-          >
-            <span>Documentos</span>
-            <span
-              style={{
-                transform: openDocs ? "rotate(90deg)" : "rotate(0deg)",
-                transition: "transform .2s",
-              }}
-            />
-          </button>
-
-          <div
-            id="docs-submenu"
-            ref={submenuRef}
-            className={`submenu collapse-transition ${openDocs ? "show" : ""}`}
-          >
-            <ul className="nav flex-column ms-3">
-              
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/coordinator-documents/gestion">
-                  Gestión de Documentos
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/coordinator-documents/revision">
-                  Revisión de Documentos
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/coordinator-documents/otros">
-                  Otros Documentos
-                </NavLink>
-              </li>
-              {/* Módulo de Procesos */}
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/coordinator-processes">
-                  <i className="bi bi-gear me-2"></i>
-                  Procesos
-                </NavLink>
-              </li>
-            </ul>
-          </div>
+          <NavLink className="nav-link" to="/coordinator-documents/gestion">
+            Gestión de Documentos
+          </NavLink>
         </li>
 
         {/* === NUEVO: Utilerías top-level === */}
