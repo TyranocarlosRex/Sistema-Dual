@@ -1,4 +1,3 @@
-// resources/js/components/CoordinatorSidebar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -7,7 +6,6 @@ export default function Sidebar() {
   const location = useLocation();
   const submenuRef = useRef(null);
 
-  // Abrir submenú si estás en rutas de documentos
   useEffect(() => {
     if (location.pathname.startsWith("/coordinator-documents")) {
       setOpenDocs(true);
@@ -31,7 +29,6 @@ export default function Sidebar() {
           </NavLink>
         </li>
 
-        {/* === NUEVO: enlace top-level a Estudiantes === */}
         <li className="nav-item mb-2">
           <NavLink className="nav-link" to="/coordinator-students">
             Estudiantes
@@ -50,7 +47,6 @@ export default function Sidebar() {
           </NavLink>
         </li>
 
-        {/* === NUEVO: Utilerías top-level === */}
         <li className="nav-item mb-2">
           <NavLink className="nav-link" to="/coordinator-utilities/letterhead">
             Utilerías

@@ -11,7 +11,6 @@ export default function RevisionEstudiante() {
     { id: 4, nombre: "Luis Torres", estado: "rechazado" },
   ]);
 
-  // Filtrar por estado
   const pendientes = students.filter(s => s.estado === "pendiente");
   const aprobados = students.filter(s => s.estado === "aprobado");
   const rechazados = students.filter(s => s.estado === "rechazado");
@@ -26,7 +25,7 @@ export default function RevisionEstudiante() {
 
       <div style={{ display: "flex", gap: "30px", marginTop: "20px", flexWrap: "wrap" }}>
         
-        {/* Pendientes */}
+        {}
         <div style={{ flex: "1", minWidth: "300px" }}>
           <h3>Pendientes por Revisar</h3>
           {pendientes.length === 0 ? (
@@ -55,7 +54,7 @@ export default function RevisionEstudiante() {
           )}
         </div>
 
-        {/* Aprobados */}
+        {}
         <div style={{ flex: "1", minWidth: "300px" }}>
           <h3>Revisados</h3>
           {aprobados.length === 0 ? (
@@ -84,7 +83,7 @@ export default function RevisionEstudiante() {
           )}
         </div>
 
-        {/* Rechazados */}
+        {}
         <div style={{ flex: "1", minWidth: "300px" }}>
           <h3>Rechazados</h3>
           {rechazados.length === 0 ? (

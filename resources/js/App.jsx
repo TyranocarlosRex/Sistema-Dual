@@ -12,10 +12,8 @@ import CoordinatorHome from './components/CoordinatorPage/CoordinatorHome';
 import CoordinatorLayout from './components/Layout/CoordinatorLayout';
 import AdminLogin from './components/Auth/AdminLogin';
 
-/* Nuevas importaciones */
 import CoordinatorUsers from './components/CoordinatorPage/Users/CoordinatorUsers';
 import CoordinatorReports from './components/CoordinatorPage/Reports/CoordinatorReports';
-
 import StudentsList from "./components/CoordinatorPage/Documents/StudentsList";
 import GestionDocumentos from "./components/CoordinatorPage/Documents/GestionDocumentos";
 import DocumentsManager from "./components/CoordinatorPage/Documents/DocumentsManager";

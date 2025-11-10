@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Datos de prueba estáticos
 const INICIALES = [
   { 
     id: 1, 
@@ -47,11 +46,9 @@ const INICIALES = [
   },
 ];
 
-// Componente de notificación simple
 function Notificacion({ mensaje, tipo, onCerrar }) {
   if (!mensaje) return null;
   
-  // Estilos en línea para evitar CSS adicional
   const estilos = {
     position: 'fixed',
     top: '20px',
@@ -90,7 +87,6 @@ function Notificacion({ mensaje, tipo, onCerrar }) {
 }
 
 export default function StudentsList() {
-  // Estados
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({
     carrera: "",
@@ -103,7 +99,6 @@ export default function StudentsList() {
   const [estudianteSeleccionado, setEstudianteSeleccionado] = useState(null);
   const navigate = useNavigate();
   
-  // Cerrar notificación después de 3 segundos
   useEffect(() => {
     if (notificacion.mensaje) {
       const timer = setTimeout(() => {
@@ -117,13 +112,11 @@ export default function StudentsList() {
     setNotificacion({ mensaje, tipo });
   };
 
-  // Filtrar estudiantes
   const estudiantesFiltrados = estudiantes.filter(estudiante => {
     const cumpleBusqueda = 
       estudiante.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
       estudiante.no_control.toLowerCase().includes(busqueda.toLowerCase());
     
-    // Verificar si el estudiante está en el período filtrado
     const periodoCoincide = filtros.periodo === "" || 
       (filtros.periodo === "1" && !estudiante.segundoPeriodo) ||
       (filtros.periodo === "2" && estudiante.segundoPeriodo);
@@ -136,13 +129,11 @@ export default function StudentsList() {
     return cumpleBusqueda && cumpleFiltros;
   });
 
-  // Acciones
   const cambiarEstado = (id, nuevoEstado) => {
     setEstudiantes(estudiantes.map(est => 
       est.id === id ? { ...est, estado: nuevoEstado } : est
     ));
     
-    // Mostrar notificación
     const accion = nuevoEstado === 'activo' ? 'activado' : 'desactivado';
     mostrarNotificacion(`Estudiante ${accion} correctamente`, 'exito');
   };
@@ -154,18 +145,15 @@ export default function StudentsList() {
     setEstudiantes(nuevosEstudiantes);
     mostrarNotificacion('Segundo período habilitado correctamente', 'exito');
     
-    // Actualizar también el estudiante seleccionado si es el mismo
     if (estudianteSeleccionado && estudianteSeleccionado.id === id) {
       setEstudianteSeleccionado({ ...estudianteSeleccionado, segundoPeriodo: true });
     }
   };
   
   const enviarCorreo = (email) => {
-    // Simular envío de correo
     mostrarNotificacion(`Correo enviado a: ${email}`, 'info');
   };
 
-  // Obtener clase CSS según el estado
   const getEstadoClase = (estado) => {
     switch(estado) {
       case 'activo': return 'bg-success';
@@ -175,7 +163,6 @@ export default function StudentsList() {
     }
   };
 
-  // Obtener texto legible del estado
   const getEstadoTexto = (estado) => {
     switch(estado) {
       case 'activo': return 'Activo';
@@ -187,7 +174,7 @@ export default function StudentsList() {
 
   return (
     <div className="container-fluid py-3">
-      {/* Notificación */}
+      {}
       {notificacion.mensaje && (
         <Notificacion 
           mensaje={notificacion.mensaje} 
@@ -196,7 +183,7 @@ export default function StudentsList() {
         />
       )}
       
-      {/* Encabezado */}
+      {}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Gestión de Estudiantes</h2>
         <button 
@@ -207,7 +194,7 @@ export default function StudentsList() {
         </button>
       </div>
 
-      {/* Filtros */}
+      {}
       <div className="card mb-4">
         <div className="card-body">
           <div className="row g-3">
@@ -283,7 +270,7 @@ export default function StudentsList() {
         </div>
       </div>
 
-      {/* Tabla de estudiantes */}
+      {}
       <div className="card">
         <div className="card-body p-0">
           <div className="table-responsive">
@@ -369,7 +356,7 @@ export default function StudentsList() {
         </div>
       </div>
 
-      {/* Modal de detalles */}
+      {}
       {estudianteSeleccionado && (
         <div className="modal fade show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
           <div className="modal-dialog modal-lg">
@@ -458,7 +445,7 @@ export default function StudentsList() {
         </div>
       )}
 
-      {/* Modal para nuevo estudiante */}
+      {}
       {mostrarModal && (
         <div className="modal fade show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
           <div className="modal-dialog">
@@ -520,10 +507,8 @@ export default function StudentsList() {
                   type="button" 
                   className="btn btn-primary"
                   onClick={() => {
-                    // En una implementación real, aquí iría la lógica para guardar
                     setNotificacion({ mensaje: 'Estudiante agregado correctamente', tipo: 'exito' });
                     setMostrarModal(false);
-                    // Limpiar notificación después de 3 segundos
                     setTimeout(() => setNotificacion({ mensaje: '', tipo: '' }), 3000);
                   }}
                 >

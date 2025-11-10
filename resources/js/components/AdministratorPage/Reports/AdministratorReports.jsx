@@ -1,17 +1,13 @@
 import React, { useState } from "react";
 
 export default function CoordinatorReports() {
-  // Lista inicial vacía
   const [reports, setReports] = useState([]);
 
-  // Datos del formulario
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
 
-  // Para edición
   const [editandoId, setEditandoId] = useState(null);
 
-  // Agregar o actualizar reporte
   const guardarReporte = () => {
     if (titulo.trim() === "" || descripcion.trim() === "") {
       alert("Completa todos los campos");
@@ -19,7 +15,6 @@ export default function CoordinatorReports() {
     }
 
     if (editandoId === null) {
-      // Nuevo reporte
       const nuevoReporte = {
         id: Date.now(),
         titulo,
@@ -28,7 +23,6 @@ export default function CoordinatorReports() {
       };
       setReports([...reports, nuevoReporte]);
     } else {
-      // Editar reporte existente
       const actualizados = reports.map((r) =>
         r.id === editandoId ? { ...r, titulo, descripcion } : r
       );
@@ -36,17 +30,14 @@ export default function CoordinatorReports() {
       setEditandoId(null);
     }
 
-    // Limpiar campos
     setTitulo("");
     setDescripcion("");
   };
 
-  // Eliminar reporte
   const eliminarReporte = (id) => {
     setReports(reports.filter((r) => r.id !== id));
   };
 
-  // Cargar datos en el formulario para editar
   const editarReporte = (reporte) => {
     setTitulo(reporte.titulo);
     setDescripcion(reporte.descripcion);
@@ -57,7 +48,7 @@ export default function CoordinatorReports() {
     <div style={{ padding: "20px" }}>
       <h2>Gestión de Reportes</h2>
 
-      {/* Formulario */}
+      {}
       <div style={{ marginBottom: "20px" }}>
         <input
           type="text"
@@ -90,7 +81,7 @@ export default function CoordinatorReports() {
         )}
       </div>
 
-      {/* Tabla de reportes */}
+      {}
       <table border="1" cellPadding="5" style={{ width: "100%", textAlign: "left" }}>
         <thead>
           <tr>

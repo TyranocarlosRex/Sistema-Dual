@@ -12,7 +12,6 @@ const AdministratorHome = () => {
   });
 
   useEffect(() => {
-    // Refresca desde el backend (por si los datos cambiaron)
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -29,7 +28,7 @@ const AdministratorHome = () => {
         localStorage.setItem('user', JSON.stringify(data.user));
       }
     })
-    .catch(() => {/* silenciar o mostrar toast */});
+    .catch(() => {});
   }, []);
 
   if (!admin) {

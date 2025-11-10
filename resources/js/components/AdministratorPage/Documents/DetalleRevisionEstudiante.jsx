@@ -10,9 +10,7 @@ export default function DetalleRevisionEstudiante() {
     documentos: []
   });
 
-  // Simular datos al cargar
   useEffect(() => {
-    // Esto luego vendrá de la base de datos
     const dummyStudent = {
       nombre: "Juan Pérez",
       documentos: [

@@ -47,7 +47,7 @@ export default function OtrosDocumentos() {
       <h2>Otros Documentos</h2>
       <p>Administra documentos generales como reglamentos, formatos y constancias.</p>
 
-      {/* Formulario */}
+      {}
       <div style={{ marginBottom: "20px" }}>
         <input
           type="text"
@@ -78,7 +78,7 @@ export default function OtrosDocumentos() {
         )}
       </div>
 
-      {/* Tabla */}
+      {}
       <table border="1" cellPadding="5" style={{ width: "100%", textAlign: "left" }}>
         <thead>
           <tr>

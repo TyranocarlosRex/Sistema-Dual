@@ -1,16 +1,13 @@
 import React, { useState } from "react";
 
 export default function CoordinatorUsers() {
-  // Lista inicial vacía
   const [users, setUsers] = useState([]);
 
-  // Datos para formulario
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
-  const [rol, setRol] = useState("student"); // Por defecto estudiante
-  const [editandoId, setEditandoId] = useState(null); // Para saber si estamos editando
+  const [rol, setRol] = useState("student");
+  const [editandoId, setEditandoId] = useState(null);
 
-  // Agregar usuario
   const agregarUsuario = () => {
     if (nombre.trim() === "" || correo.trim() === "" || rol.trim() === "") {
       alert("Completa todos los campos");
@@ -24,19 +21,17 @@ export default function CoordinatorUsers() {
       rol,
     };
 
-    setUsers(users.concat(nuevo)); // Más simple que spread operator
+    setUsers(users.concat(nuevo));
     setNombre("");
     setCorreo("");
     setRol("student");
   };
 
-  // Eliminar usuario
   const eliminarUsuario = (id) => {
     const nuevaLista = users.filter((u) => u.id !== id);
     setUsers(nuevaLista);
   };
 
-  // Preparar edición
   const empezarEdicion = (usuario) => {
     setEditandoId(usuario.id);
     setNombre(usuario.nombre);
@@ -44,7 +39,6 @@ export default function CoordinatorUsers() {
     setRol(usuario.rol);
   };
 
-  // Guardar cambios
   const guardarCambios = () => {
     const actualizados = users.map((u) => {
       if (u.id === editandoId) {
@@ -64,7 +58,7 @@ export default function CoordinatorUsers() {
     <div style={{ padding: "20px" }}>
       <h2>Gestión de Usuarios</h2>
 
-      {/* Formulario */}
+      {}
       <div style={{ marginBottom: "20px" }}>
         <input
           type="text"
@@ -96,7 +90,7 @@ export default function CoordinatorUsers() {
         )}
       </div>
 
-      {/* Tabla */}
+      {}
       <table border="1" cellPadding="5" style={{ width: "100%", textAlign: "left" }}>
         <thead>
           <tr>

@@ -10,7 +10,7 @@ export default function DocumentsManager(){
 
   const agregar = (e)=>{
     e.preventDefault();
-    if (!nombre || !fecha) return alert("Completa nombre y fecha"); // why: validación básica clara
+    if (!nombre || !fecha) return alert("Completa nombre y fecha");
     const id = Math.max(0, ...docs.map(d=>d.id)) + 1;
     setDocs([...docs, { id, alumno:"—", nombre, fecha_limite: fecha, estado:"pendiente", url:"#"}]);
     setNombre(""); setFecha("");

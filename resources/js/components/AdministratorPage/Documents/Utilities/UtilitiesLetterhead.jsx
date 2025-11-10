@@ -5,7 +5,6 @@ export default function UtilitiesLetterhead(){
 
   const generar = (e)=>{
     e.preventDefault();
-    // why: descarga un “PDF” simulado para validar el flujo
     const blob = new Blob([`Carta membretada\nEmpresa: ${empresa.nombre}\nRepresentante: ${empresa.representante}\nPuesto: ${empresa.puesto}`], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = "carta_membretada.pdf"; a.click();

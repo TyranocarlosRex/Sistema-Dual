@@ -1,4 +1,3 @@
-// resources/js/components/AdministratorSidebar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -7,7 +6,6 @@ export default function Sidebar() {
   const location = useLocation();
   const submenuRef = useRef(null);
 
-  // Abrir submenú si estás en rutas de documentos
   useEffect(() => {
     if (location.pathname.startsWith("/administrator-documents")) {
       setOpenDocs(true);
@@ -76,7 +74,7 @@ export default function Sidebar() {
           </div>
         </li>
 
-        {/* === NUEVO: Utilerías top-level === */}
+        {}
         <li className="nav-item mb-2">
           <NavLink className="nav-link" to="/administrator-utilities/letterhead">
             Utilerías

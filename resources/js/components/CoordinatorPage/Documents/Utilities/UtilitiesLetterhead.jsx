@@ -1,21 +1,17 @@
 import React, { useState } from "react";
 
 export default function UtilitiesLetterhead() {
-  // Estados para guardar la información de la empresa
   const [empresa, setEmpresa] = useState({
     nombre: "",
     representante: "",
     puesto: ""
   });
 
-  // Función que se ejecuta al enviar el formulario
   const generarPDF = (evento) => {
     evento.preventDefault();
-    // Función deshabilitada temporalmente
     console.log('Función de generación de PDF deshabilitada temporalmente');
   };
 
-  // Función para actualizar los valores del formulario
   const actualizarCampo = (campo, valor) => {
     setEmpresa({
       ...empresa,

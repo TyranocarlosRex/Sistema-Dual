@@ -2,25 +2,20 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function AdministratorUsers() {
-  // Selección de tipo
-  const [tipo, setTipo] = useState("students"); // "students" | "coordinators"
+  const [tipo, setTipo] = useState("students");
 
-  // Filtros
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [carrera, setCarrera] = useState("");
 
-  // Datos / estado UI
   const [rows, setRows] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     buscarUsuarios();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tipo]);
 
-  // Endpoint según tipo
   const endpointPorTipo = () => {
     switch (tipo) {
       case "coordinators":
@@ -31,9 +26,7 @@ export default function AdministratorUsers() {
     }
   };
 
-  // Normaliza un registro del backend a un esquema consistente
   const normalize = (u) => {
-    // Nombres
     const n =
       u?.nombre ?? u?.Nombre ?? u?.first_name ?? u?.firstName ?? u?.name ?? "";
     const a =
@@ -44,7 +37,6 @@ export default function AdministratorUsers() {
       u?.surname ??
       "";
 
-    // Correo (plano o anidado en user)
     const email =
       u?.correo ??
       u?.Correo ??
@@ -54,14 +46,12 @@ export default function AdministratorUsers() {
       u?.user?.Email ??
       "-";
 
-    // Carrera (string o arreglo)
     const careerRaw =
       u?.carrera ?? u?.Carrera ?? u?.career ?? u?.Career ?? u?.programa ?? null;
     const career = Array.isArray(careerRaw)
       ? careerRaw.join(", ")
       : careerRaw ?? "-";
 
-    // No de control / matrícula
     const noControl =
       u?.No_control ??
       u?.no_control ??
@@ -71,11 +61,9 @@ export default function AdministratorUsers() {
       u?.control ??
       "-";
 
-    // Estatus
     const estatus =
       u?.estatus ?? u?.Estatus ?? u?.status ?? u?.Status ?? "-";
 
-    // id
     const id =
     u?.id ??
     `${(email || "sin-correo")}-${(n || "").trim()}-${(a || "").trim()}`.replaceAll(" ", "_");
@@ -92,7 +80,6 @@ export default function AdministratorUsers() {
     };
   };
 
-  // Columnas por tipo (keys del objeto normalizado + etiquetas)
   const columnas =
     tipo === "coordinators"
       ? [
@@ -110,7 +97,6 @@ export default function AdministratorUsers() {
           { key: "estatus", label: "Estatus" },
         ];
 
-  // Fetch
   const buscarUsuarios = async () => {
     setCargando(true);
     setError("");
@@ -154,7 +140,7 @@ export default function AdministratorUsers() {
         Usuarios — {tipo === "students" ? "Estudiantes" : "Coordinadores"}
       </h2>
 
-      {/* Selector de tipo */}
+      {}
       <div
         style={{
           marginBottom: 12,
@@ -177,7 +163,7 @@ export default function AdministratorUsers() {
         </label>
       </div>
 
-      {/* Filtros */}
+      {}
       <div
         style={{
           marginBottom: 16,
@@ -213,7 +199,7 @@ export default function AdministratorUsers() {
         <div style={{ marginBottom: 10, color: "crimson" }}>{error}</div>
       )}
 
-      {/* Tabla dinámica */}
+      {}
       <table
         border="1"
         cellPadding="5"

@@ -2,31 +2,26 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const CoordinatorHome = () => {
-  // Estado para almacenar los datos del coordinador
   const [coordinator, setCoordinator] = useState(() => {
     const raw = localStorage.getItem('coordinator');
     return raw ? JSON.parse(raw) : null;
   });
 
-  // Estado para el correo del usuario
   const [userEmail, setUserEmail] = useState(() => {
     const u = localStorage.getItem('user');
     return u ? JSON.parse(u).email : '';
   });
 
-  // Estado para estadísticas simples
   const [stats, setStats] = useState({
     students: 0,
     activeProcesses: 0,
     pendingDocuments: 0
   });
 
-  // Cargar datos del coordinador
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    // Obtener datos del coordinador
     axios.get('/api/coordinator/me', {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -42,7 +37,6 @@ const CoordinatorHome = () => {
     })
     .catch(error => console.error('Error al cargar datos:', error));
 
-    // Simular carga de estadísticas (en un caso real, esto sería otra llamada a la API)
     setStats({
       students: 45,
       activeProcesses: 12,
@@ -50,7 +44,6 @@ const CoordinatorHome = () => {
     });
   }, []);
 
-  // Si no hay datos del coordinador, mostrar mensaje de carga
   if (!coordinator) {
     return (
       <div className="p-6 text-center">
@@ -61,14 +54,14 @@ const CoordinatorHome = () => {
 
   return (
     <div className="p-4">
-      {/* Encabezado */}
+      {}
       <div className="bg-white p-4 mb-4 rounded shadow">
         <h1 className="text-2xl font-bold">
           Bienvenido, {coordinator.Nombre || 'Coordinador'}
         </h1>
       </div>
 
-      {/* Tarjetas de estadísticas */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-50 p-4 rounded border border-blue-100">
           <h3 className="font-medium text-gray-700">Estudiantes</h3>
@@ -84,7 +77,7 @@ const CoordinatorHome = () => {
         </div>
       </div>
 
-      {/* Información personal */}
+      {}
       <div className="bg-white p-4 rounded shadow mb-6">
         <h2 className="text-xl font-semibold mb-4">Información Personal</h2>
         <div className="space-y-4">
@@ -103,7 +96,7 @@ const CoordinatorHome = () => {
         </div>
       </div>
 
-      {/* Acciones rápidas */}
+      {}
       <div className="bg-white p-4 rounded shadow">
         <h2 className="text-xl font-semibold mb-4">Acciones Rápidas</h2>
         <div className="space-y-2">

@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 export default function CoordinatorReports() {
   const [activeTab, setActiveTab] = useState('predefinidos');
   
-  // Datos para el generador de reportes
   const [filtros, setFiltros] = useState({
     carrera: '',
     periodo: '',
@@ -12,7 +11,6 @@ export default function CoordinatorReports() {
     fechaFin: ''
   });
 
-  // Datos de ejemplo para reportes predefinidos
   const reportesPredefinidos = [
     { 
       id: 1, 
@@ -40,14 +38,12 @@ export default function CoordinatorReports() {
     },
   ];
 
-  // Opciones para los filtros
   const opcionesFiltros = {
     carreras: ['Sistemas', 'Industrial', 'Mecatrónica', 'Electrónica'],
     periodos: ['Enero-Junio 2024', 'Agosto-Diciembre 2024', 'Enero-Junio 2025'],
     estados: ['Activo', 'Baja temporal', 'Egresado', 'En proceso']
   };
 
-  // Manejador de cambios en los filtros
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFiltros(prev => ({
@@ -56,7 +52,6 @@ export default function CoordinatorReports() {
     }));
   };
 
-  // Función para mostrar notificaciones en la interfaz
   const mostrarNotificacion = (tipo, titulo, mensaje) => {
     const notificacion = document.createElement('div');
     notificacion.className = `alert alert-${tipo} alert-dismissible fade show mt-3`;
@@ -69,27 +64,22 @@ export default function CoordinatorReports() {
     const contenedor = document.getElementById('notificaciones');
     contenedor.appendChild(notificacion);
     
-    // Eliminar la notificación después de 5 segundos
     setTimeout(() => {
       notificacion.remove();
     }, 5000);
   };
 
-  // Función para generar reporte
   const generarReporte = (tipo, nombre = '') => {
     mostrarNotificacion('info', 'Generando reporte', 
       nombre ? `Se está generando el reporte: ${nombre}` : 'Generando reporte personalizado');
     
-    // Aquí iría la lógica para generar el reporte
     console.log('Generando reporte con filtros:', filtros);
   };
 
-  // Función para exportar datos
   const exportarDatos = (formato) => {
     mostrarNotificacion('info', 'Exportando datos', 
       `Los datos se están exportando en formato ${formato}`);
     
-    // Aquí iría la lógica para exportar los datos
     console.log(`Exportando a ${formato} con filtros:`, filtros);
   };
 
@@ -100,7 +90,7 @@ export default function CoordinatorReports() {
           <h4 className="mb-0">Módulo de Reportes</h4>
         </div>
         
-        {/* Pestañas de navegación */}
+        {}
         <ul className="nav nav-tabs px-3 pt-2">
           <li className="nav-item">
             <button 
@@ -129,9 +119,9 @@ export default function CoordinatorReports() {
         </ul>
 
         <div className="card-body">
-          {/* Contenido de las pestañas */}
+          {}
           
-          {/* Pestaña de Reportes Predefinidos */}
+          {}
           {activeTab === 'predefinidos' && (
             <div className="row g-4">
               {reportesPredefinidos.map(reporte => (
@@ -189,7 +179,7 @@ export default function CoordinatorReports() {
             </div>
           )}
 
-          {/* Pestaña de Generador de Reportes Personalizados */}
+          {}
           {activeTab === 'personalizados' && (
             <div className="row justify-content-center">
               <div className="col-lg-8">
@@ -328,7 +318,7 @@ export default function CoordinatorReports() {
             </div>
           )}
           
-          {/* Pestaña de Métricas del Programa */}
+          {}
           {activeTab === 'metricas' && (
             <div className="row">
               <div className="col-md-6 mb-4">
@@ -470,7 +460,7 @@ export default function CoordinatorReports() {
         </div>
       </div>
       
-      {/* Contenedor para notificaciones */}
+      {}
       <div id="notificaciones" className="position-fixed" style={{top: '20px', right: '20px', zIndex: 1060, maxWidth: '350px'}}></div>
     </div>
   );

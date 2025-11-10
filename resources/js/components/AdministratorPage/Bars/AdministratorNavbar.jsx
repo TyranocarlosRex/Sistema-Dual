@@ -21,14 +21,12 @@ export default function Navbar() {
         );
       }
     } catch (e) {
-      // Si el token ya no es válido, igual limpiaremos cliente
-      // console.warn(e);
     } finally {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("role");
       localStorage.removeItem("coordinator");
-      navigate("/"); // tu ruta de login de estudiante
+      navigate("/");
     }
   };
 

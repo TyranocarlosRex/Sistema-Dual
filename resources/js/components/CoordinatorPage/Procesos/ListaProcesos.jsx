@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
-// Datos de prueba para estudiantes
 const estudiantesPrueba = [
   {
     id: 1,
@@ -70,12 +69,10 @@ const ListaProcesos = () => {
     estado: ''
   });
 
-  // Cargar datos de prueba al inicio
   useEffect(() => {
     setEstudiantes(estudiantesPrueba);
   }, []);
 
-  // Filtrar estudiantes
   const estudiantesFiltrados = estudiantes.filter(estudiante => {
     const cumpleBusqueda = estudiante.nombre.toLowerCase().includes(filtro.busqueda.toLowerCase()) || 
                          estudiante.control.includes(filtro.busqueda);
@@ -86,7 +83,6 @@ const ListaProcesos = () => {
     return cumpleBusqueda && cumpleCarrera && cumplePeriodo && cumpleEstado;
   });
 
-  // Obtener opciones únicas para los filtros
   const carreras = [...new Set(estudiantes.map(e => e.carrera))];
   const periodos = [...new Set(estudiantes.map(e => e.periodo))];
   const estados = [...new Set(estudiantes.map(e => e.estado))];
@@ -109,7 +105,6 @@ const ListaProcesos = () => {
   };
 
   const verDetallesEstudiante = (estudiante) => {
-    // Aquí iría la lógica para mostrar detalles del estudiante
     const mensaje = `Detalles de ${estudiante.nombre}\n` +
                    `Control: ${estudiante.control}\n` +
                    `Carrera: ${estudiante.carrera}\n` +
@@ -118,7 +113,6 @@ const ListaProcesos = () => {
                    `Progreso: ${estudiante.progreso}%\n` +
                    `Etapa: ${estudiante.etapa}`;
     
-    // Mostrar mensaje en la interfaz en lugar de un alert
     const mensajeDiv = document.createElement('div');
     mensajeDiv.className = 'alert alert-info';
     mensajeDiv.style.position = 'fixed';
@@ -128,7 +122,6 @@ const ListaProcesos = () => {
     mensajeDiv.style.whiteSpace = 'pre-line';
     mensajeDiv.textContent = mensaje;
     
-    // Botón para cerrar
     const closeBtn = document.createElement('button');
     closeBtn.className = 'btn-close';
     closeBtn.style.position = 'absolute';
@@ -139,7 +132,6 @@ const ListaProcesos = () => {
     mensajeDiv.appendChild(closeBtn);
     document.body.appendChild(mensajeDiv);
     
-    // Eliminar después de 5 segundos
     setTimeout(() => {
       if (document.body.contains(mensajeDiv)) {
         mensajeDiv.remove();
@@ -148,7 +140,6 @@ const ListaProcesos = () => {
   };
 
   const editarEstudiante = (estudiante) => {
-    // Aquí iría la lógica para editar el estudiante
     const mensaje = `Editando a: ${estudiante.nombre}\n` +
                    `(Esta es una simulación - en una implementación real se abriría un formulario de edición)`;
     
@@ -162,7 +153,6 @@ const ListaProcesos = () => {
     mensajeDiv.style.whiteSpace = 'pre-line';
     mensajeDiv.textContent = mensaje;
     
-    // Botón para cerrar
     const closeBtn = document.createElement('button');
     closeBtn.className = 'btn-close';
     closeBtn.style.position = 'absolute';
@@ -173,7 +163,6 @@ const ListaProcesos = () => {
     mensajeDiv.appendChild(closeBtn);
     document.body.appendChild(mensajeDiv);
     
-    // Eliminar después de 5 segundos
     setTimeout(() => {
       if (document.body.contains(mensajeDiv)) {
         mensajeDiv.remove();
@@ -188,7 +177,7 @@ const ListaProcesos = () => {
           <h5>Módulo de Procesos</h5>
         </div>
         <div className="card-body">
-          {/* Pestañas de navegación */}
+          {}
           <ul className="nav nav-tabs mb-4">
             <li className="nav-item">
               <button 
@@ -224,7 +213,7 @@ const ListaProcesos = () => {
             </li>
           </ul>
 
-          {/* Contenido de las pestañas */}
+          {}
           <div className="tab-content">
             {activeTab === 'seguimiento' && (
               <div className="tab-pane fade show active">
@@ -240,7 +229,7 @@ const ListaProcesos = () => {
                   </div>
                 </div>
 
-                {/* Filtros */}
+                {}
                 <div className="row g-3 mb-3">
                   <div className="col-md-3">
                     <input
@@ -301,7 +290,7 @@ const ListaProcesos = () => {
                   </div>
                 </div>
 
-                {/* Tabla de estudiantes */}
+                {}
                 <div className="table-responsive">
                   <table className="table table-hover table-sm">
                     <thead className="table-light">
@@ -419,7 +408,7 @@ const ListaProcesos = () => {
                     <i className="bi bi-person-x me-1"></i> Dar de Baja
                   </button>
                 </div>
-                {/* Aquí iría la tabla de bajas/altas */}
+                {}
               </div>
             )}
 
@@ -433,7 +422,7 @@ const ListaProcesos = () => {
                   <i className="bi bi-graph-up me-2"></i>
                   Visualización del progreso general de los estudiantes.
                 </div>
-                {/* Aquí irían las gráficas de progreso */}
+                {}
               </div>
             )}
           </div>

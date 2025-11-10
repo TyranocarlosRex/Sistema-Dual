@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 
-// Componente para la pestaña de Configuración
 const ConfiguracionDocumentos = () => {
   const [documentos, setDocumentos] = useState([
     { id: 1, nombre: 'Carta de presentación', tipo: 'Plantilla', periodo: 'Ambos', fechaLimite: '2023-12-31' },
     { id: 2, nombre: 'Vigencia de seguro', tipo: 'Formato', periodo: 'Ambos', fechaLimite: '2023-12-31' },
   ]);
   const [nombre, setNombre] = useState('');
-  const [tipo, setTipo] = useState(''); // Inicialmente vacío para forzar la selección
+  const [tipo, setTipo] = useState('');
   const [periodo, setPeriodo] = useState('Ambos');
-    const [fechaLimite, setFechaLimite] = useState('');
+  const [fechaLimite, setFechaLimite] = useState('');
   const [editandoId, setEditandoId] = useState(null);
   const [documentoAEliminar, setDocumentoAEliminar] = useState(null);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
@@ -17,13 +16,11 @@ const ConfiguracionDocumentos = () => {
   const guardarDocumento = (e) => {
     e.preventDefault();
     
-    // Eliminar cualquier mensaje existente primero
     const mensajeExistente = document.querySelector('.alert-warning');
     if (mensajeExistente) {
       mensajeExistente.remove();
     }
     
-    // Validación manual simple
     if (!nombre.trim() || !tipo) {
       const mensaje = document.createElement('div');
       mensaje.className = 'alert alert-warning mb-3';
@@ -31,11 +28,9 @@ const ConfiguracionDocumentos = () => {
       mensaje.style.transform = 'none';
       mensaje.textContent = 'Por favor complete todos los campos obligatorios';
       
-      // Insertar el mensaje después del formulario
       const form = e.target;
       form.parentNode.insertBefore(mensaje, form.nextSibling);
       
-      // Eliminar el mensaje después de 3 segundos
       setTimeout(() => {
         if (document.body.contains(mensaje)) {
           mensaje.remove();
@@ -64,7 +59,7 @@ const ConfiguracionDocumentos = () => {
     }
     
     setNombre('');
-    setTipo(''); // Reiniciar a valor por defecto
+    setTipo('');
     setPeriodo('Ambos');
     setFechaLimite('');
   };
@@ -89,7 +84,7 @@ const ConfiguracionDocumentos = () => {
 
   const editarDocumento = (doc) => {
     setNombre(doc.nombre);
-    setTipo(doc.tipo || ''); // Asegurar que si no hay tipo, se ponga vacío
+    setTipo(doc.tipo || '');
     setPeriodo(doc.periodo);
     setFechaLimite(doc.fechaLimite);
     setEditandoId(doc.id);
@@ -101,7 +96,7 @@ const ConfiguracionDocumentos = () => {
         <h5>Configuración de Documentos</h5>
       </div>
       
-      {/* Modal de confirmación de eliminación */}
+      {}
       {mostrarConfirmacion && (
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="modal-dialog">
@@ -287,9 +282,7 @@ const ConfiguracionDocumentos = () => {
   );
 };
 
-// Componente para la pestaña de Revisión
 const RevisionDocumentos = () => {
-  // Datos de ejemplo para la revisión
   const [documentosPendientes, setDocumentosPendientes] = useState([
     { 
       id: 1, 
@@ -320,7 +313,6 @@ const RevisionDocumentos = () => {
       return;
     }
     
-    // Si hay un mensaje de error previo y se cumplen las condiciones, lo limpiamos
     setError('');
     
     setDocumentosPendientes(documentosPendientes.map(doc => 
@@ -400,7 +392,7 @@ const RevisionDocumentos = () => {
           </table>
         </div>
 
-        {/* Modal de revisión */}
+        {}
         {documentoSeleccionado && (
           <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="modal-dialog">
@@ -412,7 +404,7 @@ const RevisionDocumentos = () => {
                     className="btn-close" 
                     onClick={() => {
                       setDocumentoSeleccionado(null);
-                      setError(''); // Limpiar mensaje de error al cerrar
+                      setError('');
                     }}
                   ></button>
                 </div>
@@ -434,7 +426,6 @@ const RevisionDocumentos = () => {
                       value={comentario}
                       onChange={(e) => {
                         setComentario(e.target.value);
-                        // Limpiar el error cuando el usuario comience a escribir
                         if (error) setError('');
                       }}
                       placeholder="Ingresa tus comentarios aquí..."
@@ -473,9 +464,7 @@ const RevisionDocumentos = () => {
   );
 };
 
-// Componente para la pestaña de Historial
 const HistorialDocumentos = () => {
-  // Datos de ejemplo para el historial
   const [historial] = useState([
     { 
       id: 1, 
@@ -639,7 +628,6 @@ const HistorialDocumentos = () => {
   );
 };
 
-// Componente principal con pestañas
 const GestionDocumentos = () => {
   const [pestañaActiva, setPestañaActiva] = useState('configuracion');
 
