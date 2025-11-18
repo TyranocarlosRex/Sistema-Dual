@@ -26,4 +26,5 @@ Route::middleware(['auth:sanctum','ability:admin'])->group(function () {
 });
 
 Route::get('/students', [StudentIndexController::class, 'index']);
+Route::patch('/students/{student}/estatus', [StudentIndexController::class, 'updateEstatus']);
 Route::get('/coordinators', [CoordinatorIndexController::class, 'index']);

@@ -37,4 +37,16 @@ class StudentIndexController extends Controller
 
         return StudentResource::collection($students);
     }
+
+    public function updateEstatus(Request $request, Student $student)
+    {
+        $validated = $request->validate([
+            'estatus' => 'required|string|in:Activo,Inactivo',
+        ]);
+
+        $student->estatus = $validated['estatus']; // o Estatus si así está en la BD
+        $student->save();
+
+        return new StudentResource($student->load('user'));
+    }
 }
