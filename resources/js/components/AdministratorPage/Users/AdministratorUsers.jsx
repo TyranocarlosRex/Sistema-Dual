@@ -35,7 +35,6 @@ export default function AdministratorUsers() {
   const [actualizandoId, setActualizandoId] = useState(null);
 
   useEffect(() => {
-    // cuando cambias de tipo, limpio filtros que no aplican
     setNombre("");
     setCorreo("");
     setCarrera("");
@@ -121,6 +120,7 @@ export default function AdministratorUsers() {
         ]
       : [
           { key: "no_control", label: "No. Control" },
+          { key: "apellidos", label: "Apellidos" }, // <-- agregado
           { key: "nombre", label: "Nombre" },
           { key: "carrera", label: "Carrera" },
           { key: "estatus", label: "Estado" },
@@ -147,7 +147,6 @@ export default function AdministratorUsers() {
         params.no_control = esNumeroControl ? trimmed : undefined;
         params.estatus = estatus || undefined;
       } else {
-        // coordinators: sólo correo + carrera
         const trimmedCorreo = correo.trim();
         params.correo = trimmedCorreo || undefined;
       }
@@ -178,7 +177,6 @@ export default function AdministratorUsers() {
     }
   };
 
-  // SOLO estudiantes: actualizar estatus en la BD
   const cambiarEstatusEstudiante = async (fila, nuevoEstatus) => {
     if (tipo !== "students") return;
 

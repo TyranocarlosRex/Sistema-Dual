@@ -24,8 +24,8 @@ export default function Sidebar() {
         </li>
 
         <li className="nav-item mb-2">
-          <NavLink className="nav-link" to="/administrator-reports">
-            Reportes
+          <NavLink className="nav-link" to="/administrator-tracking">
+            Seguimiento
           </NavLink>
         </li>
 

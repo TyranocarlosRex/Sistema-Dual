@@ -22,6 +22,7 @@ import ListaProcesos from "./components/CoordinatorPage/Procesos/ListaProcesos";
 import AdminLayout from './components/Layout/AdminLayout';
 import AdminHome from "./components/AdministratorPage/AdministratorHome";
 import AdministratorUsers from "./components/AdministratorPage/Users/AdministratorUsers";
+import AdministratorTracking from "./components/AdministratorPage/Tracking/AdministratorTracking";
 
 
 const root = document.getElementById('root');
@@ -59,7 +60,7 @@ if (root) {
           <Route element={<AdminLayout/>}>
             <Route path="/administrator-home" element={<AdminHome />} />
             <Route path="/administrator-users" element={<AdministratorUsers />} />
-            <Route path="/administrator-reports" element={<CoordinatorReports />} />
+            <Route path="/administrator-tracking" element={<AdministratorTracking />} />
             <Route path="/administrator-students" element={<StudentsList />} />
             <Route path="/administrator-documents/gestion" element={<GestionDocumentos />} />
             <Route path="/administrator-documents/gestionar" element={<DocumentsManager />} />
