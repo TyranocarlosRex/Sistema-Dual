@@ -23,7 +23,7 @@ import AdminLayout from './components/Layout/AdminLayout';
 import AdminHome from "./components/AdministratorPage/AdministratorHome";
 import AdministratorUsers from "./components/AdministratorPage/Users/AdministratorUsers";
 import AdministratorTracking from "./components/AdministratorPage/Tracking/AdministratorTracking";
-
+import AdministratorReports from './components/AdministratorPage/Reports/AdministratorReports';
 
 const root = document.getElementById('root');
 
@@ -61,11 +61,7 @@ if (root) {
             <Route path="/administrator-home" element={<AdminHome />} />
             <Route path="/administrator-users" element={<AdministratorUsers />} />
             <Route path="/administrator-tracking" element={<AdministratorTracking />} />
-            <Route path="/administrator-students" element={<StudentsList />} />
-            <Route path="/administrator-documents/gestion" element={<GestionDocumentos />} />
-            <Route path="/administrator-documents/gestionar" element={<DocumentsManager />} />
-            <Route path="/administrator-utilities/letterhead" element={<UtilitiesLetterhead />} />
-            <Route path="/administrador/procesos" element={<ListaProcesos />} />
+            <Route path="/administrator-report" element={<AdministratorReports/>} />
           </Route>
         </Routes>
       </Router>

@@ -3,9 +3,12 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,12 +19,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'bindings' => SubstituteBindings::class,
-            'throttle' => ThrottleRequests::class,
-            'sanctum' => EnsureFrontendRequestsAreStateful::class,
-            'role'        => RoleMiddleware::class,
-            'permission'  => PermissionMiddleware::class,
-            'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'bindings'  => SubstituteBindings::class,
+            'throttle'  => ThrottleRequests::class,
+
+            // Sanctum SPA/stateful
+            'sanctum'   => EnsureFrontendRequestsAreStateful::class,
+
+            // Sanctum abilities (AQUÍ lo importante)
+            'abilities' => CheckAbilities::class,
         ]);
 
         $middleware->group('api', [
@@ -32,4 +37,5 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->create();
