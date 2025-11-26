@@ -56,32 +56,28 @@ const StudentsHome = () => {
 
   // Cargar evidences del backend
   useEffect(() => {
-    const fetchEvidences = async () => {
-      try {
-        setLoadingEvidences(true);
-        setEvidencesError("");
-        const res = await axios.get("/api/student/evidences", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-          withCredentials: true,
-        });
-        setEvidences(res.data);
-      } catch (err) {
-        console.error("Error al cargar evidences del estudiante:", err);
-        if (err.response?.data?.message) {
-          setEvidencesError(err.response.data.message);
-        } else {
-          setEvidencesError("No se pudieron cargar las evidencias.");
-        }
-      } finally {
-        setLoadingEvidences(false);
-      }
-    };
+  const fetchEvidences = async () => {
+    try {
+      setLoadingEvidences(true);
+      setEvidencesError("");
+      const res = await axios.get("/api/student/evidences", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        withCredentials: true,
+      });
+      console.log("STUDENT HOME EVIDENCES:", res.data); // 👈
+      setEvidences(res.data);
+    } catch (err) {
+      // ...
+    } finally {
+      setLoadingEvidences(false);
+    }
+  };
 
-    fetchEvidences();
-  }, [token]);
+  fetchEvidences();
+}, [token]);
 
   // Helper para obtener fecha del próximo reporte (por fecha_limite)
   const getProximoReporte = (reports) => {
