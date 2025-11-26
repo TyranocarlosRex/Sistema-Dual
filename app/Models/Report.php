@@ -28,4 +28,9 @@ class Report extends Model
     {
         return $this->belongsTo(Evidence::class, 'evidence_id');
     }
+
+    public function submissions()
+    {
+        return $this->hasMany(Submission::class);
+    }
 }
