@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import StudentLogin from './components/Auth/StudentLogin';
 import CoordinatorLogin from './components/Auth/CoordinatorLogin';
 import StudentsHome from './components/StudentsPage/StudentsHome';
-import EnRoll from './components/StudentsPage/enRoll';
+import StudentReport from './components/StudentsPage/Reports/StudentReport';
 import StudentLayout from './components/Layout/StudentLayout';
 import CoordinatorHome from './components/CoordinatorPage/CoordinatorHome';
 import CoordinatorLayout from './components/Layout/CoordinatorLayout';
@@ -20,10 +20,11 @@ import DocumentsManager from "./components/CoordinatorPage/Documents/DocumentsMa
 import UtilitiesLetterhead from "./components/CoordinatorPage/Documents/Utilities/UtilitiesLetterhead";
 import ListaProcesos from "./components/CoordinatorPage/Procesos/ListaProcesos";
 import AdminLayout from './components/Layout/AdminLayout';
-import AdminHome from "./components/AdministratorPage/AdministratorHome";
+import AdministratorHome from "./components/AdministratorPage/AdministratorHome";
 import AdministratorUsers from "./components/AdministratorPage/Users/AdministratorUsers";
 import AdministratorTracking from "./components/AdministratorPage/Tracking/AdministratorTracking";
-import AdministratorReports from './components/AdministratorPage/Reports/AdministratorReports';
+import AdministratorReports from './components/AdministratorPage/Evidences/Reports/AdministratorReports';
+import AdministratorEvidences from './components/AdministratorPage/Evidences/AdministratorEvidences'
 
 const root = document.getElementById('root');
 
@@ -40,7 +41,7 @@ if (root) {
           {/* Estudiantes */}
           <Route element={<StudentLayout />}>
             <Route path="/students-home" element={<StudentsHome />} />
-            <Route path="/inscripcion" element={<EnRoll />} />
+            <Route path="/student-report" element={<StudentReport />} />
           </Route>
 
           {/* Coordinadores */}
@@ -58,9 +59,10 @@ if (root) {
           </Route>
           {/* Administrador */}
           <Route element={<AdminLayout/>}>
-            <Route path="/administrator-home" element={<AdminHome />} />
+            <Route path="/administrator-home" element={<AdministratorHome />} />
             <Route path="/administrator-users" element={<AdministratorUsers />} />
             <Route path="/administrator-tracking" element={<AdministratorTracking />} />
+            <Route path="/administrator-evidence" element={<AdministratorEvidences/>} />
             <Route path="/administrator-report" element={<AdministratorReports/>} />
           </Route>
         </Routes>

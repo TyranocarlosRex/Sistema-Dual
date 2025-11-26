@@ -12,7 +12,7 @@ const CARRERAS = [
   "Licenciatura en Administracion",
   "Ingenieria en Sistemas Computacionales",
   "Ingenieria Informatica",
-  "Ingenieria en Gestion Empresarial",
+  "Ingenieria en Gestión Empresarial",
   "Ingenieria Aeronautica",
 ];
 
@@ -126,86 +126,110 @@ export default function AdministratorUsers() {
           { key: "estatus", label: "Estado" },
         ];
 
-  const buscarUsuarios = async () => {
-    setCargando(true);
-    setError("");
-    try {
-      const url = endpointPorTipo();
+  const buscarUsuarios = async (page = 1) => {
+  setCargando(true);
+  setError("");
 
-      const params = {
-        rol: tipo === "students" ? "student" : "coordinator",
-        carrera: carrera || undefined,
-        page: 1,
-        per_page: 10,
-      };
+  try {
+    const token = localStorage.getItem("token");
 
-      if (tipo === "students") {
-        const trimmed = nombre.trim();
-        const esNumeroControl = trimmed !== "" && /^\d+$/.test(trimmed);
-
-        params.nombre = !esNumeroControl ? (trimmed || undefined) : undefined;
-        params.no_control = esNumeroControl ? trimmed : undefined;
-        params.estatus = estatus || undefined;
-      } else {
-        const trimmedCorreo = correo.trim();
-        params.correo = trimmedCorreo || undefined;
-      }
-
-      const { data } = await axios.get(url, {
-        params,
-        withCredentials: true,
-        headers: { Accept: "application/json" },
-      });
-
-      const listaCruda = Array.isArray(data?.data)
-        ? data.data
-        : Array.isArray(data)
-        ? data
-        : Array.isArray(data?.results)
-        ? data.results
-        : [];
-
-      setRows(listaCruda.map(normalize));
-    } catch (e) {
-      console.error(e);
+    if (!token) {
       setRows([]);
-      setError(
-        "No se pudo obtener la lista. Verifica el tipo seleccionado o los parámetros de búsqueda."
-      );
-    } finally {
-      setCargando(false);
+      setError("No hay sesión de administrador. Vuelve a iniciar sesión.");
+      return;
     }
-  };
+
+    // Usa el helper que ya tenías
+    const url = endpointPorTipo();
+
+    const params = {
+  page,
+  per_page: 10,
+};
+
+if (carrera) {
+  params.carrera = carrera;
+}
+
+if (tipo === "students") {
+  const trimmed = nombre.trim();
+  const esNumeroControl = trimmed !== "" && /^\d+$/.test(trimmed);
+
+  params.rol = "student";
+  params.nombre = !esNumeroControl ? (trimmed || undefined) : undefined;
+  params.no_control = esNumeroControl ? trimmed : undefined;
+  params.estatus = estatus || undefined;
+} else {
+  params.rol = "coordinator";
+  const trimmedCorreo = correo.trim();
+  params.correo = trimmedCorreo || undefined;
+}
+
+    const { data } = await axios.get(url, {
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    const listaCruda = Array.isArray(data?.data)
+      ? data.data
+      : Array.isArray(data)
+      ? data
+      : Array.isArray(data?.results)
+      ? data.results
+      : [];
+
+    setRows(listaCruda.map(normalize));
+  } catch (e) {
+    console.error(e);
+    setRows([]);
+    setError(
+      "No se pudo obtener la lista. Verifica el tipo seleccionado o los parámetros de búsqueda."
+    );
+  } finally {
+    setCargando(false);
+  }
+};
 
   const cambiarEstatusEstudiante = async (fila, nuevoEstatus) => {
-    if (tipo !== "students") return;
+  if (tipo !== "students") return;
 
-    try {
-      setActualizandoId(fila.id);
+  try {
+    setActualizandoId(fila.id);
 
-      const idBack = fila._raw?.id ?? fila.id;
-
-      await axios.patch(
-        `/api/students/${idBack}/estatus`,
-        { estatus: nuevoEstatus },
-        {
-          withCredentials: true,
-          headers: { Accept: "application/json" },
-        }
-      );
-
-      setRows((prev) =>
-        prev.map((r) =>
-          r.id === fila.id ? { ...r, estatus: nuevoEstatus } : r
-        )
-      );
-    } catch (e) {
-      console.error(e);
-      alert("No se pudo actualizar el estatus del estudiante.");
-    } finally {
-      setActualizandoId(null);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("La sesión ha expirado, vuelve a iniciar sesión como administrador.");
+      return;
     }
-  };
+
+    const idBack = fila._raw?.id ?? fila.id;
+
+    await axios.patch(
+      `/api/students/${idBack}/estatus`,
+      { estatus: nuevoEstatus },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === fila.id ? { ...r, estatus: nuevoEstatus } : r
+      )
+    );
+  } catch (e) {
+    console.error(e);
+    alert("No se pudo actualizar el estatus del estudiante.");
+  } finally {
+    setActualizandoId(null);
+  }
+};
 
   const verDetalle = (fila) => {
     const idBack = fila._raw?.id ?? fila.id;

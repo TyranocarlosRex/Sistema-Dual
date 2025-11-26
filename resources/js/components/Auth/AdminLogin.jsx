@@ -14,6 +14,11 @@ const AdminLogin = () => {
     try {
       const { data } = await axios.post('/api/auth/login/admin', { email, password });
 
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('student');
+      localStorage.removeItem('admin');
+
 // Soporta varias llaves de token (back viejo/nuevo)
   const token =
   data.access_token ??
@@ -23,7 +28,7 @@ const AdminLogin = () => {
 
 if (!token) {
   setError('El servidor no regresó token');
-  return; // evita navegar con token vacío
+  return;
 }
 
 localStorage.setItem('token', token);
@@ -32,6 +37,7 @@ localStorage.setItem('token', token);
 localStorage.setItem('user', JSON.stringify(
   data.user ?? null
 ));
+
 localStorage.setItem('admin', JSON.stringify(
   data.admin ?? data.user?.admin ?? null
 ));

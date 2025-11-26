@@ -10,6 +10,7 @@ class Report extends Model
     use HasFactory;
 
     protected $fillable = [
+        'evidence_id',
         'titulo',
         'descripcion',
         'fecha_limite',
@@ -21,5 +22,10 @@ class Report extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function evidence()
+    {
+        return $this->belongsTo(Evidence::class, 'evidence_id');
     }
 }

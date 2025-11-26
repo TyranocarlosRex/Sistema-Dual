@@ -39,15 +39,6 @@ export default function Navbar() {
           Sistema Dual
         </NavLink>
 
-        <div className="navbar-nav">
-          <NavLink
-            to="/inscripcion"
-            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-          >
-            Inscripciones
-          </NavLink>
-        </div>
-
         {isAuthed && (
           <button
             className="btn btn-outline-danger btn-sm"

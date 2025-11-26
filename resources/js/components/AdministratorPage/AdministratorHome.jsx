@@ -1,14 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const safeJSON = (str, fallback = null) => {
+  try {
+    if (!str || str === 'null') return fallback;
+    return JSON.parse(str);
+  } catch {
+    return fallback;
+  }
+};
+
 const AdministratorHome = () => {
   const [admin, setAdmin] = useState(() => {
     const raw = localStorage.getItem('admin');
-    return raw ? JSON.parse(raw) : null;
+    return safeJSON(raw, null);
   });
+
   const [userEmail, setUserEmail] = useState(() => {
-    const u = localStorage.getItem('user');
-    return u ? JSON.parse(u).email : '';
+    const rawUser = localStorage.getItem('user');
+    const userObj = safeJSON(rawUser, null);
+    return userObj?.email ?? '';
   });
 
   useEffect(() => {
@@ -16,19 +27,19 @@ const AdministratorHome = () => {
     if (!token) return;
 
     axios.get('/api/admin/me', {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` }, // 👈 importante: con backticks
     })
-    .then(({ data }) => {
-      if (data?.admin) {
-        setAdmin(data.admin);
-        localStorage.setItem('admin', JSON.stringify(data.admin));
-      }
-      if (data?.user?.email) {
-        setUserEmail(data.user.email);
-        localStorage.setItem('user', JSON.stringify(data.user));
-      }
-    })
-    .catch(() => {});
+      .then(({ data }) => {
+        if (data?.admin) {
+          setAdmin(data.admin);
+          localStorage.setItem('admin', JSON.stringify(data.admin));
+        }
+        if (data?.user?.email) {
+          setUserEmail(data.user.email);
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   if (!admin) {

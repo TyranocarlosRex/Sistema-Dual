@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 
 export default function Sidebar() {
   const [openDocs, setOpenDocs] = useState(false);
+  const [openPosts, setOpenPosts] = useState(false);
   const location = useLocation();
   const submenuRef = useRef(null);
 
@@ -10,9 +11,14 @@ export default function Sidebar() {
     if (location.pathname.startsWith("/administrator-documents")) {
       setOpenDocs(true);
     }
+
+    if (location.pathname.startsWith("/administrator-publications")) {
+      setOpenPosts(true);
+    }
   }, [location.pathname]);
 
   const toggleDocs = () => setOpenDocs((s) => !s);
+  const togglePosts = () => setOpenPosts((s) => !s);
 
   return (
     <div className="bg-light border-end vh-100" style={{ width: "150px" }}>
@@ -29,54 +35,54 @@ export default function Sidebar() {
           </NavLink>
         </li>
 
-        <li className="nav-item mb-2">
-          <NavLink className="nav-link" to="/administrator-report">
-            Reportes
-          </NavLink>
-        </li>
-
+        {/* PUBLICACIONES con dropdown */}
         <li className="nav-item mb-2">
           <button
             className="btn btn-link nav-link d-flex justify-content-between align-items-center w-100 text-start"
-            onClick={toggleDocs}
-            aria-expanded={openDocs}
-            aria-controls="docs-submenu"
+            onClick={togglePosts}
+            aria-expanded={openPosts}
+            aria-controls="posts-submenu"
             style={{ textDecoration: "none" }}
           >
-            <span>Documentos</span>
+            <span>Publicaciones</span>
             <span
               style={{
-                transform: openDocs ? "rotate(90deg)" : "rotate(0deg)",
+                transform: openPosts ? "rotate(90deg)" : "rotate(0deg)",
                 transition: "transform .2s",
               }}
             />
           </button>
 
           <div
-            id="docs-submenu"
-            ref={submenuRef}
-            className={`submenu collapse-transition ${openDocs ? "show" : ""}`}
+            id="posts-submenu"
+            className={`submenu collapse-transition ${openPosts ? "show" : ""}`}
           >
             <ul className="nav flex-column ms-3">
-              
               <li className="nav-item">
-                <NavLink className="nav-link" to="/administrator-documents/gestionar">
-                  Gestión de documentos
+                <NavLink
+                  className="nav-link"
+                  to="/administrator-evidence"
+                >
+                  Evidencias
                 </NavLink>
               </li>
 
               <li className="nav-item">
-                <NavLink className="nav-link" to="/administrator-documents/revision">
-                  Revisar Documentos
+                <NavLink
+                  className="nav-link"
+                  to="/administrator-publications/anuncios"
+                >
+                  Anuncios
                 </NavLink>
               </li>
             </ul>
           </div>
         </li>
-
-        {}
         <li className="nav-item mb-2">
-          <NavLink className="nav-link" to="/administrator-utilities/letterhead">
+          <NavLink
+            className="nav-link"
+            to="/administrator-utilities/letterhead"
+          >
             Utilerías
           </NavLink>
         </li>

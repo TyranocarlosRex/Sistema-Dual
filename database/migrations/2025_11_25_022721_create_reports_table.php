@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('evidence_id')
+            ->nullable()
+            ->constrained('evidences')
+            ->nullOnDelete();
             $table->string('titulo');
             $table->text('descripcion')->nullable();
             $table->date('fecha_limite')->nullable();

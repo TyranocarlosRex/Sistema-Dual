@@ -17,6 +17,11 @@ const StudentLogin = () => {
         password,
       });
 
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('student');
+      localStorage.removeItem('admin');
+
        const token = data.token ?? data.access_token; // soporta ambos
        if (token) {
         localStorage.setItem('token', token);

@@ -54,15 +54,13 @@ class AdminLogin implements LoginService
 
         // 4) Emite token con ability "admin"
         $abilities = ['admin'];
-        $token = $this->tokens->issue($user, $abilities, 'admin');
-
-        // 5) Respuesta (asegúrate que el front lea 'access_token' o cambia a 'token')
-        return [
-            'access_token' => $token,
-            'token_type'   => 'Bearer',
-            'abilities'    => $abilities,
-            'user'         => $user->only(['id','name','email']),
-            'admin'        => $admin,
-        ];
+$token = $this->tokens->issue($user, $abilities, 'admin');
+// ...
+return [
+    'access_token' => $token,
+    'token_type'   => 'Bearer',
+    'abilities'    => $abilities,
+    // ...
+];
     }
 }

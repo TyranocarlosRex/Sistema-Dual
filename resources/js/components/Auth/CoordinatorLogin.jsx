@@ -14,6 +14,11 @@ const CoordinatorLogin = () => {
     try {
       const { data } = await axios.post('/api/auth/login/coordinator', { email, password });
 
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('student');
+      localStorage.removeItem('admin');
+
 // Soporta varias llaves de token (back viejo/nuevo)
   const token =
   data.access_token ??

@@ -15,10 +15,11 @@ class StoreReportRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'evidence_id' => ['required', 'exists:evidences,id'],
             'titulo'       => ['required', 'string', 'max:255'],
             'descripcion'  => ['nullable', 'string'],
             'fecha_limite' => ['nullable', 'date'],
-            'attachment'   => ['nullable', 'file', 'max:4096'], // 4MB
+            'attachment'   => ['nullable', 'file', 'max:4096'],
         ];
     }
 }
