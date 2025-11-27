@@ -102,107 +102,187 @@ const AdministratorHome = () => {
 
   if (isLoading) {
     return (
-      <div className="p-5 text-center">
+      <div className="d-flex flex-column align-items-center justify-content-center" style={{ padding: '4rem 1rem' }}>
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Cargando...</span>
         </div>
-        <p className="mt-3 mb-0">Preparando tu panel de administrador</p>
+        <p className="mt-3 mb-0 text-muted">Preparando tu panel de administrador…</p>
       </div>
     );
   }
 
   if (!admin) {
     return (
-      <div className="p-5 text-center bg-white rounded shadow-sm">
-        <p className="mb-2">No encontramos tu sesión de administrador.</p>
-        <button className="btn btn-primary btn-sm" onClick={() => navigate('/login-admin')}>
-          Volver a iniciar sesión
-        </button>
+      <div className="d-flex flex-column align-items-center justify-content-center text-center" style={{ padding: '4rem 1.5rem' }}>
+        <div className="bg-white rounded-4 shadow-sm p-4" style={{ maxWidth: '420px' }}>
+          <h2 className="h5 mb-2">Sesión no encontrada</h2>
+          <p className="mb-3 text-muted">Vuelve a iniciar sesión para continuar con la administración.</p>
+          <button className="btn btn-primary" onClick={() => navigate('/login-admin')}>
+            Volver a iniciar sesión
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container py-4">
-      <div className="bg-white rounded shadow-sm p-4 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div>
-          <p className="text-muted mb-1">Panel de administración</p>
-          <h1 className="h4 mb-2">Bienvenido, {admin.name}</h1>
-          <div className="text-secondary">Controla usuarios, seguimiento y publicaciones del modelo dual.</div>
-        </div>
-        <div className="text-end">
-          <span className="badge text-bg-primary px-3 py-2">Acceso administrador</span>
-        </div>
-      </div>
+    <div className="py-4" style={{ background: '#f4f6fb', minHeight: '100%' }}>
+      <div className="container-fluid" style={{ maxWidth: '1200px' }}>
+        <section
+          className="rounded-4 mb-4 text-white"
+          style={{
+            background: 'linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)',
+            padding: '2.25rem',
+            boxShadow: '0 20px 45px -30px rgba(37, 99, 235, 0.8)',
+          }}
+        >
+          <p className="text-uppercase small mb-2" style={{ letterSpacing: '0.1em', opacity: 0.7 }}>
+            Panel administrador
+          </p>
+          <h1 className="h3 mb-2">Hola, {admin.name}</h1>
+          <p className="mb-0" style={{ maxWidth: '520px', opacity: 0.85 }}>
+            Organiza usuarios, gestiona procesos duales y controla la comunicación desde una sola vista.
+          </p>
+        </section>
 
-      <div className="row g-3 mb-4">
-        {operationalNotes.map((note) => (
-          <div className="col-12 col-md-6 col-lg-3" key={note.label}>
-            <div className="border rounded p-3 h-100 bg-light">
-              <p className="text-muted mb-1">{note.label}</p>
-              <small className="text-secondary d-block">{note.hint}</small>
-            </div>
+        <section className="mb-4">
+          <div className="row g-3">
+            {operationalNotes.map((note) => (
+              <div className="col-12 col-md-6 col-xl-3" key={note.label}>
+                <div
+                  className="rounded-4 h-100"
+                  style={{
+                    background: '#ffffff',
+                    padding: '1.25rem',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 16px 30px -24px rgba(15, 23, 42, 0.7)',
+                  }}
+                >
+                  <p className="text-uppercase small mb-1" style={{ color: '#64748b', letterSpacing: '0.08em' }}>
+                    {note.label}
+                  </p>
+                  <p className="mb-0" style={{ color: '#1f2937', fontSize: '0.9rem' }}>
+                    {note.hint}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-        
-      <div className="row g-3">
-        <div className="col-12 col-lg-8">
-          <div className="bg-white rounded shadow-sm p-3">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h2 className="h5 mb-0">Módulos principales</h2>
-              <span className="text-muted small">Accesos directos</span>
-            </div>
+        </section>
 
-            <div className="row g-3">
-              {moduleCards.map((item) => (
-                <div className="col-12 col-md-6" key={item.title}>
-                  <div className="border rounded p-3 h-100">
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <span className="badge text-bg-secondary">{item.badge}</span>
+        <div className="row g-3">
+          <div className="col-12 col-lg-8">
+            <section
+              className="rounded-4 h-100"
+              style={{
+                background: '#ffffff',
+                padding: '1.75rem',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 20px 45px -30px rgba(15, 23, 42, 0.5)',
+              }}
+            >
+              <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h2 className="h5 mb-0">Módulos principales</h2>
+                <span className="text-muted small">Accesos directos</span>
+              </div>
+
+              <div className="row g-3">
+                {moduleCards.map((item) => (
+                  <div className="col-12 col-md-6" key={item.title}>
+                    <div
+                      className="rounded-4 h-100 d-flex flex-column"
+                      style={{
+                        border: '1px solid #e2e8f0',
+                        padding: '1.25rem',
+                        background: '#f9fbff',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow = '0 16px 30px -24px rgba(37, 99, 235, 0.6)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <span className="badge bg-primary mb-2" style={{ alignSelf: 'flex-start' }}>
+                        {item.badge}
+                      </span>
+                      <h3 className="h6 mb-2">{item.title}</h3>
+                      <p className="text-muted small flex-grow-1">{item.description}</p>
+                      <button className="btn btn-outline-primary btn-sm mt-2 align-self-start" onClick={item.action}>
+                        Abrir módulo
+                      </button>
                     </div>
-                    <h3 className="h6">{item.title}</h3>
-                    <p className="text-secondary small mb-3">{item.description}</p>
-                    <button className="btn btn-outline-primary btn-sm" onClick={item.action}>
-                      Abrir módulo
-                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <div className="col-12 col-lg-4">
+            <div className="d-grid gap-3">
+              <section
+                className="rounded-4"
+                style={{
+                  background: '#ffffff',
+                  padding: '1.5rem',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 15px 30px -24px rgba(15, 23, 42, 0.5)',
+                }}
+              >
+                <h2 className="h6 mb-3">Tu perfil</h2>
+                <div className="mb-3">
+                  <p className="text-uppercase small mb-1" style={{ color: '#94a3b8', letterSpacing: '0.08em' }}>
+                    Nombre
+                  </p>
+                  <div className="rounded-3 px-3 py-2" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                    {admin.name || 'Administrador'}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
+                <div className="mb-3">
+                  <p className="text-uppercase small mb-1" style={{ color: '#94a3b8', letterSpacing: '0.08em' }}>
+                    Correo
+                  </p>
+                  <div className="rounded-3 px-3 py-2" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                    {userEmail || 'No especificado'}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-uppercase small mb-1" style={{ color: '#94a3b8', letterSpacing: '0.08em' }}>
+                    Rol
+                  </p>
+                  <div className="rounded-3 px-3 py-2" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                    Administrador general
+                  </div>
+                </div>
+              </section>
 
-        <div className="col-12 col-lg-4">
-          <div className="bg-white rounded shadow-sm p-3 mb-3">
-            <h2 className="h6 mb-3">Tus datos</h2>
-            <div className="mb-3">
-              <label className="form-label text-muted mb-1">Nombre</label>
-              <div className="form-control form-control-sm">{admin.name || 'Administrador'}</div>
+              <section
+                className="rounded-4"
+                style={{
+                  background: '#ffffff',
+                  padding: '1.5rem',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 15px 30px -24px rgba(15, 23, 42, 0.45)',
+                }}
+              >
+                <h2 className="h6 mb-3">Indicaciones rápidas</h2>
+                <ul className="list-unstyled d-grid gap-2 small mb-0" style={{ color: '#475569' }}>
+                  <li>Actualiza usuarios antes de compartir accesos.</li>
+                  <li>Confirma evidencias nuevas cada semana.</li>
+                  <li>Programa reportes ejecutivos antes del cierre.</li>
+                  <li>Usa los accesos directos para navegar más rápido.</li>
+                </ul>
+              </section>
             </div>
-            <div className="mb-3">
-              <label className="form-label text-muted mb-1">Correo</label>
-              <div className="form-control form-control-sm">{userEmail || 'No especificado'}</div>
-            </div>
-            <div>
-              <label className="form-label text-muted mb-1">Rol</label>
-              <div className="form-control form-control-sm">Administrador general</div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded shadow-sm p-3">
-            <h2 className="h6 mb-2">Indicaciones rápidas</h2>
-            <ul className="list-unstyled mb-0 small text-secondary">
-              <li className="mb-2">• Actualiza usuarios antes de compartir accesos.</li>
-              <li className="mb-2">• Confirma evidencias nuevas cada semana.</li>
-              <li className="mb-2">• Programa reportes ejecutivos antes del cierre.</li>
-              <li className="mb-2">• Usa los accesos directos para navegar más rápido.</li>
-            </ul>
           </div>
         </div>
       </div>
     </div>
   );
-};
+}
+;
 
 export default AdministratorHome;
