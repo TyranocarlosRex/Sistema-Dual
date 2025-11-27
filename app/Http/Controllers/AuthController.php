@@ -21,4 +21,30 @@ class AuthController extends Controller {
         $data = $service->login($request->validated());
         return response()->json($data, 200);
     }
+
+    public function meAdmin(Request $request) {
+        $user = $request->user()->load('admin');
+        $admin = $user->admin;
+
+        if (!$admin) {
+            return response()->json(['message' => 'Administrador no encontrado'], 404);
+        }
+
+        return response()->json([
+            'user' => [
+                'id'    => (int)$user->id,
+                'name'  => (string)$user->name,
+                'email' => (string)$user->email,
+            ],
+            'admin' => [
+                'id'          => (int)$admin->id,
+                'user_id'     => (int)$admin->user_id,
+                'name'        => trim((string)($admin->nombre ?? '')) !== ''
+                    ? trim($admin->nombre . ' ' . ($admin->apellidos ?? ''))
+                    : (string)$user->name,
+                'first_name'  => $admin->nombre ?? null,
+                'last_name'   => $admin->apellidos ?? null,
+            ],
+        ], 200);
+    }
 }

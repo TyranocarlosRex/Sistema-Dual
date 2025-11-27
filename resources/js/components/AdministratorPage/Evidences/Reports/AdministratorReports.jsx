@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function AdministratorReports() {
+export default function AdministratorReports({ embedded = false, onClose }) {
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [fechaLimite, setFechaLimite] = useState("");
@@ -118,8 +118,10 @@ export default function AdministratorReports() {
     setSuccess("");
   };
 
+  const wrapperClass = embedded ? "py-2" : "container py-4";
+
   return (
-    <div className="container py-4">
+    <div className={wrapperClass}>
       <h2 className="mb-3">
         {editingId ? "Editar reporte" : "Reportes / Áreas para subir evidencia"}
       </h2>

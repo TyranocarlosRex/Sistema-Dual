@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 
-export default function CoordinatorUsers() {
+function LegacyCoordinatorUsers() {
   const [users, setUsers] = useState([]);
 
   const [nombre, setNombre] = useState("");
@@ -129,3 +130,181 @@ export default function CoordinatorUsers() {
     </div>
   );
 }
+
+function CoordinatorUsers() {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [filtroNombre, setFiltroNombre] = useState("");
+  const [filtroNoControl, setFiltroNoControl] = useState("");
+  const [filtroEstatus, setFiltroEstatus] = useState("");
+
+  const coordinator = useMemo(() => {
+    const raw = localStorage.getItem("coordinator");
+    try {
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token || !coordinator) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchStudents = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const carrera = coordinator.Carrera ?? coordinator.carrera ?? "";
+        const res = await axios.get("/api/students", {
+          params: {
+            carrera,
+            nombre: filtroNombre || undefined,
+            no_control: filtroNoControl || undefined,
+            estatus: filtroEstatus || undefined,
+          },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = res.data?.data ?? res.data ?? [];
+        setStudents(data);
+      } catch (err) {
+        console.error(err);
+        setError("No se pudieron cargar los estudiantes de tu carrera.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, [coordinator, filtroNombre, filtroNoControl, filtroEstatus]);
+
+  return (
+    <div className="container py-4">
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+          <p className="text-muted mb-0 small">Coordinador</p>
+          <h4 className="mb-0">Estudiantes de tu carrera</h4>
+          {coordinator && (
+            <div className="text-secondary small">
+              Carrera: <strong>{coordinator.Carrera || coordinator.carrera || "N/D"}</strong>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {error && <div className="alert alert-danger">{error}</div>}
+
+      <div className="card mb-3">
+        <div className="card-body">
+          <div className="row g-3 align-items-end">
+            <div className="col-12 col-md-4">
+              <label className="form-label">Nombre</label>
+              <input
+                type="text"
+                className="form-control"
+                value={filtroNombre}
+                onChange={(e) => setFiltroNombre(e.target.value)}
+                placeholder="Buscar por nombre"
+              />
+            </div>
+            <div className="col-12 col-md-3">
+              <label className="form-label">No. Control</label>
+              <input
+                type="text"
+                className="form-control"
+                value={filtroNoControl}
+                onChange={(e) => setFiltroNoControl(e.target.value)}
+                placeholder="Ej. 12345"
+              />
+            </div>
+            <div className="col-12 col-md-3">
+              <label className="form-label">Estatus</label>
+              <select
+                className="form-select"
+                value={filtroEstatus}
+                onChange={(e) => setFiltroEstatus(e.target.value)}
+              >
+                <option value="">Todos</option>
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+              </select>
+            </div>
+            <div className="col-12 col-md-2">
+              <label className="form-label d-block">&nbsp;</label>
+              <div className="text-muted small">
+                {loading ? "Cargando..." : `${students.length} registros`}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-body p-0">
+          <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0">
+              <thead className="table-light">
+                <tr>
+                  <th>Nombre</th>
+                  <th>Correo</th>
+                  <th>Carrera</th>
+                  <th>No. Control</th>
+                  <th>Estatus</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan="5" className="text-center py-3 text-muted">
+                      Cargando...
+                    </td>
+                  </tr>
+                ) : students.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="text-center py-3 text-muted">
+                      No hay estudiantes para esta carrera.
+                    </td>
+                  </tr>
+                ) : (
+                  students.map((s) => (
+                    <tr key={s.id}>
+                      <td>
+                        <div className="fw-semibold">
+                          {s.Nombre} {s.Apellidos}
+                        </div>
+                        <div className="small text-muted">
+                          {s.Correo || "-"}
+                        </div>
+                      </td>
+                      <td>{s.Correo || "-"}</td>
+                      <td>{s.Carrera || "-"}</td>
+                      <td>{s.No_control || "-"}</td>
+                      <td>
+                        <span
+                          className={`badge text-bg-${
+                            (s.estatus || s.Estatus || "").toLowerCase() === "activo"
+                              ? "success"
+                              : "secondary"
+                          }`}
+                        >
+                          {s.estatus || s.Estatus || "N/D"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default CoordinatorUsers;

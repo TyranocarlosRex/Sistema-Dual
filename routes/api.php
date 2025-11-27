@@ -37,6 +37,7 @@ Route::middleware(['auth:sanctum', 'abilities:coordinator'])->group(function () 
 // Admin genérico (si lo necesitas)
 Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
     // rutas exclusivas de admin que NO son evidences/reports
+    Route::get('/admin/me', [AuthController::class, 'meAdmin']);
 });
 
 // Rutas comunes autenticadas

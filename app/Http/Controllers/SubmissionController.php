@@ -26,6 +26,18 @@ class SubmissionController extends Controller
             'file' => ['required', 'file', 'max:4096'], // 4 MB
         ]);
 
+        // reemplaza envíos anteriores del mismo estudiante para este reporte
+        $previous = Submission::where('report_id', $report->id)
+            ->where('student_id', $student->id)
+            ->get();
+
+        foreach ($previous as $old) {
+            if ($old->file_path) {
+                Storage::disk('public')->delete($old->file_path);
+            }
+            $old->delete();
+        }
+
         $file      = $request->file('file');
         $path      = $file->store('submissions', 'public');
         $origName  = $file->getClientOriginalName();
@@ -93,6 +105,16 @@ class SubmissionController extends Controller
             return response()->json(['message' => 'El archivo no existe.'], 404);
         }
 
-        return response()->download($path, $submission->original_name);
+        // Detecta MIME para que el navegador no lo trate como texto plano
+        $mime = 'application/octet-stream';
+        try {
+            $mime = Storage::disk('public')->mimeType($submission->file_path) ?: $mime;
+        } catch (\Throwable) {
+            $mime = $mime;
+        }
+
+        return response()->download($path, $submission->original_name, [
+            'Content-Type' => $mime,
+        ]);
     }
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import AdministratorReports from "./Reports/AdministratorReports";
 
 const API_URL = "http://localhost:8000/api";
 
@@ -12,6 +13,7 @@ export default function AdminEvidences() {
   const [evidences, setEvidences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showReportsModal, setShowReportsModal] = useState(false);
 
   // formulario para crear evidence
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -19,7 +21,14 @@ export default function AdminEvidences() {
   const [tipo, setTipo] = useState("inscripcion");
   const [descripcion, setDescripcion] = useState("");
 
-  // formulario para crear reporte dentro de un evidence
+  // editar evidence
+  const [editingId, setEditingId] = useState(null);
+  const [editTitulo, setEditTitulo] = useState("");
+  const [editTipo, setEditTipo] = useState("inscripcion");
+  const [editDescripcion, setEditDescripcion] = useState("");
+  const [editError, setEditError] = useState("");
+
+  // estado para saber en qué espacio se abre el modal
   const [activeEvidenceId, setActiveEvidenceId] = useState(null);
   const [repTitulo, setRepTitulo] = useState("");
   const [repDescripcion, setRepDescripcion] = useState("");
@@ -79,13 +88,45 @@ export default function AdminEvidences() {
     }
   };
 
+  const empezarEdicion = (ev) => {
+    setEditingId(ev.id);
+    setEditTitulo(ev.titulo || "");
+    setEditTipo(ev.tipo || "inscripcion");
+    setEditDescripcion(ev.descripcion || "");
+    setEditError("");
+  };
+
+  const cancelarEdicion = () => {
+    setEditingId(null);
+    setEditTitulo("");
+    setEditTipo("inscripcion");
+    setEditDescripcion("");
+    setEditError("");
+  };
+
+  const handleActualizarEvidence = async (e) => {
+    e.preventDefault();
+    if (!editingId) return;
+    setEditError("");
+
+    try {
+      await axiosAuth.put(`/evidences/${editingId}`, {
+        titulo: editTitulo,
+        tipo: editTipo,
+        descripcion: editDescripcion,
+      });
+
+      cancelarEdicion();
+      await cargarEvidences();
+    } catch (err) {
+      console.error(err);
+      setEditError("No se pudo actualizar el espacio.");
+    }
+  };
+
   const abrirFormReporte = (evidenceId) => {
     setActiveEvidenceId(evidenceId);
-    setRepTitulo("");
-    setRepDescripcion("");
-    setRepFechaLimite("");
-    setRepAttachment(null);
-    setReportError("");
+    setShowReportsModal(true);
   };
 
   const handleCrearReporte = async (e) => {
@@ -123,6 +164,8 @@ export default function AdminEvidences() {
       setReportError("No se pudo crear el reporte.");
     }
   };
+
+  const activeEvidence = evidences.find((ev) => ev.id === activeEvidenceId);
 
   return (
     <div className="p-6 space-y-6">
@@ -242,19 +285,103 @@ export default function AdminEvidences() {
                       Tipo: {ev.tipo} — ID: {ev.id}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => abrirFormReporte(ev.id)}
-                    className="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                  >
-                    Agregar reporte
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => empezarEdicion(ev)}
+                      className="text-xs border px-3 py-1 rounded hover:bg-gray-100"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => abrirFormReporte(ev.id)}
+                      className="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                    >
+                      Agregar reporte
+                    </button>
+                  </div>
                 </div>
 
                 {ev.descripcion && (
                   <p className="text-sm text-gray-700 mb-2">
                     {ev.descripcion}
                   </p>
+                )}
+
+                {editingId === ev.id && (
+                  <form
+                    onSubmit={handleActualizarEvidence}
+                    className="mt-3 border-t pt-3 space-y-2 bg-gray-50 p-3 rounded"
+                  >
+                    <h3 className="text-sm font-semibold">
+                      Editar espacio
+                    </h3>
+
+                    {editError && (
+                      <div className="text-red-600 text-xs mb-1">
+                        {editError}
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-xs font-medium mb-1">
+                        Título
+                      </label>
+                      <input
+                        type="text"
+                        className="border rounded w-full px-2 py-1 text-sm"
+                        value={editTitulo}
+                        onChange={(e) => setEditTitulo(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium mb-1">
+                        Tipo
+                      </label>
+                      <select
+                        className="border rounded w-full px-2 py-1 text-sm"
+                        value={editTipo}
+                        onChange={(e) => setEditTipo(e.target.value)}
+                      >
+                        {TIPO_OPCIONES.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium mb-1">
+                        Descripción
+                      </label>
+                      <textarea
+                        className="border rounded w-full px-2 py-1 text-sm"
+                        rows={2}
+                        value={editDescripcion}
+                        onChange={(e) => setEditDescripcion(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"
+                      >
+                        Guardar cambios
+                      </button>
+                      <button
+                        type="button"
+                        className="border px-3 py-1 rounded text-xs"
+                        onClick={cancelarEdicion}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
                 )}
 
                 {/* Lista de reportes */}
@@ -283,7 +410,7 @@ export default function AdminEvidences() {
                 </div>
 
                 {/* Formulario crear reporte para este evidence */}
-                {activeEvidenceId === ev.id && (
+                {false && activeEvidenceId === ev.id && (
                   <form
                     onSubmit={handleCrearReporte}
                     className="mt-3 border-t pt-3 space-y-2"
@@ -370,6 +497,41 @@ export default function AdminEvidences() {
           </div>
         )}
       </div>
+
+      {showReportsModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded shadow-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-lg font-semibold">Agregar reporte</h3>
+                {activeEvidence && (
+                  <p className="text-sm text-gray-500">
+                    Para el espacio: {activeEvidence.titulo} (ID {activeEvidence.id})
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowReportsModal(false);
+                  setActiveEvidenceId(null);
+                }}
+                className="text-gray-500 hover:text-gray-700 text-xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <AdministratorReports
+              embedded
+              onClose={() => {
+                setShowReportsModal(false);
+                setActiveEvidenceId(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

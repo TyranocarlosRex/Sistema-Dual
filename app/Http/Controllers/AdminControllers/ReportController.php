@@ -36,7 +36,9 @@ class ReportController extends Controller
        $data['attachment_path'] = null;
        
        if ($request->hasFile('attachment')) {
-        $path = $request->file('attachment')->store('reports', 'public');
+        $originalName = $request->file('attachment')->getClientOriginalName();
+        $fileName = time() . '_' . $originalName;
+        $path = $request->file('attachment')->storeAs('reports', $fileName, 'public');
         $data['has_attachment'] = true;
         $data['attachment_path'] = $path;
     }
@@ -64,7 +66,7 @@ class ReportController extends Controller
             ], 404);
         }
         
-        return response()->download($path);
+        return response()->download($path, basename($report->attachment_path));
     }
 
     public function indexForStudent(Request $request)
@@ -105,7 +107,9 @@ class ReportController extends Controller
             Storage::disk('public')->delete($report->attachment_path);
         }
 
-        $path = $request->file('attachment')->store('reports', 'public');
+        $originalName = $request->file('attachment')->getClientOriginalName();
+        $fileName = time() . '_' . $originalName;
+        $path = $request->file('attachment')->storeAs('reports', $fileName, 'public');
         $data['has_attachment'] = true;
         $data['attachment_path'] = $path;
     } elseif ($request->boolean('remove_attachment')) {

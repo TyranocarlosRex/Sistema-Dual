@@ -68,16 +68,23 @@ navigate('/coordinator-home', { replace: true });
           <button
             type="button"
             className="tab"
-            onClick={() => navigate('/')} // ajusta si tu ruta es distinta
+            onClick={() => navigate('/')}
           >
             Estudiantes
           </button>
           <button
             type="button"
-            className="tab"
-            onClick={() => navigate('/login-admin')} // ajusta si tu ruta es distinta
+            className="tab active"
+            onClick={() => {}} // ya estás en Coordinadores
           >
-            Administrativo
+            Coordinadores
+          </button>
+          <button
+            type="button"
+            className="tab"
+            onClick={() => navigate('/login-admin')}
+          >
+            Administrativos
           </button>
         </div>
 

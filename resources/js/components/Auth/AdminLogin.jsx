@@ -69,7 +69,7 @@ navigate('/administrator-home', { replace: true });
           <button
             type="button"
             className="tab"
-            onClick={() => navigate('/')} // ajusta si tu ruta es distinta
+            onClick={() => navigate('/')}
           >
             Estudiantes
           </button>
@@ -79,6 +79,13 @@ navigate('/administrator-home', { replace: true });
             onClick={() => navigate('/login-coordinador')}
           >
             Coordinadores
+          </button>
+          <button
+            type="button"
+            className="tab active"
+            onClick={() => {}} // ya estás en Administradores
+          >
+            Administrativos
           </button>
         </div>
 

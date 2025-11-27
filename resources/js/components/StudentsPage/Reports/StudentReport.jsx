@@ -18,6 +18,8 @@ export default function StudentReports() {
   const [selectedFiles, setSelectedFiles] = useState({});
   const [uploading, setUploading] = useState({});
   const [uploadError, setUploadError] = useState({});
+  const [downloadingAttachment, setDownloadingAttachment] = useState({});
+  const [downloadError, setDownloadError] = useState({});
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -63,36 +65,16 @@ export default function StudentReports() {
 
   const reports = selectedEvidence?.reports ?? [];
 
-  const handleDownload = async (reportId) => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `${API_URL}/student/reports/${reportId}/attachment`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: "blob",
-          withCredentials: true,
-        }
-      );
-
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "formato_reporte");
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      console.error(err);
-      alert("No se pudo descargar el archivo.");
-    }
-  };
-
   // cuando el alumno elige un archivo
   const handleFileChange = (reportId, file) => {
     setSelectedFiles((prev) => ({
       ...prev,
       [reportId]: file || null,
+    }));
+    // al elegir un nuevo archivo, limpiamos error anterior
+    setUploadError((prev) => ({
+      ...prev,
+      [reportId]: "",
     }));
   };
 
@@ -131,6 +113,25 @@ export default function StudentReports() {
 
       // limpiar input para ese reporte
       setSelectedFiles((prev) => ({ ...prev, [reportId]: null }));
+
+      // actualizar el estado local para reflejar la nueva entrega
+      setEvidences((prev) =>
+        prev.map((ev) =>
+          ev.id === evidenceId
+            ? {
+                ...ev,
+                reports: ev.reports.map((r) =>
+                  r.id === reportId
+                    ? {
+                        ...r,
+                        submissions: [res.data], // última entrega del alumno
+                      }
+                    : r
+                ),
+              }
+            : ev
+        )
+      );
     } catch (err) {
       console.error(err);
       setUploadError((prev) => ({
@@ -139,6 +140,54 @@ export default function StudentReports() {
       }));
     } finally {
       setUploading((prev) => ({ ...prev, [reportId]: false }));
+    }
+  };
+
+  const handleDownloadAttachment = async (report) => {
+    if (!report.has_attachment) return;
+
+    try {
+      setDownloadingAttachment((prev) => ({ ...prev, [report.id]: true }));
+      setDownloadError((prev) => ({ ...prev, [report.id]: "" }));
+
+      const token = localStorage.getItem("token");
+
+      const response = await axios.get(
+        `${API_URL}/student/reports/${report.id}/attachment`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob",
+          withCredentials: true,
+        }
+      );
+
+      // Intenta obtener el nombre del archivo desde el header; usa fallback si no viene.
+      const disposition = response.headers["content-disposition"] || "";
+      const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
+      const rawName = match ? match[1] : null;
+      const cleanName = rawName
+        ? rawName.replace(/['"]/g, "")
+        : `${report.titulo || "reporte"}-adjunto`;
+
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", cleanName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      setDownloadError((prev) => ({
+        ...prev,
+        [report.id]: "No se pudo descargar el archivo.",
+      }));
+    } finally {
+      setDownloadingAttachment((prev) => ({ ...prev, [report.id]: false }));
     }
   };
 
@@ -193,72 +242,124 @@ export default function StudentReports() {
 
       {/* Grid de tarjetas tipo "Evaluación Bimestral 1,2,3" */}
       <div className="row">
-        {reports.map((report) => (
-          <div key={report.id} className="col-md-4 mb-3">
-            <div className="card h-100">
-              <div className="card-header bg-light">
-                <strong>{report.titulo}</strong>
-              </div>
+        {reports.map((report) => {
+          const mySubmission =
+            report.submissions && report.submissions.length > 0
+              ? report.submissions[0]
+              : null;
 
-              <div className="card-body d-flex flex-column">
-                {report.descripcion && (
-                  <p className="card-text">{report.descripcion}</p>
-                )}
+          const hasSelectedFile = !!selectedFiles[report.id];
 
-                {report.fecha_limite && (
-                  <p className="mb-1">
-                    <strong>Fecha de entrega: </strong>
-                    {report.fecha_limite}
-                  </p>
-                )}
+          return (
+            <div key={report.id} className="col-md-4 mb-3">
+              <div className="card h-100">
+                <div className="card-header bg-light">
+                  <strong>{report.titulo}</strong>
+                </div>
 
-                <div className="mt-auto">
-                  {/* Descargar formato base */}
-                  {report.has_attachment && (
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-primary mb-2"
-                      onClick={() => handleDownload(report.id)}
-                    >
-                      Descargar formato
-                    </button>
+                <div className="card-body d-flex flex-column">
+                  {report.descripcion && (
+                    <p className="card-text">{report.descripcion}</p>
                   )}
 
-                  {/* SUBIR ARCHIVO DEL ALUMNO */}
-                  <div className="mb-2">
-                    <small className="d-block text-muted mb-1">
-                      Subir tu archivo en PDF (máx. 4 MB)
-                    </small>
-                    <input
-                      type="file"
-                      className="form-control form-control-sm"
-                      onChange={(e) =>
-                        handleFileChange(
-                          report.id,
-                          e.target.files[0] || null
-                        )
-                      }
-                    />
-                    {uploadError[report.id] && (
-                      <div className="text-danger small mt-1">
-                        {uploadError[report.id]}
-                      </div>
-                    )}
-                  </div>
+                  {report.fecha_limite && (
+                    <p className="mb-1">
+                      <strong>Fecha de entrega: </strong>
+                      {report.fecha_limite}
+                    </p>
+                  )}
 
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-success"
-                    onClick={() => handleSubmitFile(report.id)}
-                    disabled={uploading[report.id]}
-                  >
-                    {uploading[report.id] ? "Enviando..." : "Enviar archivo"}
-                  </button>
+                  {report.has_attachment && (
+                    <div className="mb-2">
+                      <p className="mb-1">
+                        <strong>Archivo base: </strong>
+                      </p>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary"
+                        onClick={() => handleDownloadAttachment(report)}
+                        disabled={downloadingAttachment[report.id]}
+                      >
+                        {downloadingAttachment[report.id]
+                          ? "Descargando..."
+                          : "Descargar reporte"}
+                      </button>
+                      {downloadError[report.id] && (
+                        <div className="text-danger small mt-1">
+                          {downloadError[report.id]}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Info de la entrega del alumno */}
+                  {mySubmission && (
+                    <div className="mb-2">
+                      <p className="mb-1">
+                        <strong>Estado actual: </strong>
+                        <span
+                          className={
+                            "badge " +
+                            (mySubmission.status === "aceptado"
+                              ? "bg-success"
+                              : mySubmission.status === "rechazado"
+                              ? "bg-danger"
+                              : "bg-warning text-dark")
+                          }
+                        >
+                          {mySubmission.status}
+                        </span>
+                      </p>
+                      <p className="mb-0">
+                        <strong>Archivo enviado: </strong>
+                        {mySubmission.original_name}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-auto">
+                    {/* SUBIR / REEMPLAZAR ARCHIVO DEL ALUMNO */}
+                    <div className="mb-2">
+                      <small className="d-block text-muted mb-1">
+                        {mySubmission
+                          ? "Si necesitas corregir, selecciona un nuevo archivo y vuelve a enviarlo."
+                          : "Subir tu archivo en PDF (máx. 4 MB)."}
+                      </small>
+                      <input
+                        type="file"
+                        className="form-control form-control-sm"
+                        onChange={(e) =>
+                          handleFileChange(
+                            report.id,
+                            e.target.files[0] || null
+                          )
+                        }
+                      />
+                      {uploadError[report.id] && (
+                        <div className="text-danger small mt-1">
+                          {uploadError[report.id]}
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-success"
+                      onClick={() => handleSubmitFile(report.id)}
+                      disabled={uploading[report.id] || !hasSelectedFile}
+                    >
+                      {uploading[report.id]
+                        ? "Enviando..."
+                        : mySubmission
+                        ? "Reemplazar archivo"
+                        : "Enviar archivo"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <hr />

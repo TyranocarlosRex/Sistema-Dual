@@ -42,10 +42,23 @@ class EvidenceController extends Controller
         return response()->json($evidence);
     }
 
+    public function update(Request $request, Evidence $evidence)
+    {
+        $data = $request->validate([
+            'titulo'      => ['required', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string'],
+            'tipo'        => ['required', 'in:inscripcion,programa'],
+        ]);
+
+        $evidence->update($data);
+
+        return response()->json($evidence);
+    }
+
     public function indexForStudent(Request $request)
     {
         $user = $request->user();
-        $student = $user->student; // relación user->student
+        $student = $user->student;
 
         if (!$student) {
             return response()->json([
@@ -53,25 +66,28 @@ class EvidenceController extends Controller
             ], 403);
         }
 
-        // Tomar el estatus sin importar si la columna es 'estatus' o 'Estatus'
+        // tomar estatus sin importar si la columna es estatus o Estatus
         $rawEstatus = $student->estatus ?? $student->Estatus ?? '';
+        $estatus    = strtolower(trim((string) $rawEstatus));
 
-        // Normalizar: quitar espacios y pasar a minúsculas
-        $estatus = strtolower(trim((string) $rawEstatus));
-
-        // Siempre puede ver inscripcion
         $tiposVisibles = ['inscripcion'];
-
-        // Si está activo (Activo, ACTIVO, etc.) también programa
         if ($estatus === 'activo') {
             $tiposVisibles[] = 'programa';
         }
 
         $evidences = Evidence::query()
-            ->with(['reports' => function ($q) {
-                $q->orderBy('fecha_limite', 'asc')
-                  ->orderBy('created_at', 'asc');
-            }])
+            ->with([
+                'reports' => function ($q) use ($student) {
+                    $q->with([
+                        // 👇 solo las entregas de ESTE alumno
+                        'submissions' => function ($qq) use ($student) {
+                            $qq->where('student_id', $student->id);
+                        }
+                    ])
+                    ->orderBy('fecha_limite', 'asc')
+                    ->orderBy('created_at', 'asc');
+                }
+            ])
             ->whereIn('tipo', $tiposVisibles)
             ->orderByRaw("FIELD(tipo, 'inscripcion','programa')")
             ->orderBy('titulo')

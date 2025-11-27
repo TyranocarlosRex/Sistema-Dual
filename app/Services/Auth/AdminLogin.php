@@ -54,13 +54,29 @@ class AdminLogin implements LoginService
 
         // 4) Emite token con ability "admin"
         $abilities = ['admin'];
-$token = $this->tokens->issue($user, $abilities, 'admin');
-// ...
-return [
-    'access_token' => $token,
-    'token_type'   => 'Bearer',
-    'abilities'    => $abilities,
-    // ...
-];
+        $token     = $this->tokens->issue($user, $abilities, 'admin');
+
+        // 5) Respuesta homogenizada con los otros inicios de sesión
+        return [
+            'token'        => $token,             // compatibilidad front antiguo
+            'access_token' => $token,             // compatibilidad postman / oauth-like
+            'token_type'   => 'Bearer',
+            'abilities'    => $abilities,
+            'user'         => [
+                'id'    => (int)$user->id,
+                'name'  => (string)$user->name,
+                'email' => (string)$user->email,
+            ],
+            'admin'        => [
+                'id'          => (int)$admin->id,
+                'user_id'     => (int)$admin->user_id,
+                // name unificado para el panel (usa nombre+apellidos si existen)
+                'name'        => trim((string)($admin->nombre ?? '')) !== ''
+                    ? trim($admin->nombre . ' ' . ($admin->apellidos ?? ''))
+                    : (string)$user->name,
+                'first_name'  => $admin->nombre ?? null,
+                'last_name'   => $admin->apellidos ?? null,
+            ],
+        ];
     }
 }
