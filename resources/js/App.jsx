@@ -20,6 +20,9 @@ import AdministratorTracking from "./components/AdministratorPage/Tracking/Admin
 import AdministratorReports from './components/AdministratorPage/Evidences/Reports/AdministratorReports';
 import AdministratorEvidences from './components/AdministratorPage/Evidences/AdministratorEvidences'
 import CoordinatorTracking from './components/CoordinatorPage/Tracking/CoordinatorTracking';
+import CoordinatorPending from './components/CoordinatorPage/Tracking/CoordinatorPending';
+import AdministratirAdvertisements from "./components/AdministratorPage/Advertisements/AdministratirAdvertisements";
+import StudentDetails from './components/Shared/StudentDetails';
 
 const safeParse = (raw) => {
   try {
@@ -79,14 +82,18 @@ if (root) {
             <Route path="/coordinator-home" element={<CoordinatorHome />} />
             <Route path="/coordinator-users" element={<CoordinatorUsers />} />
             <Route path="/coordinator-tracking" element={<CoordinatorTracking />} />
+            <Route path="/coordinator-pending" element={<CoordinatorPending />} />
+            <Route path="/student-details/:id" element={<StudentDetails />} />
           </Route>
           {/* Administrador */}
           <Route element={<RequireAdmin><AdminLayout/></RequireAdmin>}>
             <Route path="/administrator-home" element={<AdministratorHome />} />
             <Route path="/administrator-users" element={<AdministratorUsers />} />
+            <Route path="/administrator/students/:id" element={<StudentDetails />} />
             <Route path="/administrator-tracking" element={<AdministratorTracking />} />
             <Route path="/administrator-evidence" element={<AdministratorEvidences/>} />
             <Route path="/administrator-report" element={<AdministratorReports/>} />
+            <Route path="/administrator-advertisements" element={<AdministratirAdvertisements />} />
           </Route>
         </Routes>
       </Router>

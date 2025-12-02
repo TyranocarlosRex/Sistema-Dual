@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import AnnouncementsPanel from "../Shared/AnnouncementsPanel";
 
 const CoordinatorHome = () => {
   const navigate = useNavigate();
@@ -135,7 +136,7 @@ const CoordinatorHome = () => {
                     </p>
                     <button
                       className="btn btn-outline-primary btn-sm"
-                      onClick={() => navigate("/coordinator-reports")}
+                      onClick={() => navigate("/coordinator-tracking")}
                     >
                       Abrir
                     </button>
@@ -150,22 +151,7 @@ const CoordinatorHome = () => {
                     </p>
                     <button
                       className="btn btn-outline-primary btn-sm"
-                      onClick={() => navigate("/coordinator-documents/gestion")}
-                    >
-                      Abrir
-                    </button>
-                  </div>
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="border rounded p-3 h-100">
-                    <p className="text-muted small mb-1">Procesos</p>
-                    <h6 className="mb-2">Avance de proyectos</h6>
-                    <p className="text-secondary small mb-3">
-                      Da seguimiento a los proyectos duales activos.
-                    </p>
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => navigate("/procesos")}
+                      onClick={() => navigate("/coordinator-pending")}
                     >
                       Abrir
                     </button>
@@ -176,8 +162,15 @@ const CoordinatorHome = () => {
           </div>
         </div>
 
-        <div className="col-12 col-lg-4">
-          <div className="card mb-3">
+        <div className="col-12 col-lg-4 d-flex flex-column gap-3">
+          <AnnouncementsPanel
+            title="Anuncios para coordinadores"
+            emptyMessage="No hay anuncios nuevos por ahora."
+            maxItems={4}
+            compact
+          />
+
+          <div className="card">
             <div className="card-header bg-light">
               <h6 className="mb-0">Tus datos</h6>
             </div>

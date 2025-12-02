@@ -16,6 +16,7 @@ class Submission extends Model
         'original_name',
         'status',
         'feedback',
+        'calificacion',
     ];
 
     public function report()

@@ -1,5 +1,5 @@
+﻿import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const CARRERAS = [
@@ -12,26 +12,32 @@ const CARRERAS = [
   "Licenciatura en Administracion",
   "Ingenieria en Sistemas Computacionales",
   "Ingenieria Informatica",
-  "Ingenieria en Gestión Empresarial",
+  "Ingenieria en Gestion Empresarial",
   "Ingenieria Aeronautica",
 ];
 
 const ESTATUS = ["Activo", "Inactivo"];
 
+const HERO_STYLE = {
+  background: "linear-gradient(135deg, #2563eb 0%, #0f172a 100%)",
+  color: "#fff",
+  borderRadius: "20px",
+  padding: "24px 28px",
+  boxShadow: "0 24px 54px -35px rgba(37, 99, 235, 0.7)",
+};
+
 export default function AdministratorUsers() {
   const navigate = useNavigate();
 
   const [tipo, setTipo] = useState("students");
-
-  const [nombre, setNombre] = useState("");   // sólo se usa para students
-  const [correo, setCorreo] = useState("");   // sólo se usa para coordinators
+  const [nombre, setNombre] = useState("");
+  const [correo, setCorreo] = useState("");
   const [carrera, setCarrera] = useState("");
-  const [estatus, setEstatus] = useState(""); // sólo se usa para students
+  const [estatus, setEstatus] = useState("");
 
   const [rows, setRows] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
-
   const [actualizandoId, setActualizandoId] = useState(null);
 
   useEffect(() => {
@@ -120,116 +126,113 @@ export default function AdministratorUsers() {
         ]
       : [
           { key: "no_control", label: "No. Control" },
-          { key: "apellidos", label: "Apellidos" }, // <-- agregado
+          { key: "apellidos", label: "Apellidos" },
           { key: "nombre", label: "Nombre" },
           { key: "carrera", label: "Carrera" },
           { key: "estatus", label: "Estado" },
         ];
 
   const buscarUsuarios = async (page = 1) => {
-  setCargando(true);
-  setError("");
+    setCargando(true);
+    setError("");
 
-  try {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      setRows([]);
-      setError("No hay sesión de administrador. Vuelve a iniciar sesión.");
-      return;
-    }
+      if (!token) {
+        setRows([]);
+        setError("No hay sesion de administrador. Vuelve a iniciar sesion.");
+        return;
+      }
 
-    // Usa el helper que ya tenías
-    const url = endpointPorTipo();
+      const url = endpointPorTipo();
 
-    const params = {
-  page,
-  per_page: 10,
-};
+      const params = {
+        page,
+        per_page: 12,
+      };
 
-if (carrera) {
-  params.carrera = carrera;
-}
+      if (carrera) {
+        params.carrera = carrera;
+      }
 
-if (tipo === "students") {
-  const trimmed = nombre.trim();
-  const esNumeroControl = trimmed !== "" && /^\d+$/.test(trimmed);
+      if (tipo === "students") {
+        const trimmed = nombre.trim();
+        const esNumeroControl = trimmed !== "" && /^\d+$/.test(trimmed);
 
-  params.rol = "student";
-  params.nombre = !esNumeroControl ? (trimmed || undefined) : undefined;
-  params.no_control = esNumeroControl ? trimmed : undefined;
-  params.estatus = estatus || undefined;
-} else {
-  params.rol = "coordinator";
-  const trimmedCorreo = correo.trim();
-  params.correo = trimmedCorreo || undefined;
-}
+        params.rol = "student";
+        params.nombre = !esNumeroControl ? (trimmed || undefined) : undefined;
+        params.no_control = esNumeroControl ? trimmed : undefined;
+        params.estatus = estatus || undefined;
+      } else {
+        params.rol = "coordinator";
+        const trimmedCorreo = correo.trim();
+        params.correo = trimmedCorreo || undefined;
+      }
 
-    const { data } = await axios.get(url, {
-      params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    });
-
-    const listaCruda = Array.isArray(data?.data)
-      ? data.data
-      : Array.isArray(data)
-      ? data
-      : Array.isArray(data?.results)
-      ? data.results
-      : [];
-
-    setRows(listaCruda.map(normalize));
-  } catch (e) {
-    console.error(e);
-    setRows([]);
-    setError(
-      "No se pudo obtener la lista. Verifica el tipo seleccionado o los parámetros de búsqueda."
-    );
-  } finally {
-    setCargando(false);
-  }
-};
-
-  const cambiarEstatusEstudiante = async (fila, nuevoEstatus) => {
-  if (tipo !== "students") return;
-
-  try {
-    setActualizandoId(fila.id);
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("La sesión ha expirado, vuelve a iniciar sesión como administrador.");
-      return;
-    }
-
-    const idBack = fila._raw?.id ?? fila.id;
-
-    await axios.patch(
-      `/api/students/${idBack}/estatus`,
-      { estatus: nuevoEstatus },
-      {
+      const { data } = await axios.get(url, {
+        params,
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-      }
-    );
+      });
 
-    setRows((prev) =>
-      prev.map((r) =>
-        r.id === fila.id ? { ...r, estatus: nuevoEstatus } : r
-      )
-    );
-  } catch (e) {
-    console.error(e);
-    alert("No se pudo actualizar el estatus del estudiante.");
-  } finally {
-    setActualizandoId(null);
-  }
-};
+      const listaCruda = Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data)
+        ? data
+        : Array.isArray(data?.results)
+        ? data.results
+        : [];
+
+      setRows(listaCruda.map(normalize));
+    } catch (e) {
+      console.error(e);
+      setRows([]);
+      setError(
+        "No se pudo obtener la lista. Verifica el tipo seleccionado o los parametros de busqueda."
+      );
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const cambiarEstatusEstudiante = async (fila, nuevoEstatus) => {
+    if (tipo !== "students") return;
+
+    try {
+      setActualizandoId(fila.id);
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("La sesion ha expirado, vuelve a iniciar sesion como administrador.");
+        return;
+      }
+
+      const idBack = fila._raw?.id ?? fila.id;
+
+      await axios.patch(
+        `/api/students/${idBack}/estatus`,
+        { estatus: nuevoEstatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      setRows((prev) =>
+        prev.map((r) => (r.id === fila.id ? { ...r, estatus: nuevoEstatus } : r))
+      );
+    } catch (e) {
+      console.error(e);
+      alert("No se pudo actualizar el estatus del estudiante.");
+    } finally {
+      setActualizandoId(null);
+    }
+  };
 
   const verDetalle = (fila) => {
     const idBack = fila._raw?.id ?? fila.id;
@@ -246,237 +249,296 @@ if (tipo === "students") {
   };
 
   const colSpanExtra = columnas.length + (tipo === "students" ? 1 : 0);
+  const isStudents = tipo === "students";
+
+  const resumen = useMemo(() => {
+    const total = rows.length;
+    const activos = rows.filter((r) => (r.estatus || "").toLowerCase() === "activo").length;
+    const inactivos = rows.filter((r) => (r.estatus || "").toLowerCase() === "inactivo").length;
+    return { total, activos, inactivos };
+  }, [rows]);
 
   return (
-    <div className="container py-3">
-      {/* Título */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">
-          Usuarios — {tipo === "students" ? "Estudiantes" : "Coordinadores"}
-        </h2>
-      </div>
-
-      {/* Selector de tipo */}
-      <div className="d-flex gap-2 mb-3 flex-wrap align-items-center">
-        <span className="fw-semibold">Ver:</span>
-        <select
-          className="form-select"
-          style={{ maxWidth: 220 }}
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
-        >
-          <option value="students">Estudiantes</option>
-          <option value="coordinators">Coordinadores</option>
-        </select>
-      </div>
-
-      {/* Card de filtros */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <div className="row g-3">
-            {tipo === "students" && (
-              <>
-                {/* Nombre / No. Control */}
-                <div className="col-md-4">
-                  <label className="form-label">Nombre o No. Control</label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                  />
-                </div>
-
-                {/* Carrera */}
-                <div className="col-md-4">
-                  <label className="form-label">Carrera</label>
-                  <select
-                    className="form-select"
-                    value={carrera}
-                    onChange={(e) => setCarrera(e.target.value)}
-                  >
-                    <option value="">Todas las carreras</option>
-                    {CARRERAS.map((car) => (
-                      <option key={car} value={car}>
-                        {car}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Estado */}
-                <div className="col-md-4">
-                  <label className="form-label">Estado</label>
-                  <select
-                    className="form-select"
-                    value={estatus}
-                    onChange={(e) => setEstatus(e.target.value)}
-                  >
-                    <option value="">Todos</option>
-                    {ESTATUS.map((eOpt) => (
-                      <option key={eOpt} value={eOpt}>
-                        {eOpt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            )}
-
-            {tipo === "coordinators" && (
-              <>
-                {/* Correo */}
-                <div className="col-md-6">
-                  <label className="form-label">Correo</label>
-                  <input
-                    className="form-control"
-                    type="email"
-                    value={correo}
-                    onChange={(e) => setCorreo(e.target.value)}
-                  />
-                </div>
-
-                {/* Carrera */}
-                <div className="col-md-6">
-                  <label className="form-label">Carrera</label>
-                  <select
-                    className="form-select"
-                    value={carrera}
-                    onChange={(e) => setCarrera(e.target.value)}
-                  >
-                    <option value="">Todas las carreras</option>
-                    {CARRERAS.map((car) => (
-                      <option key={car} value={car}>
-                        {car}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            )}
-
-            <div className="col-12 d-flex justify-content-end">
+    <div className="p-3 p-md-4" style={{ background: "#f5f7fb", minHeight: "100vh" }}>
+      <div className="container-fluid" style={{ maxWidth: "1200px" }}>
+        <section style={HERO_STYLE} className="mb-4">
+          <p className="text-uppercase small mb-1" style={{ letterSpacing: "0.08em", opacity: 0.85 }}>
+            Usuarios {isStudents ? "— Estudiantes" : "— Coordinadores"}
+          </p>
+          <div className="d-flex flex-wrap align-items-center gap-3">
+            <div>
+              <h1 className="h4 mb-1">Gestiona usuarios y estados</h1>
+              <p className="mb-0" style={{ maxWidth: "520px", opacity: 0.9 }}>
+                Filtra, consulta y actualiza el estatus desde un panel limpio con acciones rapidas.
+              </p>
+            </div>
+            <div className="ms-auto d-flex gap-2">
               <button
-                className="btn btn-outline-secondary me-2"
-                type="button"
-                onClick={() => {
-                  setNombre("");
-                  setCorreo("");
-                  setCarrera("");
-                  setEstatus("");
-                  buscarUsuarios();
-                }}
-                disabled={cargando}
-              >
-                Limpiar
-              </button>
-              <button
-                className="btn btn-primary"
+                className="btn btn-light btn-sm"
                 type="button"
                 onClick={buscarUsuarios}
                 disabled={cargando}
               >
-                {cargando ? "Buscando..." : "Buscar"}
+                {cargando ? "Actualizando..." : "Actualizar lista"}
               </button>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Error */}
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
+        <div className="row g-3 mb-3">
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <p className="text-muted small mb-1">Total</p>
+                <h4 className="mb-0">{resumen.total}</h4>
+              </div>
+            </div>
+          </div>
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <p className="text-muted small mb-1">Activos</p>
+                <h4 className="mb-0 text-success">{resumen.activos}</h4>
+              </div>
+            </div>
+          </div>
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <p className="text-muted small mb-1">Inactivos</p>
+                <h4 className="mb-0 text-danger">{resumen.inactivos}</h4>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
 
-      {/* Tabla */}
-      <div className="table-responsive">
-        <table className="table table-sm align-middle">
-          <thead>
-            <tr>
-              {columnas.map((c) => (
-                <th key={c.key}>{c.label}</th>
-              ))}
-              {tipo === "students" && <th>Acciones</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id}>
-                {columnas.map((c) => {
-                  if (c.key === "estatus") {
-                    return (
-                      <td key={c.key}>
-                        {r.estatus && r.estatus !== "-" ? (
-                          <span className={badgeClassForStatus(r.estatus)}>
-                            {r.estatus}
-                          </span>
-                        ) : (
-                          <span className="text-muted">N/A</span>
-                        )}
+        <div className="card border-0 shadow-sm mb-4">
+          <div className="card-body">
+            <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
+              <span className="fw-semibold">Ver:</span>
+              <div className="btn-group" role="group">
+                <button
+                  type="button"
+                  className={`btn btn-sm ${isStudents ? "btn-primary" : "btn-outline-primary"}`}
+                  onClick={() => setTipo("students")}
+                  disabled={cargando}
+                >
+                  Estudiantes
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-sm ${!isStudents ? "btn-primary" : "btn-outline-primary"}`}
+                  onClick={() => setTipo("coordinators")}
+                  disabled={cargando}
+                >
+                  Coordinadores
+                </button>
+              </div>
+              <span className="badge bg-light text-dark ms-auto">
+                {rows.length} resultados
+              </span>
+            </div>
+
+            <div className="row g-3">
+              {isStudents && (
+                <>
+                  <div className="col-md-4">
+                    <label className="form-label">Nombre o No. Control</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      placeholder="Ej. Ana Lopez o 20231234"
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label">Carrera</label>
+                    <select
+                      className="form-select"
+                      value={carrera}
+                      onChange={(e) => setCarrera(e.target.value)}
+                    >
+                      <option value="">Todas las carreras</option>
+                      {CARRERAS.map((car) => (
+                        <option key={car} value={car}>
+                          {car}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label">Estado</label>
+                    <select
+                      className="form-select"
+                      value={estatus}
+                      onChange={(e) => setEstatus(e.target.value)}
+                    >
+                      <option value="">Todos</option>
+                      {ESTATUS.map((eOpt) => (
+                        <option key={eOpt} value={eOpt}>
+                          {eOpt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {!isStudents && (
+                <>
+                  <div className="col-md-6">
+                    <label className="form-label">Correo</label>
+                    <input
+                      className="form-control"
+                      type="email"
+                      placeholder="coordinador@ejemplo.com"
+                      value={correo}
+                      onChange={(e) => setCorreo(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Carrera</label>
+                    <select
+                      className="form-select"
+                      value={carrera}
+                      onChange={(e) => setCarrera(e.target.value)}
+                    >
+                      <option value="">Todas las carreras</option>
+                      {CARRERAS.map((car) => (
+                        <option key={car} value={car}>
+                          {car}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
+              <div className="col-12 d-flex justify-content-end gap-2">
+                <button
+                  className="btn btn-outline-secondary"
+                  type="button"
+                  onClick={() => {
+                    setNombre("");
+                    setCorreo("");
+                    setCarrera("");
+                    setEstatus("");
+                    buscarUsuarios();
+                  }}
+                  disabled={cargando}
+                >
+                  Limpiar
+                </button>
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  onClick={buscarUsuarios}
+                  disabled={cargando}
+                >
+                  {cargando ? "Buscando..." : "Buscar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {error && (
+          <div className="alert alert-danger shadow-sm" role="alert">
+            {error}
+          </div>
+        )}
+
+        <div className="card border-0 shadow-sm">
+          <div className="card-body p-0">
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0">
+                <thead className="table-light">
+                  <tr>
+                    {columnas.map((c) => (
+                      <th key={c.key} style={{ whiteSpace: "nowrap" }}>{c.label}</th>
+                    ))}
+                    {isStudents && <th style={{ width: "200px" }}>Acciones</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.id}>
+                      {columnas.map((c) => {
+                        if (c.key === "estatus") {
+                          return (
+                            <td key={c.key}>
+                              {r.estatus && r.estatus !== "-" ? (
+                                <span className={badgeClassForStatus(r.estatus)}>
+                                  {r.estatus}
+                                </span>
+                              ) : (
+                                <span className="text-muted">N/A</span>
+                              )}
+                            </td>
+                          );
+                        }
+                        return <td key={c.key}>{r[c.key] ?? "-"}</td>;
+                      })}
+
+                      {isStudents && (
+                        <td>
+                          <div className="d-flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              className="btn btn-outline-primary btn-sm"
+                              onClick={() => verDetalle(r)}
+                            >
+                              Ver
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-success btn-sm"
+                              disabled={
+                                actualizandoId === r.id || r.estatus === "Activo"
+                              }
+                              onClick={() => cambiarEstatusEstudiante(r, "Activo")}
+                            >
+                              Activo
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-danger btn-sm"
+                              disabled={
+                                actualizandoId === r.id || r.estatus === "Inactivo"
+                              }
+                              onClick={() => cambiarEstatusEstudiante(r, "Inactivo")}
+                            >
+                              Inactivo
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+
+                  {rows.length === 0 && !cargando && (
+                    <tr>
+                      <td colSpan={colSpanExtra} className="text-center text-muted py-4">
+                        Sin resultados
                       </td>
-                    );
-                  }
+                    </tr>
+                  )}
 
-                  return <td key={c.key}>{r[c.key] ?? "-"}</td>;
-                })}
-
-                {tipo === "students" && (
-                  <td>
-                    <div className="d-flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        className="btn btn-outline-primary btn-sm"
-                        onClick={() => verDetalle(r)}
-                      >
-                        👁️
-                      </button>
-
-                      <button
-                        type="button"
-                        className="btn btn-success btn-sm"
-                        disabled={
-                          actualizandoId === r.id || r.estatus === "Activo"
-                        }
-                        onClick={() => cambiarEstatusEstudiante(r, "Activo")}
-                      >
-                        Activo
-                      </button>
-
-                      <button
-                        type="button"
-                        className="btn btn-danger btn-sm"
-                        disabled={
-                          actualizandoId === r.id || r.estatus === "Inactivo"
-                        }
-                        onClick={() => cambiarEstatusEstudiante(r, "Inactivo")}
-                      >
-                        Inactivo
-                      </button>
-                    </div>
-                  </td>
-                )}
-              </tr>
-            ))}
-
-            {rows.length === 0 && !cargando && (
-              <tr>
-                <td colSpan={colSpanExtra} className="text-center text-muted">
-                  Sin resultados
-                </td>
-              </tr>
-            )}
-
-            {cargando && (
-              <tr>
-                <td colSpan={colSpanExtra} className="text-center">
-                  Cargando...
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                  {cargando && (
+                    <tr>
+                      <td colSpan={colSpanExtra} className="text-center py-4">
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="visually-hidden">Cargando...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

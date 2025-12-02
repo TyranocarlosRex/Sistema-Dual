@@ -1,8 +1,11 @@
-﻿import React from "react";
+import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
 const SIDEBAR_STYLE = {
-  minWidth: "180px",
+  minWidth: "200px",
+  width: "200px",
+  flexShrink: 0,
+  flexBasis: "200px",
   minHeight: "100vh",
   background: "linear-gradient(180deg, #0ea5e9 0%, #0f172a 80%)",
   color: "#e2e8f0",
@@ -24,7 +27,7 @@ const SECTION_TITLE_STYLE = {
 const BASE_LINK_STYLE = {
   display: "flex",
   alignItems: "center",
-  padding: "0.65rem 0.9rem",
+  padding: "0.6rem 0.9rem",
   borderRadius: "0.75rem",
   textDecoration: "none",
   fontSize: "0.95rem",
@@ -42,6 +45,7 @@ const MENU_LINKS = [
   { label: "Inicio", to: "/coordinator-home" },
   { label: "Usuarios", to: "/coordinator-users" },
   { label: "Seguimiento", to: "/coordinator-tracking" },
+  { label: "Pendientes", to: "/coordinator-pending" },
 ];
 
 export default function Sidebar() {

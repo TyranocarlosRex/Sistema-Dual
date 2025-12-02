@@ -118,13 +118,6 @@ navigate('/administrator-home', { replace: true });
 
           <button type="submit" className="login-button">Entrar</button>
 
-          <button
-            type="button"
-            className="forgot-password"
-            onClick={() => navigate('/recuperar')}
-          >
-            Olvidé mi contraseña
-          </button>
         </form>
       </div>
     </div>

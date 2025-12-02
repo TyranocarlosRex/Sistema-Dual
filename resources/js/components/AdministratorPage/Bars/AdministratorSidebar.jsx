@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+﻿import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
 const SIDEBAR_STYLE = {
@@ -37,21 +37,6 @@ const ACTIVE_LINK_STYLE = {
   fontWeight: 600,
 };
 
-const SECTION_TOGGLE_STYLE = {
-  ...SECTION_TITLE_STYLE,
-  marginBottom: 0,
-  padding: "0.4rem 0.5rem",
-  borderRadius: "0.5rem",
-  display: "flex",
-  alignItems: "center",
-  gap: "0.5rem",
-  width: "100%",
-  background: "transparent",
-  border: "1px solid rgba(255, 255, 255, 0.08)",
-  color: SECTION_TITLE_STYLE.color,
-  cursor: "pointer",
-};
-
 const menuGroups = [
   {
     title: "Administracion",
@@ -65,88 +50,38 @@ const menuGroups = [
     title: "Publicaciones",
     links: [
       { label: "Evidencias", to: "/administrator-evidence" },
-      { label: "Reportes", to: "/administrator-report" },
+      { label: "Anuncios", to: "/administrator-advertisements" },
     ],
   },
 ];
 
 export default function Sidebar() {
   const { pathname } = useLocation();
-  const [openGroups, setOpenGroups] = useState(() => {
-    const initialState = {};
-    menuGroups.forEach((group) => {
-      const hasActiveLink = group.links.some((link) =>
-        pathname.startsWith(link.to)
-      );
-      initialState[group.title] = hasActiveLink;
-    });
-    return initialState;
-  });
-
-  useEffect(() => {
-    setOpenGroups((prev) => {
-      const next = { ...prev };
-      menuGroups.forEach((group) => {
-        const hasActiveLink = group.links.some((link) =>
-          pathname.startsWith(link.to)
-        );
-        if (hasActiveLink) {
-          next[group.title] = true;
-        }
-      });
-      return next;
-    });
-  }, [pathname]);
-
-  const toggleGroup = (title) => {
-    setOpenGroups((prev) => ({ ...prev, [title]: !prev[title] }));
-  };
 
   return (
     <aside style={SIDEBAR_STYLE}>
       <div className="d-grid gap-4">
-        {menuGroups.map((group) => (
-          <div key={group.title}>
-            <button
-              type="button"
-              onClick={() => toggleGroup(group.title)}
-              style={SECTION_TOGGLE_STYLE}
-              aria-expanded={openGroups[group.title]}
-            >
-              <span>{group.title}</span>
-              <span
-                className="ms-auto"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#cbd5e1",
-                  transition: "transform 0.2s ease",
-                  transform: openGroups[group.title] ? "rotate(90deg)" : "rotate(0)",
-                }}
-              >
-                &gt;
-              </span>
-            </button>
+        {menuGroups.map((group, idx) => (
+          <div key={group.title || idx}>
+            <p style={SECTION_TITLE_STYLE}>{group.title}</p>
+            <div className="d-grid gap-2">
+              {group.links.map((link) => {
+                const isActive = pathname.startsWith(link.to);
+                const linkStyle = {
+                  ...BASE_LINK_STYLE,
+                  ...(isActive ? ACTIVE_LINK_STYLE : {}),
+                };
 
-            {openGroups[group.title] && (
-              <div className="d-grid gap-2 mt-2">
-                {group.links.map((link) => {
-                  const isActive = pathname.startsWith(link.to);
-                  const linkStyle = {
-                    ...BASE_LINK_STYLE,
-                    ...(isActive ? ACTIVE_LINK_STYLE : {}),
-                  };
-
-                  return (
-                    <NavLink key={link.to} to={link.to} style={linkStyle}>
-                      <span>{link.label}</span>
-                      {isActive && (
-                        <span className="badge bg-primary ms-auto">Activo</span>
-                      )}
-                    </NavLink>
-                  );
-                })}
-              </div>
-            )}
+                return (
+                  <NavLink key={link.to} to={link.to} style={linkStyle}>
+                    <span>{link.label}</span>
+                    {isActive && (
+                      <span className="badge bg-primary ms-auto">Activo</span>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
           </div>
         ))}
       </div>

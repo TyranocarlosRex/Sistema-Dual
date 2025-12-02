@@ -1,0 +1,1 @@
+Get-Content database/migrations/2025_11_26_072326_create_submissions_table.php

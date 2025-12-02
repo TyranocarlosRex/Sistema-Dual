@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ClassroomBoard from "../Shared/ClassroomBoard";
 
 const safeJSON = (str, fallback = null) => {
   try {
@@ -136,6 +137,15 @@ const StudentsHome = () => {
             Consulta tus espacios de evidencia, entrega reportes a tiempo y sigue tu avance en el programa dual.
           </p>
         </section>
+
+        <div className="mt-3">
+          <ClassroomBoard
+            evidences={evidences}
+            loadingEvidences={loadingEvidences}
+            evidencesError={evidencesError}
+            onOpenEvidence={(id) => navigate(`/student-report?evidence=${id}`)}
+          />
+        </div>
 
         <div className="row g-3 mt-3 mb-1">
           <div className="col-12 col-md-4">

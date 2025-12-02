@@ -9,6 +9,7 @@ use Illuminate\Routing\Middleware\ThrottleRequests;
 
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
+use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // Sanctum abilities (AQUÍ lo importante)
             'abilities' => CheckAbilities::class,
+            'ability'   => CheckForAnyAbility::class,
         ]);
 
         $middleware->group('api', [
@@ -34,6 +36,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle:api',
             'bindings',
         ]);
+
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

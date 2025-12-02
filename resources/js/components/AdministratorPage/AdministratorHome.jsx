@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -150,18 +150,20 @@ const AdministratorHome = () => {
             {operationalNotes.map((note) => (
               <div className="col-12 col-md-6 col-xl-3" key={note.label}>
                 <div
-                  className="rounded-4 h-100"
+                  className="h-100"
                   style={{
                     background: '#ffffff',
-                    padding: '1.25rem',
-                    border: '1px solid #e2e8f0',
-                    boxShadow: '0 16px 30px -24px rgba(15, 23, 42, 0.7)',
+                    padding: '1.2rem',
+                    borderRadius: '18px',
+                    boxShadow:
+                      '0 18px 35px -28px rgba(15, 23, 42, 0.65), 0 1px 0 rgba(255,255,255,0.8) inset',
+                    border: '1px solid #edf2ff',
                   }}
                 >
-                  <p className="text-uppercase small mb-1" style={{ color: '#64748b', letterSpacing: '0.08em' }}>
+                  <p className="text-uppercase small mb-1" style={{ color: '#475569', letterSpacing: '0.08em' }}>
                     {note.label}
                   </p>
-                  <p className="mb-0" style={{ color: '#1f2937', fontSize: '0.9rem' }}>
+                  <p className="mb-0" style={{ color: '#0f172a', fontSize: '0.95rem', lineHeight: 1.5 }}>
                     {note.hint}
                   </p>
                 </div>
@@ -282,7 +284,6 @@ const AdministratorHome = () => {
       </div>
     </div>
   );
-}
-;
+};
 
 export default AdministratorHome;

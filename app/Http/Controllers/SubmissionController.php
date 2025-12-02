@@ -82,13 +82,15 @@ class SubmissionController extends Controller
     public function updateStatus(Request $request, Submission $submission)
     {
         $request->validate([
-            'status'   => ['required', 'in:enviado,aceptado,rechazado'],
+            'status'   => ['required_without_all:calificacion,feedback', 'in:enviado,aceptado,rechazado'],
             'feedback' => ['nullable', 'string'],
+            'calificacion' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $submission->update([
-            'status'   => $request->input('status'),
-            'feedback' => $request->input('feedback'),
+            'status'       => $request->input('status', $submission->status),
+            'feedback'     => $request->input('feedback', $submission->feedback),
+            'calificacion' => $request->input('calificacion', $submission->calificacion),
         ]);
 
         return response()->json($submission);
