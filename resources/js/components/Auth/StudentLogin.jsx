@@ -21,9 +21,10 @@ const StudentLogin = () => {
       localStorage.removeItem('user');
       localStorage.removeItem('student');
       localStorage.removeItem('admin');
+      localStorage.removeItem('coordinator');
 
-       const token = data.token ?? data.access_token; // soporta ambos
-       if (token) {
+      const token = data.token ?? data.access_token; // soporta ambos
+      if (token) {
         localStorage.setItem('token', token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       } else {

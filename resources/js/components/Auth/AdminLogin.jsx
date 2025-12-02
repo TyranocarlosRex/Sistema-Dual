@@ -17,32 +17,31 @@ const AdminLogin = () => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('student');
+      localStorage.removeItem('coordinator');
       localStorage.removeItem('admin');
 
-// Soporta varias llaves de token (back viejo/nuevo)
-  const token =
-  data.access_token ??
-  data.token ??
-  data.plainTextToken ??
-  null;
+      // Soporta varias llaves de token (back viejo/nuevo)
+      const token =
+        data.access_token ??
+        data.token ??
+        data.plainTextToken ??
+        null;
 
-if (!token) {
-  setError('El servidor no regresó token');
-  return;
-}
+      if (!token) {
+        setError('El servidor no regresó token');
+        return;
+      }
 
-localStorage.setItem('token', token);
+      localStorage.setItem('token', token);
 
-// Guarda user y admin de forma robusta
-localStorage.setItem('user', JSON.stringify(
-  data.user ?? null
-));
+      // Guarda user y admin de forma robusta
+      localStorage.setItem('user', JSON.stringify(data.user ?? null));
 
-localStorage.setItem('admin', JSON.stringify(
-  data.admin ?? data.user?.admin ?? null
-));
+      localStorage.setItem('admin', JSON.stringify(
+        data.admin ?? data.user?.admin ?? null
+      ));
 
-navigate('/administrator-home', { replace: true });
+      navigate('/administrator-home', { replace: true });
     } catch (err) {
       // API puede devolver distintos formatos; cubrimos mensaje general y errores de campos
       if (err.response?.data?.errors?.name) {

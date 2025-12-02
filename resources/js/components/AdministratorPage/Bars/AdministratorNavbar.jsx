@@ -47,7 +47,7 @@ export default function Navbar() {
         await axios.post(
           "/api/logout",
           {},
-          { headers: { Authorization: Bearer  } }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
       }
     } catch (e) {
@@ -80,7 +80,7 @@ export default function Navbar() {
             >
               <span className="badge bg-primary text-white">AD</span>
               <span className="text-dark">{adminName}</span>
-              <span style={{ fontSize: "0.8rem" }}>{openMenu ? "▲" : "▼"}</span>
+              <span style={{ fontSize: "0.8rem" }}>{openMenu ? "^" : "v"}</span>
             </button>
             {openMenu && (
               <div

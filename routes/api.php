@@ -25,8 +25,8 @@ Route::middleware(['auth:sanctum', 'abilities:student'])->group(function () {
     Route::post('/student/reports/{report}/submit',[SubmissionController::class, 'storeForStudent']);
 });
 
-// Coordinador
-Route::middleware(['auth:sanctum', 'abilities:coordinator'])->group(function () {
+// Coordinador (y admin puede ver detalles de estudiantes)
+Route::middleware(['auth:sanctum', 'ability:coordinator,admin'])->group(function () {
     Route::get('/coordinator/report-submissions',[SubmissionController::class, 'indexForStaff']);
     Route::get('/coordinator/report-submissions/{submission}/download',[SubmissionController::class, 'download']);
     Route::patch('/coordinator/report-submissions/{submission}',[SubmissionController::class, 'updateStatus']);

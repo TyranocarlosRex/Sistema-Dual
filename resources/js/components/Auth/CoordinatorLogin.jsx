@@ -17,31 +17,30 @@ const CoordinatorLogin = () => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('student');
+      localStorage.removeItem('coordinator');
       localStorage.removeItem('admin');
 
-// Soporta varias llaves de token (back viejo/nuevo)
-  const token =
-  data.access_token ??
-  data.token ??
-  data.plainTextToken ??
-  null;
+      // Soporta varias llaves de token (back viejo/nuevo)
+      const token =
+        data.access_token ??
+        data.token ??
+        data.plainTextToken ??
+        null;
 
-if (!token) {
-  setError('El servidor no regresó token');
-  return; // evita navegar con token vacío
-}
+      if (!token) {
+        setError('El servidor no regresó token');
+        return; // evita navegar con token vacío
+      }
 
-localStorage.setItem('token', token);
+      localStorage.setItem('token', token);
 
-// Guarda user y coordinator de forma robusta
-localStorage.setItem('user', JSON.stringify(
-  data.user ?? null
-));
-localStorage.setItem('coordinator', JSON.stringify(
-  data.coordinator ?? data.user?.coordinator ?? null
-));
+      // Guarda user y coordinator de forma robusta
+      localStorage.setItem('user', JSON.stringify(data.user ?? null));
+      localStorage.setItem('coordinator', JSON.stringify(
+        data.coordinator ?? data.user?.coordinator ?? null
+      ));
 
-navigate('/coordinator-home', { replace: true });
+      navigate('/coordinator-home', { replace: true });
     } catch (err) {
       // API puede devolver distintos formatos; cubrimos mensaje general y errores de campos
       if (err.response?.data?.errors?.name) {

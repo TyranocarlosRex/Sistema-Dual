@@ -55,7 +55,7 @@ export default function Navbar() {
         await axios.post(
           "/api/logout",
           {},
-          { headers: { Authorization: Bearer  } }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
       }
     } catch (e) {
@@ -87,7 +87,7 @@ export default function Navbar() {
             >
               <span className="badge bg-info text-white">CO</span>
               <span className="text-dark">{coordinatorName}</span>
-              <span style={{ fontSize: "0.8rem" }}>{openMenu ? "▲" : "▼"}</span>
+              <span style={{ fontSize: "0.8rem" }}>{openMenu ? "^" : "v"}</span>
             </button>
             {openMenu && (
               <div className="dropdown-menu show mt-2" style={{ right: 0, left: "auto" }}>
