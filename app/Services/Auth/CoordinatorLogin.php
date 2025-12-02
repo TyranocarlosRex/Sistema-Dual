@@ -1,18 +1,24 @@
-<?php
+﻿<?php
+
 namespace App\Services\Auth;
+
 use App\Contracts\Auth\LoginService;
 use App\Contracts\Auth\PasswordVerifier;
 use App\Contracts\Auth\TokenIssuer;
 use App\Models\User;
-use App\Models\Coordinator;
-use Illuminate\Http\Exceptions\HttpResponseException;
+use App\Services\Auth\Concerns\JsonFails;
+use App\Services\Auth\LoginResponseFactory;
 
 class CoordinatorLogin implements LoginService
 {
+    use JsonFails;
+
     public function __construct(
         private PasswordVerifier $passwords,
         private TokenIssuer $tokens,
-    ) {}
+        private LoginResponseFactory $responses,
+    ) {
+    }
 
     public function login(array $credentials): array
     {
@@ -20,48 +26,31 @@ class CoordinatorLogin implements LoginService
         $plain = (string)($credentials['password'] ?? '');
 
         if ($email === '' || $plain === '') {
-            throw new HttpResponseException(
-                response()->json(['message' => 'Faltan credenciales'], 422)
-            );
+            $this->fail('Faltan credenciales', 422);
         }
 
-        // 1) Busca al usuario por email (case-insensitive)
         $user = User::whereRaw('LOWER(email) = ?', [$email])
             ->with('coordinator')
             ->first();
 
         if (!$user) {
-            throw new HttpResponseException(
-                response()->json(['message' => 'Credenciales inválidas'], 422)
-            );
+            $this->fail('Credenciales invalidas', 401);
         }
 
-        // 2) Verifica password
-        if (!$this->passwords->verify($plain, $user->password)) {
-            throw new HttpResponseException(
-                response()->json(['message' => 'Credenciales inválidas'], 422)
-            );
+        if (!$this->passwords->verify($plain, (string)$user->password)) {
+            $this->fail('Credenciales invalidas', 401);
         }
 
-        // 3) Debe existir relación coordinator
         $coordinator = $user->coordinator;
         if (!$coordinator) {
-            throw new HttpResponseException(
-                response()->json(['message' => 'Coordinador no encontrado'], 404)
-            );
+            $this->fail('Coordinador no encontrado', 404);
         }
 
-        // 4) Emite token con ability "coordinator"
         $abilities = ['coordinator'];
         $token = $this->tokens->issue($user, $abilities, 'coordinator');
 
-        // 5) Respuesta consistente con tu front
-        return [
-            'access_token' => $token,                     // <-- usa esta llave para el front
-            'token_type'   => 'Bearer',
-            'abilities'    => $abilities,
-            'user'         => $user->only(['id','name','email']),
+        return $this->responses->make($user, $abilities, $token, [
             'coordinator'  => $coordinator,
-        ];
+        ]);
     }
 }

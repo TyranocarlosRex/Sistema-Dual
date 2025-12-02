@@ -10,11 +10,13 @@ class CandidateTracker
 {
     public function track(User $user): void
     {
+        $user->loadMissing('student');
         if (!$this->shouldTrack($user)) {
             return;
         }
-
-        $student = method_exists($user, 'student') ? $user->student : null;
+        // asegurate de tener el perfil de estudiante cargado
+        $student = $user->student;
+        $now = Carbon::now();
 
         $payload = [
             'student_id' => $student->id ?? null,
@@ -24,24 +26,24 @@ class CandidateTracker
             'Correo_institucional' => $student->Correo_institucional ?? ($user->email ?? null),
             'Carrera'    => $student->Carrera ?? null,
             'Semestre'   => isset($student->Semestre) ? (int)$student->Semestre : null,
-            'origen'     => 'login',
-            'last_login_at' => Carbon::now(),
+            'origen'     => Candidate::ORIGEN_LOGIN,
+            'last_login_at' => $now,
         ];
 
         $rec = Candidate::firstOrNew(['user_id' => $user->id]);
         if (!$rec->exists) {
-            $payload['first_login_at'] = Carbon::now();
-            $payload['Estatus'] = 'Inactivo'; // o 'Activo'
+            $payload['first_login_at'] = $now;
+            $payload['Estatus'] = Candidate::STATUS_INACTIVO; // o STATUS_ACTIVO
         }
         $rec->fill($payload)->save();
     }
 
     private function shouldTrack(User $user): bool
     {
-        if (isset($user->rol) && strtolower($user->rol) !== 'student') {
+        if (strtolower((string)($user->role ?? '')) !== 'student') {
             return false;
         }
-        if (method_exists($user, 'student') && !$user->student) {
+        if (!$user->student) {
             return false;
         }
         // if ($user->student && (int)$user->student->Semestre !== 8) return false;

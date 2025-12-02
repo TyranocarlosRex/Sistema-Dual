@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Candidate extends Model
 {
+    public const STATUS_ACTIVO   = 'Activo';
+    public const STATUS_INACTIVO = 'Inactivo';
+    public const ORIGEN_LOGIN    = 'login';
+
     protected $table = 'candidate';
 
     protected $fillable = [
