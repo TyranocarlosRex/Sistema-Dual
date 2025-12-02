@@ -56,18 +56,25 @@ const CoordinatorHome = () => {
 
   return (
     <div className="container py-4">
-      <div className="bg-white rounded shadow-sm p-4 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div
+        className="rounded-4 text-white p-4 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3 shadow-lg"
+        style={{
+          background: "linear-gradient(135deg, #0ea5e9 0%, #0f172a 100%)",
+        }}
+      >
         <div>
-          <p className="text-muted mb-1 small">Panel de coordinador</p>
+          <p className="text-uppercase small mb-1" style={{ letterSpacing: "0.08em", opacity: 0.8 }}>
+            Panel coordinador
+          </p>
           <h1 className="h4 mb-1">
-            Bienvenido, {coordinator.Nombre || "Coordinador"}
+            Hola, {coordinator.Nombre || "Coordinador"}
           </h1>
-          <div className="text-secondary">
-            Gestiona estudiantes, documentos y reportes de tu carrera.
+          <div style={{ opacity: 0.95, maxWidth: "520px" }}>
+            Gestiona estudiantes, documentos y reportes de tu carrera desde un solo lugar.
           </div>
         </div>
         <div className="text-end">
-          <span className="badge text-bg-success px-3 py-2">Coordinador</span>
+          <span className="badge bg-white text-dark px-3 py-2">Coordinador</span>
         </div>
       </div>
 
