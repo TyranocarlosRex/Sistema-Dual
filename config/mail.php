@@ -1,5 +1,11 @@
 <?php
-
+/*Este archivo es parte de la configuración del sistema de correo en una aplicación Laravel.
+Aquí se definen los mailers que la aplicación utilizará para enviar correos electrónicos, 
+como SMTP, Sendmail, Mailgun, SES, Postmark, entre otros. También se especifica 
+el mailer predeterminado que se utilizará para enviar correos electrónicos. 
+Esta configuración es esencial para que la aplicación pueda enviar correos e
+lectrónicos correctamente, ya sea para notificaciones, restablecimiento de contraseñas 
+u otras funciones relacionadas con el correo electrónico.*/
 return [
 
     /*

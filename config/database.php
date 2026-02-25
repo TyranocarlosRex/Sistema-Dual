@@ -1,5 +1,7 @@
 <?php
-
+/*Este archivo es parte de la configuración de la base de datos en una aplicación Laravel.
+Aquí se definen las conexiones a diferentes tipos de bases de datos (como SQLite, MySQL, PostgreSQL, SQL Server) y sus respectivas configuraciones. También se especifica la conexión predeterminada que se utilizará para las operaciones de base de datos, así como la configuración para Redis, que es un almacén de datos en memoria utilizado para caché y otras funciones. Esta configuración es 
+esencial para que la aplicación pueda interactuar con la base de datos correctamente.*/  
 use Illuminate\Support\Str;
 
 return [

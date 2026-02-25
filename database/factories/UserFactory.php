@@ -5,7 +5,12 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-
+/*Aquí se define la fábrica para el modelo User, 
+que se utiliza para generar datos de prueba para los usuarios en la base de datos. 
+La fábrica define el estado predeterminado del modelo, incluyendo el nombre, correo electrónico, 
+fecha de verificación del correo electrónico, contraseña y token de recuerdo. 
+También incluye un método para indicar que la dirección de correo electrónico del usuario no 
+está verificada.*/
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */

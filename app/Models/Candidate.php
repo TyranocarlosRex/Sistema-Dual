@@ -3,7 +3,27 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+/*Clase: Candidate
+Descripción: Modelo que representa a un candidato (estudiante) en la aplicación.
+Atributos:
+- user_id: ID del usuario asociado al candidato.
+- student_id: ID del estudiante (número de control).
+- No_control: Número de control del estudiante.
+- Apellidos: Apellidos del estudiante.
+- Nombre: Nombre del estudiante.
+- Correo_institucional: Correo institucional del estudiante.
+- Carrera: Carrera del estudiante.
+- Semestre: Semestre actual del estudiante.
+- Estatus: Estatus del candidato (e.g., 'Activo', 'Inactivo').
+- first_login_at: Fecha y hora del primer inicio de sesión del candidato.
+- last_login_at: Fecha y hora del último inicio de sesión del candidato.
+- origen: Origen del registro del candidato (e.g., 'login').
+Relaciones:
+- user(): Relación de pertenencia con el modelo User, indicando que un candidato pertenece a un usuario específico.
+Scopes:
+- scopeActivos(): Scope para obtener solo los candidatos con estatus 'Activo'.
+- scopeInactivos(): Scope para obtener solo los candidatos con estatus 'Inactivo'.
+*/
 class Candidate extends Model
 {
     public const STATUS_ACTIVO   = 'Activo';

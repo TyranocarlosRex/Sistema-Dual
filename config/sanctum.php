@@ -1,7 +1,13 @@
 <?php
 
 use Laravel\Sanctum\Sanctum;
-
+/*Este archivo es parte de la configuración de Sanctum en una aplicación Laravel. 
+Sanctum es un paquete de autenticación que proporciona una forma sencilla de emitir tokens 
+API para usuarios autenticados. Aquí se definen las configuraciones relacionadas con los 
+dominios que pueden recibir cookies de autenticación, los guardias de autenticación que se 
+utilizarán, la duración de los tokens, el prefijo de los tokens y el middleware que se aplicará 
+a las rutas protegidas por Sanctum. Esta configuración es esencial para que la autenticación 
+basada en tokens funcione correctamente en la aplicación.*/
 return [
 
     /*

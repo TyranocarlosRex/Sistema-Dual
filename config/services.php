@@ -1,5 +1,11 @@
 <?php
-
+/*Este archivo es parte de la configuración de servicios de terceros en una aplicación Laravel.
+Aquí se definen las credenciales para servicios de terceros como Mailgun, Postmark, AWS, Slack, 
+entre otros. Esta configuración proporciona un lugar centralizado para almacenar esta información, 
+lo que facilita a los paquetes y a la aplicación en general acceder a las credenciales necesarias 
+para interactuar con estos servicios de manera segura y eficiente. Es esencial para que la 
+aplicación pueda integrarse correctamente con servicios externos y utilizar sus funcionalidades 
+según sea necesario.*/
 return [
 
     /*

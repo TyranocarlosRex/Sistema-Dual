@@ -1,5 +1,6 @@
 <?php
-
+/*Este archivo es parte de la configuración de permisos en una aplicación Laravel que utiliza el paquete Spatie Permission. Aquí se definen los modelos, tablas y otras configuraciones relacionadas con la gestión de roles y permisos en la aplicación. Esta configuración es esencial para que el sistema de control de acceso funcione correctamente, permitiendo asignar roles y permisos a 
+los usuarios y controlar su acceso a diferentes partes de la aplicación según sus permisos.*/  
 return [
 
     'models' => [

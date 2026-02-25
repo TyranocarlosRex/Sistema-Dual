@@ -1,7 +1,13 @@
 <?php
 
 use Illuminate\Support\Str;
-
+/*Este archivo es parte de la configuración de sesiones en una aplicación Laravel. 
+Aquí se definen las opciones relacionadas con el manejo de sesiones, como el controlador 
+de sesiones que se utilizará (archivo, cookie, base de datos, Redis, etc.), la duración de 
+las sesiones, la configuración de cookies, entre otros. Esta configuración es esencial para 
+que la aplicación pueda gestionar correctamente las sesiones de los usuarios, lo que es 
+fundamental para mantener el estado de autenticación y otras informaciones relacionadas con 
+la interacción del usuario con la aplicación.*/
 return [
 
     /*

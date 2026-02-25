@@ -1,5 +1,9 @@
 <?php
-
+/*Este archivo es parte de la configuración de CORS (Cross-Origin Resource Sharing) 
+en una aplicación Laravel. CORS es un mecanismo que permite a los recursos de una página 
+web ser solicitados desde otro dominio fuera del dominio desde el cual se sirvió el recurso. 
+Esta configuración define qué rutas, métodos, orígenes y encabezados están permitidos para 
+las solicitudes CORS.*/
 return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'logout', 'user'],

@@ -1,7 +1,11 @@
 <?php
 
 use Illuminate\Support\Str;
-
+/* * Configuración de cache.
+ *
+ * Aquí se configuran los aspectos relacionados con el sistema de cache, como el driver por defecto, las conexiones disponibles y el prefijo de las claves.
+ * Se utiliza el nuevo sistema de configuración fluida introducido en Laravel 10.2.
+ */
 return [
 
     /*

@@ -1,5 +1,10 @@
 <?php
-
+/*Este archivo es parte de la configuración de colas en una aplicación Laravel. 
+Aquí se definen las conexiones a diferentes sistemas de colas (como base de datos, Beanstalkd, 
+SQS, Redis) y sus respectivas configuraciones. También se especifica la conexión predeterminada 
+que se utilizará para las operaciones de cola, así como la configuración para el almacenamiento 
+de trabajos fallidos. Esta configuración es esencial para que la aplicación pueda manejar tareas 
+en segundo plano y procesar trabajos de manera eficiente.*/
 return [
 
     /*

@@ -2,7 +2,9 @@
 
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
-
+/*Aquí se define el punto de entrada de la aplicación Laravel. 
+Se carga el autoloader de Composer, se verifica si la aplicación está en modo 
+de mantenimiento y luego se inicia la aplicación Laravel para manejar la solicitud entrante.*/
 define('LARAVEL_START', microtime(true));
 
 // Determine if the application is in maintenance mode...

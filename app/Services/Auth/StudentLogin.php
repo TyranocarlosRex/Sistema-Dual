@@ -9,7 +9,8 @@ use App\Models\Student;
 use App\Services\Auth\Concerns\JsonFails;
 use App\Services\Auth\LoginResponseFactory;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-
+/* * Servicio de login para estudiantes.
+ */
 final class StudentLogin implements LoginService
 {
     use JsonFails;

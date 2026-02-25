@@ -8,7 +8,8 @@ use App\Contracts\Auth\TokenIssuer;
 use App\Models\User;
 use App\Services\Auth\Concerns\JsonFails;
 use App\Services\Auth\LoginResponseFactory;
-
+/* * Servicio de login para coordinadores.
+ */
 class CoordinatorLogin implements LoginService
 {
     use JsonFails;

@@ -4,7 +4,12 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
-
+/*Este archivo es parte de la configuración de logging (registro de eventos) en una aplicación 
+Laravel. Aquí se definen los canales de registro que la aplicación utilizará para escribir 
+mensajes en los logs. Se especifica el canal predeterminado, así como los canales disponibles, 
+que pueden incluir opciones como archivos diarios, Slack, Papertrail, syslog, entre otros. 
+Esta configuración es esencial para que la aplicación pueda registrar eventos, errores y otras 
+informaciones importantes de manera organizada y accesible para su posterior análisis.*/
 return [
 
     /*

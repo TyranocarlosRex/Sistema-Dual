@@ -3,7 +3,8 @@
 namespace App\Services\Auth;
 
 use App\Models\User;
-
+/* * Fábrica de respuestas homogéneas para los flujos de login.
+ */
 class LoginResponseFactory
 {
     /**

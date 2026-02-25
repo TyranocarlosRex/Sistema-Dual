@@ -7,7 +7,10 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
-
+/*Clase: RouteServiceProvider
+Descripción: Este proveedor de servicios se encarga de definir las rutas de la aplicación,
+así como de configurar las políticas de limitación de solicitudes para la API.
+*/
 class RouteServiceProvider extends ServiceProvider
 {
     public function boot(): void

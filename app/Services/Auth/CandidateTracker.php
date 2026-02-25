@@ -5,7 +5,14 @@ namespace App\Services\Auth;
 use App\Models\User;
 use App\Models\Candidate;
 use Illuminate\Support\Carbon;
-
+/*Clase: CandidateTracker
+Descripción: Esta clase se encarga de rastrear la actividad de los candidatos (estudiantes) 
+que inician sesión en el sistema. Al iniciar sesión, se verifica si el usuario es un estudiante
+y, de ser así, se actualiza o crea un registro en la tabla de candidatos con información
+relevante como el número de control, nombre, carrera, semestre y las fechas de primer y último 
+inicio de sesión. Esto permite llevar un seguimiento de la actividad de los estudiantes en el 
+sistema, lo que puede ser útil para análisis y reportes futuros. 
+*/
 class CandidateTracker
 {
     public function track(User $user): void

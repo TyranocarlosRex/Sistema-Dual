@@ -9,3 +9,7 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+/**Este archivo CSS es el punto de entrada para los estilos de la aplicación.
+ Se importa Tailwind CSS para utilizar sus utilidades de diseño y estilos predefinidos.
+ Además, se incluyen fuentes personalizadas y se definen variables de tema para la 
+ fuente sans-serif  utilizada en toda la aplicación. */

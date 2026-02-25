@@ -4,6 +4,10 @@ namespace App\Services\Auth\Concerns;
 
 use Illuminate\Http\Exceptions\HttpResponseException;
 
+/*Trait: JsonFails
+Descripción: Este trait proporciona un método para lanzar excepciones HTTP con respuestas 
+JSON personalizadas,lo que es útil para manejar errores de autenticación en una API.
+*/
 trait JsonFails
 {
     /**

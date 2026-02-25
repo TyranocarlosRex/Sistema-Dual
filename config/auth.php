@@ -1,5 +1,9 @@
 <?php
-
+/* * Configuración de autenticación.
+ *
+ * Aquí se configuran los aspectos relacionados con la autenticación, como los guardias, proveedores de usuarios y opciones de restablecimiento de contraseñas.
+ * Se utiliza el nuevo sistema de configuración fluida introducido en Laravel 10.2.
+ */
 return [
 
     /*

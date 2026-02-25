@@ -10,7 +10,11 @@ use Illuminate\Routing\Middleware\ThrottleRequests;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
-
+/* * Bootstrap de la aplicación.
+ *
+ * Aquí se configura la aplicación, incluyendo rutas, middleware y excepciones.
+ * Se utiliza el nuevo sistema de configuración fluida introducido en Laravel 10.2.
+ */
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',

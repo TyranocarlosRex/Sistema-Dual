@@ -3,7 +3,11 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-
+/*Esta migración crea tres tablas en la base de datos: 'users', 'password_reset_tokens' y 'sessions'.
+La tabla 'users' almacena información sobre los usuarios, incluyendo su nombre, correo electrónico, fecha de verificación del correo electrónico, contraseña, token de recuerdo y rol. 
+La tabla 'password_reset_tokens' almacena los tokens de restablecimiento de contraseña para los usuarios, con su correo electrónico como clave primaria. 
+La tabla 'sessions' almacena información sobre las sesiones de los usuarios, incluyendo el ID de la sesión, el ID del usuario, la dirección IP, el agente de usuario, la carga útil y la última actividad. 
+La función 'up' se encarga de crear estas tablas, mientras que la función 'down' se encarga de eliminarlas si es necesario.*/       
 return new class extends Migration
 {
     /**

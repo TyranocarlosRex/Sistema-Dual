@@ -1,5 +1,10 @@
 <?php
-
+/*Este archivo es parte de la configuración del sistema de archivos en una aplicación Laravel.
+Aquí se definen los discos de almacenamiento que la aplicación puede utilizar para guardar 
+archivos, como el disco local, el disco público y el disco S3 (Amazon Simple Storage Service).
+ También se especifica el disco predeterminado que se utilizará para las operaciones de
+  almacenamiento. Esta configuración es esencial para que la aplicación pueda manejar 
+  correctamente la carga, almacenamiento y acceso a los archivos.*/
 return [
 
     /*

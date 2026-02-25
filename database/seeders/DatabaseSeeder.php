@@ -1,6 +1,9 @@
 <?php
 
 namespace Database\Seeders;
+/*Este seeder es el encargado de ejecutar los seeders de roles y permisos,
+ ademas de crear un usuario de prueba para poder iniciar sesión en la aplicación y 
+ probar los permisos asignados a ese usuario.*/
 
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;

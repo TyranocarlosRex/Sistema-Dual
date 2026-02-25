@@ -9,7 +9,13 @@ use App\Http\Controllers\AdminControllers\EvidenceController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\AdminControllers\AdvertisementController;
 use App\Http\Controllers\StudentDetailsController;
-
+/*En este archivo se definen las rutas de la API para la aplicación.
+ Se organizan en grupos según el rol del usuario (estudiante, coordinador, admin) y se 
+ aplican middleware de autenticación y autorización para proteger las rutas.
+ Cada ruta está asociada a un controlador específico que maneja la lógica de la solicitud. P
+ or ejemplo, las rutas de autenticación permiten a los usuarios iniciar sesión, mientras que 
+ las rutas de estudiantes, coordinadores y admin permiten acceder a funcionalidades específicas
+  según el rol del usuario.*/
 Route::prefix('auth')->group(function () {
     Route::post('/login/student', [AuthController::class, 'loginStudent']);
     Route::post('/login/coordinator', [AuthController::class, 'loginCoordinator']);

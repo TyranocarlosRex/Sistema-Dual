@@ -4,7 +4,8 @@ namespace App\Services\Auth;
 
 use App\Contracts\Auth\TokenIssuer;
 use App\Models\User;
-
+/* * Implementación de emisión de tokens usando Laravel Sanctum.
+ */
 class SanctumTokenIssuer implements TokenIssuer
 {
     public function __construct(

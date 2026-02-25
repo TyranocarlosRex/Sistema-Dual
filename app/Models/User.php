@@ -10,7 +10,24 @@ use App\Models\Student;
 use App\Models\Coordinator;
 use App\Models\Admin;
 
-
+/*Clase: User
+Descripción: Modelo que representa a un usuario en la aplicación, que puede ser un estudiante, coordinador o administrador.
+Atributos:
+- name: Nombre del usuario.
+- email: Correo electrónico del usuario.
+- password: Contraseña del usuario.
+- role: Rol del usuario (e.g., 'student', 'coordinator', 'admin').
+Relaciones:
+- student(): Relación de uno a uno con el modelo Student, indicando que un usuario 
+puede tener un registro asociado en la tabla student, 
+que contiene información adicional sobre su estatus como estudiante.
+- coordinator(): Relación de uno a uno con el modelo Coordinator, indicando que un 
+usuario puede tener un registro asociado en la tabla coordinators, que contiene información 
+adicional sobre su estatus como coordinador.
+- admin(): Relación de uno a uno con el modelo Admin, indicando que un usuario puede tener 
+un registro asociado en la tabla admins, que contiene información adicional sobre su estatus 
+como administrador.
+*/   
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */

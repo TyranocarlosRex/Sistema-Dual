@@ -1,5 +1,9 @@
 <?php
-
+/* * Configuración de la aplicación.
+ *
+ * Aquí se configuran los aspectos generales de la aplicación, como el nombre, el entorno, la zona horaria, etc.
+ * Se utiliza el nuevo sistema de configuración fluida introducido en Laravel 10.2.
+ */
 return [
 
     /*
