@@ -7,6 +7,13 @@ use App\Http\Resources\StudentResource;
 use App\Models\Student;
 use Illuminate\Http\Request;
 
+/*La clase StudentIndexController maneja la funcionalidad de listar estudiantes 
+    con filtros opcionales y actualizar su estatus. 
+    
+    - index: Permite listar estudiantes con filtros por nombre, correo y carrera, 
+    y soporta paginación.
+    - updateEstatus: Permite actualizar el estatus de un estudiante (Activo/Inactivo).*/
+
 class StudentIndexController extends Controller
 {
     public function index(Request $request)

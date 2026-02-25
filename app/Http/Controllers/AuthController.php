@@ -8,6 +8,14 @@ use App\Services\Auth\CoordinatorLogin;
 use App\Services\Auth\AdminLogin;
 use Illuminate\Http\Request;
 
+/*La clase AuthController maneja la autenticación para estudiantes, coordinadores y administradores, 
+    así como la obtención de información del administrador autenticado.
+
+    - loginStudent: Maneja el inicio de sesión para estudiantes.
+    - loginCoordinator: Maneja el inicio de sesión para coordinadores.
+    - loginAdmin: Maneja el inicio de sesión para administradores.
+    - meAdmin: Devuelve la información del administrador autenticado, incluyendo detalles del usuario y del administrador.*/
+    
 class AuthController extends Controller {
     public function loginStudent(LoginStudentRequest $request, StudentLogin $service) {
         $data = $service->login($request->validated());

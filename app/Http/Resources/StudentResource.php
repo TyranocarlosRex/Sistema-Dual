@@ -4,7 +4,9 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
+/*Clase: StudentResource
+Descripción: Esta clase se encarga de transformar los datos del estudiante para ser
+enviados como respuesta*/
 class StudentResource extends JsonResource
 {
     /**

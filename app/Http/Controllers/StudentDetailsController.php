@@ -7,6 +7,14 @@ use App\Models\Submission;
 use App\Models\Report;
 use Illuminate\Http\Request;
 
+
+/*La clase StudentDetailsController maneja la funcionalidad de mostrar los detalles 
+    de un estudiante específico, incluyendo su información personal, los documentos que 
+    ha enviado y los documentos pendientes por enviar.
+    - show: Devuelve la información detallada de un estudiante, incluyendo sus datos personales, 
+    los documentos que ha enviado (con su estado, feedback y calificación) y 
+    los documentos pendientes que aún no ha enviado.*/
+    
 class StudentDetailsController extends Controller
 {
     public function show(Request $request, Student $student)

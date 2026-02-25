@@ -7,6 +7,12 @@ use App\Http\Resources\CoordinatorResource;
 use App\Models\Coordinator;
 use Illuminate\Http\Request;
 
+
+/*La clase CoordinatorIndexController maneja la funcionalidad de listar coordinadores 
+    con filtros opcionales. 
+    - index: Permite listar coordinadores con filtros por nombre, correo y carrera, 
+    y soporta paginación.*/
+
 class CoordinatorIndexController extends Controller
 {
     public function index(Request $request)

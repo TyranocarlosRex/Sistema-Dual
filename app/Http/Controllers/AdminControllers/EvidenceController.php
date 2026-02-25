@@ -6,6 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\Evidence;
 use Illuminate\Http\Request;
 
+
+/*Este código define el controlador EvidenceController que maneja las 
+solicitudes relacionadas con las evidencias.
+
+El método index devuelve una lista de evidencias ordenadas por tipo y título, con la opción de incluir los reportes relacionados.
+
+El método store permite crear una nueva evidencia validando los datos de entrada.
+
+El método show devuelve los detalles de una evidencia específica, incluyendo sus reportes.
+
+El método update permite actualizar una evidencia existente validando los datos de entrada.
+
+El método indexForStudent devuelve una lista de evidencias visibles para un estudiante 
+autenticado, filtrando por el estatus del estudiante y ordenando los reportes por 
+fecha límite y fecha de creación.*/
+
 class EvidenceController extends Controller
 {
     public function index(Request $request)

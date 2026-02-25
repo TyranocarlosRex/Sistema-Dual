@@ -8,6 +8,21 @@ use App\Models\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+
+/*La clase SubmissionController maneja la funcionalidad relacionada con las entregas de los 
+    estudiantes para los reportes, permitiendo a los estudiantes subir sus archivos, y a los 
+    coordinadores o administradores revisar esas entregas, actualizar su estado y proporcionar
+    retoralimentacion.
+
+    - storeForStudent: Permite a un estudiante subir un archivo para un reporte específico, 
+                        reemplazando cualquier entrega anterior.
+    - indexForStaff: Permite a coordinadores o administradores listar todas las entregas, 
+                        con filtros opcionales por reporte y estado.
+    - updateStatus: Permite a coordinadores o administradores actualizar el estado, feedback y 
+                        calificación de una entrega.
+    - download: Permite a coordinadores o administradores descargar el archivo subido por el 
+                        studiante para una entrega específica.*/
+
 class SubmissionController extends Controller
 {
     /**

@@ -6,6 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Advertisement;
 use Illuminate\Http\Request;
 
+/*Este código define el controlador AdvertisementController 
+que maneja las solicitudes relacionadas con los anuncios.
+
+El método index devuelve una lista de anuncios visibles para 
+el usuario autenticado, filtrados por su rol y carrera (si es estudiante).
+
+El método store permite a los coordinadores y administradores crear nuevos anuncios, 
+validando los datos de entrada y manejando la carga de archivos adjuntos.*/
+
 class AdvertisementController extends Controller
 {
     public function index(Request $request)

@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-
+/*Clase: UpdateReportRequest
+Descripción: Esta clase se encarga de validar los datos para actualizar un reporte existente.
+*/
 class UpdateReportRequest extends FormRequest
 {
     /**

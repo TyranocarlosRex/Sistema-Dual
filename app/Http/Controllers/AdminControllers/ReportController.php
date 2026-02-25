@@ -9,6 +9,18 @@ use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+
+/*Esta clase ReportController maneja las operaciones CRUD para los reportes, 
+    incluyendo la gestión de archivos adjuntos.
+
+- index: Lista todos los reportes, con opción de filtrar por evidencia.
+- store: Crea un nuevo reporte, permitiendo subir un archivo adjunto.
+- downloadAttachment: Permite descargar el archivo adjunto de un reporte.
+- indexForStudent: Lista los reportes relevantes para el estudiante autenticado.
+- update: Actualiza un reporte existente, con opciones para manejar el archivo 
+    adjunto (reemplazar o eliminar).
+- destroy: Elimina un reporte y su archivo adjunto si existe.*/
+
 class ReportController extends Controller
 {
     public function index(Request $request)
