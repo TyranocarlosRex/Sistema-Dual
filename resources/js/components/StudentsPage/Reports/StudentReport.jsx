@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 const API_URL = "/api";
 
 const LABEL_TIPO = {
-  inscripcion: "Inscripción",
+  inscripcion: "Inscripcion",
   programa: "Programa (reportes del programa)",
 };
 
@@ -13,6 +13,7 @@ export default function StudentReports() {
   const [evidences, setEvidences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("asignado");
 
   // estado para subida de archivos
   const [selectedFiles, setSelectedFiles] = useState({});
@@ -64,6 +65,25 @@ export default function StudentReports() {
     : null;
 
   const reports = selectedEvidence?.reports ?? [];
+
+  const evidenceStatus = (ev) => {
+    const reportsEv = ev.reports || [];
+    if (reportsEv.length === 0) return "asignado";
+    const submitted = reportsEv.filter((r) => r.submissions && r.submissions.length > 0).length;
+    if (submitted === 0) return "sinentregar";
+    if (submitted === reportsEv.length) return "completada";
+    return "asignado";
+  };
+
+  const filteredEvidences =
+    activeTab === "asignado"
+      ? evidences
+      : evidences.filter((ev) => evidenceStatus(ev) === activeTab);
+  const TABS = [
+    { key: "asignado", label: "Asignado" },
+    { key: "sinentregar", label: "Sin entregar" },
+    { key: "completada", label: "Completada" },
+  ];
 
   // cuando el alumno elige un archivo
   const handleFileChange = (reportId, file) => {
@@ -191,23 +211,94 @@ export default function StudentReports() {
     }
   };
 
-  if (loading) return <p className="text-muted">Cargando evidencias...</p>;
-
-  // Si no viene evidence en la URL o no se encontró, mensaje claro
-  if (!evidenceId || !selectedEvidence) {
+  if (loading) {
     return (
       <div className="container py-4">
-        <h2 className="mb-3">Reportes del programa</h2>
-        <p className="text-muted">
-          No se encontró la evidencia seleccionada. Vuelve al inicio y elige un
-          espacio.
-        </p>
-        <button
-          className="btn btn-secondary btn-sm mt-2"
-          onClick={() => navigate("/students-home")}
-        >
-          Volver al inicio
-        </button>
+        <p className="text-muted mb-0">Cargando evidencias...</p>
+      </div>
+    );
+  }
+
+  // Si no viene evidence en la URL o no se encontró, mensaje claro
+  if (!selectedEvidence) {
+    return (
+      <div className="container py-4">
+        <h2 className="mb-3">Mis evidencias</h2>
+
+        {evidenceId && (
+          <div className="alert alert-warning py-2">
+            No se encontro la evidencia seleccionada, elige una de la lista.
+          </div>
+        )}
+
+        {error && <div className="alert alert-danger">{error}</div>}
+
+        <div className="d-flex align-items-center gap-3 border-bottom pb-2 mb-3">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                className="btn btn-link p-0"
+                style={{
+                  textDecoration: "none",
+                  color: isActive ? "#0d6efd" : "#1f2937",
+                  fontWeight: isActive ? 600 : 500,
+                }}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                {tab.label}
+                {isActive && (
+                  <div
+                    style={{
+                      height: "3px",
+                      backgroundColor: "#0d6efd",
+                      borderRadius: "999px",
+                      marginTop: "6px",
+                    }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {filteredEvidences.length === 0 ? (
+          <p className="text-muted mb-0">No tienes evidencias asignadas por ahora.</p>
+        ) : (
+          <div className="row g-3">
+            {filteredEvidences.map((ev) => (
+              <div key={ev.id} className="col-12 col-md-6">
+                <div className="card h-100 shadow-sm border-0">
+                  <div className="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h3 className="h6 mb-0">{ev.titulo}</h3>
+                    <span className="badge bg-success-subtle text-success">
+                      {LABEL_TIPO[ev.tipo] || ev.tipo}
+                    </span>
+                  </div>
+                  <div className="card-body">
+                    {ev.descripcion && (
+                      <p className="mb-2 text-muted small">{ev.descripcion}</p>
+                    )}
+                    <p className="mb-1 small text-muted">
+                      Total de reportes: {ev.reports ? ev.reports.length : 0}
+                    </p>
+                  </div>
+                  <div className="card-footer bg-transparent border-0">
+                    <button
+                      type="button"
+                      className="btn btn-outline-success btn-sm"
+                      onClick={() => navigate(`/student-report?evidence=${ev.id}`)}
+                    >
+                      Ver reportes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -366,9 +457,9 @@ export default function StudentReports() {
 
       <button
         className="btn btn-link p-0"
-        onClick={() => navigate("/students-home")}
+        onClick={() => navigate("/student-report")}
       >
-        ← Volver a mis evidencias
+        &larr; Volver a mis evidencias
       </button>
     </div>
   );

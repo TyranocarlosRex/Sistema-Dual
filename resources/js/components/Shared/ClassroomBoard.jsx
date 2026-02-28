@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 const ROLE_LABELS = {
@@ -15,6 +15,13 @@ const formatDateTime = (value) => {
   return date.toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" });
 };
 
+const toTimestamp = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  const time = date.getTime();
+  return Number.isNaN(time) ? null : time;
+};
+
 const nextReportLabel = (reports = []) => {
   const conFecha = (reports || []).filter((r) => r.fecha_limite);
   if (conFecha.length === 0) return "Sin fecha limite";
@@ -29,7 +36,6 @@ export default function ClassroomBoard({
   evidencesError = "",
   onOpenEvidence,
 }) {
-  const [tab, setTab] = useState("todo");
   const [announcements, setAnnouncements] = useState([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(true);
   const [announcementsError, setAnnouncementsError] = useState("");
@@ -58,6 +64,48 @@ export default function ClassroomBoard({
 
   const hasAnnouncements = announcements.length > 0;
   const hasEvidences = evidences.length > 0;
+  const timelineIsLoading = loadingAnnouncements || loadingEvidences;
+
+  const timelineItems = useMemo(() => {
+    const combined = [];
+
+    announcements.forEach((a) => {
+      const dateValue = a.created_at || a.visible_from;
+      combined.push({
+        id: `announcement-${a.id ?? a.titulo}`,
+        kind: "announcement",
+        title: a.titulo,
+        description: a.mensaje,
+        dateValue,
+        timestamp: toTimestamp(dateValue),
+        meta: {
+          role: a.target_role,
+          carrera: a.target_carrera,
+          visibleFrom: a.visible_from,
+          attachment: a.attachment_path,
+        },
+      });
+    });
+
+    evidences.forEach((ev) => {
+      const dateValue = ev.created_at || ev.updated_at;
+      combined.push({
+        id: `evidence-${ev.id}`,
+        kind: "evidence",
+        title: ev.titulo,
+        description: ev.descripcion,
+        dateValue,
+        timestamp: toTimestamp(dateValue),
+        meta: {
+          id: ev.id,
+          tipo: ev.tipo,
+          reports: ev.reports || [],
+        },
+      });
+    });
+
+    return combined.sort((a, b) => (b.timestamp ?? -Infinity) - (a.timestamp ?? -Infinity));
+  }, [announcements, evidences]);
 
   const announcementsView = (
     <>
@@ -95,6 +143,102 @@ export default function ClassroomBoard({
                 >
                   Ver adjunto
                 </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  const timelineView = (
+    <>
+      {announcementsError && <div className="alert alert-danger py-2 mb-0">Anuncios: {announcementsError}</div>}
+      {evidencesError && <div className="alert alert-danger py-2 mb-0 mt-2">Evidencias: {evidencesError}</div>}
+
+      {!announcementsError && !evidencesError && timelineIsLoading && (
+        <div className="text-muted small">Cargando anuncios y evidencias...</div>
+      )}
+
+      {!timelineIsLoading && timelineItems.length === 0 && (
+        <div className="text-muted small">No hay anuncios ni evidencias recientes.</div>
+      )}
+
+      {!timelineIsLoading && timelineItems.length > 0 && (
+        <div className="d-grid gap-3">
+          {timelineItems.map((item) => (
+            <div key={item.id} className="border rounded p-3 bg-white">
+              <div className="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                <div className="d-flex flex-wrap align-items-center gap-2">
+                  <span
+                    className={`badge ${
+                      item.kind === "announcement" ? "bg-primary-subtle text-primary" : "bg-success-subtle text-success"
+                    }`}
+                  >
+                    {item.kind === "announcement" ? "Anuncio" : "Evidencia"}
+                  </span>
+
+                  {item.kind === "announcement" ? (
+                    <>
+                      <span className="badge bg-secondary-subtle text-secondary">
+                        {ROLE_LABELS[item.meta.role] || item.meta.role || "Todos"}
+                      </span>
+                      {item.meta.carrera && <span className="badge bg-light text-secondary">{item.meta.carrera}</span>}
+                      {item.meta.visibleFrom && (
+                        <span className="badge bg-light text-secondary">
+                          Disponible desde {formatDateTime(item.meta.visibleFrom)}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="badge bg-light text-secondary">
+                      {item.meta.tipo === "inscripcion"
+                        ? "Inscripcion"
+                        : item.meta.tipo === "programa"
+                        ? "Programa"
+                        : item.meta.tipo || "Evidencia"}
+                    </span>
+                  )}
+                </div>
+
+                <span className="text-muted small">
+                  {formatDateTime(item.dateValue) || "Fecha no disponible"}
+                </span>
+              </div>
+
+              <div className="fw-semibold mt-1">{item.title}</div>
+              {item.description && (
+                <p className="text-muted small mb-2" style={{ whiteSpace: "pre-line" }}>
+                  {item.description}
+                </p>
+              )}
+
+              {item.kind === "announcement" && item.meta.attachment && (
+                <a
+                  href={`/storage/${item.meta.attachment}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-sm btn-outline-primary"
+                >
+                  Ver adjunto
+                </a>
+              )}
+
+              {item.kind === "evidence" && (
+                <div className="d-flex flex-wrap gap-2 align-items-center">
+                  <span className="text-muted small">
+                    {(item.meta.reports?.length || 0)} reportes - {nextReportLabel(item.meta.reports || [])}
+                  </span>
+                  {onOpenEvidence && (
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-success"
+                      onClick={() => onOpenEvidence(item.meta.id)}
+                    >
+                      Abrir evidencia
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           ))}
@@ -142,50 +286,10 @@ export default function ClassroomBoard({
   return (
     <div className="card shadow-sm border-0">
       <div className="card-header bg-light d-flex align-items-center gap-3">
-        <div>
-          <h6 className="mb-0">Anuncios y evidencias</h6>
-        </div>
-        <div className="ms-auto d-flex gap-1">
-          <button
-            type="button"
-            className={`btn btn-sm ${tab === "todo" ? "btn-primary" : "btn-outline-primary"}`}
-            onClick={() => setTab("todo")}
-          >
-            Todo
-          </button>
-          <button
-            type="button"
-            className={`btn btn-sm ${tab === "anuncios" ? "btn-primary" : "btn-outline-primary"}`}
-            onClick={() => setTab("anuncios")}
-          >
-            Anuncios
-          </button>
-          <button
-            type="button"
-            className={`btn btn-sm ${tab === "evidencias" ? "btn-primary" : "btn-outline-primary"}`}
-            onClick={() => setTab("evidencias")}
-          >
-            Evidencias
-          </button>
-        </div>
+        <h6 className="mb-0">Anuncios y evidencias</h6>
       </div>
       <div className="card-body">
-        {tab === "todo" ? (
-          <div className="row g-3">
-            <div className="col-12 col-lg-6">
-              <h6 className="mb-2">Anuncios</h6>
-              {announcementsView}
-            </div>
-            <div className="col-12 col-lg-6">
-              <h6 className="mb-2">Evidencias</h6>
-              {evidencesView}
-            </div>
-          </div>
-        ) : tab === "anuncios" ? (
-          announcementsView
-        ) : (
-          evidencesView
-        )}
+        {timelineView}
       </div>
     </div>
   );

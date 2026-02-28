@@ -5,6 +5,9 @@ import { useState, useEffect, useRef } from "react";
 const NAVBAR_STYLE = {
   background: "linear-gradient(135deg, #22c55e 0%, #15803d 100%)",
   boxShadow: "0 10px 24px -18px rgba(34, 197, 94, 0.55)",
+  position: "sticky",
+  top: 0,
+  zIndex: 1030,
 };
 
 const safeParse = (raw) => {
