@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -54,6 +54,13 @@ const AdministratorHome = () => {
   const moduleCards = useMemo(
     () => [
       {
+        title: 'Periodos',
+        description:
+          'Crea nuevos ciclos, activa el periodo vigente y conserva historicos cerrados para consulta.',
+        action: () => navigate('/administrator-periods'),
+        badge: 'Ciclos',
+      },
+      {
         title: 'Usuarios',
         description:
           'Registra nuevos coordinadores, ajusta el estatus de estudiantes y revisa su información de contacto.',
@@ -73,6 +80,13 @@ const AdministratorHome = () => {
           'Consulta y publica comunicados, revisa documentos y confirma las evidencias de los equipos.',
         action: () => navigate('/administrator-evidence'),
         badge: 'Publicaciones',
+      },
+      {
+        title: 'Documentos y plantillas',
+        description:
+          'Crea documentos en blanco, importa formatos base y guardalos para volver a editarlos o reutilizarlos.',
+        action: () => navigate('/administrator-documents'),
+        badge: 'Documentos',
       },
     ],
     [navigate]
@@ -287,3 +301,4 @@ const AdministratorHome = () => {
 };
 
 export default AdministratorHome;
+

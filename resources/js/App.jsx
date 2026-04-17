@@ -15,14 +15,17 @@ import AdminLogin from './components/Auth/AdminLogin';
 import CoordinatorUsers from './components/CoordinatorPage/Users/CoordinatorUsers';
 import AdminLayout from './components/Layout/AdminLayout';
 import AdministratorHome from "./components/AdministratorPage/AdministratorHome";
+import AdministratorPeriods from "./components/AdministratorPage/Periods/AdministratorPeriods";
 import AdministratorUsers from "./components/AdministratorPage/Users/AdministratorUsers";
 import AdministratorTracking from "./components/AdministratorPage/Tracking/AdministratorTracking";
 import AdministratorReports from './components/AdministratorPage/Evidences/Reports/AdministratorReports';
 import AdministratorEvidences from './components/AdministratorPage/Evidences/AdministratorEvidences'
+import AdministratorDocumentImports from './components/AdministratorPage/Documents/AdministratorDocumentImports';
 import CoordinatorTracking from './components/CoordinatorPage/Tracking/CoordinatorTracking';
 import CoordinatorPending from './components/CoordinatorPage/Tracking/CoordinatorPending';
 import AdministratirAdvertisements from "./components/AdministratorPage/Advertisements/AdministratirAdvertisements";
 import StudentDetails from './components/Shared/StudentDetails';
+import { ToastProvider } from "./components/Shared/ToastProvider";
 
 const safeParse = (raw) => {
   try {
@@ -64,39 +67,44 @@ const root = document.getElementById('root');
 if (root) {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
-      <Router>
-        <Routes>
-          {/* Login */}
-          <Route path="/" element={<StudentLogin />} />
-          <Route path="/login-coordinador" element={<CoordinatorLogin />} />
-          <Route path="/login-admin" element={<AdminLogin />} />
+      <ToastProvider>
+        <Router>
+          <Routes>
+            {/* Login */}
+            <Route path="/" element={<StudentLogin />} />
+            <Route path="/login-coordinador" element={<CoordinatorLogin />} />
+            <Route path="/login-admin" element={<AdminLogin />} />
 
-          {/* Estudiantes */}
-          <Route element={<RequireStudent><StudentLayout /></RequireStudent>}>
-            <Route path="/students-home" element={<StudentsHome />} />
-            <Route path="/student-report" element={<StudentReport />} />
-          </Route>
+            {/* Estudiantes */}
+            <Route element={<RequireStudent><StudentLayout /></RequireStudent>}>
+              <Route path="/students-home" element={<StudentsHome />} />
+              <Route path="/student-report" element={<StudentReport />} />
+            </Route>
 
-          {/* Coordinadores */}
-          <Route element={<RequireCoordinator><CoordinatorLayout/></RequireCoordinator>}>
-            <Route path="/coordinator-home" element={<CoordinatorHome />} />
-            <Route path="/coordinator-users" element={<CoordinatorUsers />} />
-            <Route path="/coordinator-tracking" element={<CoordinatorTracking />} />
-            <Route path="/coordinator-pending" element={<CoordinatorPending />} />
-            <Route path="/student-details/:id" element={<StudentDetails />} />
-          </Route>
-          {/* Administrador */}
-          <Route element={<RequireAdmin><AdminLayout/></RequireAdmin>}>
-            <Route path="/administrator-home" element={<AdministratorHome />} />
-            <Route path="/administrator-users" element={<AdministratorUsers />} />
-            <Route path="/administrator/students/:id" element={<StudentDetails />} />
-            <Route path="/administrator-tracking" element={<AdministratorTracking />} />
-            <Route path="/administrator-evidence" element={<AdministratorEvidences/>} />
-            <Route path="/administrator-report" element={<AdministratorReports/>} />
-            <Route path="/administrator-advertisements" element={<AdministratirAdvertisements />} />
-          </Route>
-        </Routes>
-      </Router>
+            {/* Coordinadores */}
+            <Route element={<RequireCoordinator><CoordinatorLayout/></RequireCoordinator>}>
+              <Route path="/coordinator-home" element={<CoordinatorHome />} />
+              <Route path="/coordinator-users" element={<CoordinatorUsers />} />
+              <Route path="/coordinator-tracking" element={<CoordinatorTracking />} />
+              <Route path="/coordinator-pending" element={<CoordinatorPending />} />
+              <Route path="/student-details/:id" element={<StudentDetails />} />
+            </Route>
+            {/* Administrador */}
+            <Route element={<RequireAdmin><AdminLayout/></RequireAdmin>}>
+              <Route path="/administrator-home" element={<AdministratorHome />} />
+              <Route path="/administrator-periods" element={<AdministratorPeriods />} />
+              <Route path="/administrator-users" element={<AdministratorUsers />} />
+              <Route path="/administrator/students/:id" element={<StudentDetails />} />
+              <Route path="/administrator-tracking" element={<AdministratorTracking />} />
+              <Route path="/administrator-evidence" element={<AdministratorEvidences/>} />
+              <Route path="/administrator-report" element={<AdministratorReports/>} />
+              <Route path="/administrator-documents" element={<AdministratorDocumentImports />} />
+              <Route path="/administrator-advertisements" element={<AdministratirAdvertisements />} />
+            </Route>
+          </Routes>
+        </Router>
+      </ToastProvider>
     </React.StrictMode>,
   );
 }
+

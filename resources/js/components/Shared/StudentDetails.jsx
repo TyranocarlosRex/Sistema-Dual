@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { parseDownloadFilename } from "../../utils/downloadFilename";
 
 const HERO_STYLE = {
   background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 45%, #0f172a 100%)",
@@ -13,9 +14,12 @@ const HERO_STYLE = {
 export default function StudentDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const staffSubmissionBasePath = localStorage.getItem("admin")
+    ? "/api/admin/report-submissions"
+    : "/api/coordinator/report-submissions";
 
   const [student, setStudent] = useState(null);
-  const [evidences, setEvidences] = useState({ sent: [], missing: [] });
+  const [evidences, setEvidences] = useState({ spaces: [], sent: [], missing: [] });
   const [grades, setGrades] = useState({});
   const [feedbacks, setFeedbacks] = useState({});
   const [loading, setLoading] = useState(true);
@@ -38,8 +42,12 @@ export default function StudentDetailsPage() {
           },
         });
 
-        setStudent(data.student);
-        setEvidences(data.documents);
+      setStudent(data.student);
+      setEvidences({
+        spaces: Array.isArray(data.documents?.spaces) ? data.documents.spaces : [],
+        sent: Array.isArray(data.documents?.sent) ? data.documents.sent : [],
+        missing: Array.isArray(data.documents?.missing) ? data.documents.missing : [],
+      });
         if (Array.isArray(data.documents?.sent)) {
           const initialGrades = {};
           const initialFeedbacks = {};
@@ -109,8 +117,9 @@ export default function StudentDetailsPage() {
   const studentStatus =
     student.Estatus && student.Estatus.toLowerCase() === "activo"
       ? "success"
+      : student.Estatus && student.Estatus.toLowerCase() === "baja"
+      ? "warning text-dark"
       : "secondary";
-
   const handleSubmissionUpdate = async (sub, statusOverride) => {
     try {
       setUpdatingId(sub.id);
@@ -124,7 +133,7 @@ export default function StudentDetailsPage() {
       };
 
       const { data } = await axios.patch(
-        `/api/admin/report-submissions/${sub.id}`,
+        `${staffSubmissionBasePath}/${sub.id}`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -150,19 +159,17 @@ export default function StudentDetailsPage() {
       setDownloadingId(sub.id);
       const token = localStorage.getItem("token");
       const { data, headers } = await axios.get(
-        `/api/admin/report-submissions/${sub.id}/download`,
+        `${staffSubmissionBasePath}/${sub.id}/download`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",
         }
       );
 
-      const disposition = headers["content-disposition"] || "";
-      const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
-      const rawName = match ? match[1] : null;
-      const filename = rawName
-        ? rawName.replace(/['"]/g, "")
-        : sub.original_name || `entrega-${sub.id}`;
+      const filename = parseDownloadFilename(
+        headers,
+        sub.original_name || `entrega-${sub.id}`
+      );
 
       const blob = new Blob([data], {
         type: headers["content-type"] || "application/octet-stream",
@@ -228,6 +235,10 @@ export default function StudentDetailsPage() {
 
           <div className="d-flex align-items-center gap-4 text-end">
             <div>
+              <div className="fw-bold fs-3">{evidences.spaces.length}</div>
+              <div className="text-light text-opacity-75 small mb-0">Espacios visibles</div>
+            </div>
+            <div>
               <div className="fw-bold fs-3">{evidences.sent.length}</div>
               <div className="text-light text-opacity-75 small mb-0">Evidencias enviadas</div>
             </div>
@@ -236,6 +247,43 @@ export default function StudentDetailsPage() {
               <div className="text-light text-opacity-75 small mb-0">Evidencias faltantes</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="card border-0 shadow-sm mb-4">
+        <div className="card-header bg-transparent border-0">
+          <h6 className="mb-0">Espacios de evidencia</h6>
+          <p className="text-muted small mb-0">
+            Evidencias visibles para este estudiante en el periodo actual
+          </p>
+        </div>
+        <div className="card-body">
+          {evidences.spaces.length === 0 ? (
+            <div className="alert alert-light mb-0">
+              No hay espacios de evidencia configurados para este estudiante.
+            </div>
+          ) : (
+            <div className="row g-3">
+              {evidences.spaces.map((space) => (
+                <div key={space.id} className="col-12 col-md-6">
+                  <div className="p-3 border rounded-3 h-100 bg-light">
+                    <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
+                      <div className="fw-semibold">{space.titulo}</div>
+                      <span className="badge bg-info text-dark text-uppercase">
+                        {space.tipo || "evidencia"}
+                      </span>
+                    </div>
+                    <div className="text-muted small mb-2">
+                      {space.descripcion || "Sin descripcion"}
+                    </div>
+                    <div className="small">
+                      Reportes configurados en el periodo: {space.period_reports_count ?? 0}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -270,6 +318,34 @@ export default function StudentDetailsPage() {
                 <div className="fw-semibold">{student.Direccion || "-"}</div>
               </div>
             </div>
+            <div className="col-md-6">
+              <div className="p-3 border rounded-3 h-100 bg-light">
+                <div className="text-muted small">Empresa</div>
+                <div className="fw-semibold">{student.Empresa || "-"}</div>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="p-3 border rounded-3 h-100 bg-light">
+                <div className="text-muted small">Numero de convenio</div>
+                <div className="fw-semibold">{student.Numero_convenio || "-"}</div>
+              </div>
+            </div>
+            {student.Estatus === "Baja" && (
+              <>
+                <div className="col-md-6">
+                  <div className="p-3 border rounded-3 h-100 bg-light">
+                    <div className="text-muted small">Fecha de baja</div>
+                    <div className="fw-semibold">{formatDate(student.Fecha_baja)}</div>
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="p-3 border rounded-3 h-100 bg-light">
+                    <div className="text-muted small">Motivo de baja</div>
+                    <div className="fw-semibold">{student.Motivo_baja || "-"}</div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -303,8 +379,8 @@ export default function StudentDetailsPage() {
                 <tbody>
                   {evidences.sent.map((sub) => (
                     <tr key={sub.id}>
-                      <td className="fw-semibold">{sub.report?.titulo}</td>
-                      <td>{sub.report?.evidence?.titulo}</td>
+                      <td className="fw-semibold">{sub.report?.titulo || "-"}</td>
+                      <td>{sub.report?.evidence?.titulo || "-"}</td>
                       <td className="text-muted small">
                         {formatDateTime(sub.submitted_at)}
                       </td>
@@ -480,6 +556,11 @@ export default function StudentDetailsPage() {
           </div>
         </div>
       )}
+
     </>
   );
 }
+
+
+
+

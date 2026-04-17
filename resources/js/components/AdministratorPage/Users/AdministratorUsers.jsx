@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +16,7 @@ const CARRERAS = [
   "Ingenieria Aeronautica",
 ];
 
-const ESTATUS = ["Activo", "Inactivo"];
+const ESTATUS = ["Activo", "Inactivo", "Baja"];
 
 const HERO_STYLE = {
   background: "linear-gradient(135deg, #2563eb 0%, #0f172a 100%)",
@@ -24,6 +24,15 @@ const HERO_STYLE = {
   borderRadius: "20px",
   padding: "24px 28px",
   boxShadow: "0 24px 54px -35px rgba(37, 99, 235, 0.7)",
+};
+
+const INITIAL_STATUS_MODAL = {
+  open: false,
+  row: null,
+  nuevoEstatus: "",
+  empresa: "",
+  numero_convenio: "",
+  motivo_baja: "",
 };
 
 export default function AdministratorUsers() {
@@ -39,13 +48,19 @@ export default function AdministratorUsers() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [actualizandoId, setActualizandoId] = useState(null);
+  const [statusModal, setStatusModal] = useState(INITIAL_STATUS_MODAL);
 
   useEffect(() => {
     setNombre("");
     setCorreo("");
     setCarrera("");
     setEstatus("");
-    buscarUsuarios();
+    buscarUsuarios(1, {
+      nombre: "",
+      correo: "",
+      carrera: "",
+      estatus: "",
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tipo]);
 
@@ -112,6 +127,9 @@ export default function AdministratorUsers() {
       carrera: career,
       no_control: noControl,
       estatus: estatusNormalizado,
+      empresa: u?.Empresa ?? u?.empresa ?? "",
+      numero_convenio: u?.Numero_convenio ?? u?.numero_convenio ?? "",
+      motivo_baja: u?.Motivo_baja ?? u?.motivo_baja ?? "",
       _raw: u,
     };
   };
@@ -132,7 +150,7 @@ export default function AdministratorUsers() {
           { key: "estatus", label: "Estado" },
         ];
 
-  const buscarUsuarios = async (page = 1) => {
+  const buscarUsuarios = async (page = 1, overrides = {}) => {
     setCargando(true);
     setError("");
 
@@ -152,21 +170,26 @@ export default function AdministratorUsers() {
         per_page: 12,
       };
 
-      if (carrera) {
-        params.carrera = carrera;
+      const carreraValue = overrides.carrera ?? carrera;
+      const nombreValue = overrides.nombre ?? nombre;
+      const correoValue = overrides.correo ?? correo;
+      const estatusValue = overrides.estatus ?? estatus;
+
+      if (carreraValue) {
+        params.carrera = carreraValue;
       }
 
       if (tipo === "students") {
-        const trimmed = nombre.trim();
+        const trimmed = nombreValue.trim();
         const esNumeroControl = trimmed !== "" && /^\d+$/.test(trimmed);
 
         params.rol = "student";
         params.nombre = !esNumeroControl ? (trimmed || undefined) : undefined;
         params.no_control = esNumeroControl ? trimmed : undefined;
-        params.estatus = estatus || undefined;
+        params.estatus = estatusValue || undefined;
       } else {
         params.rol = "coordinator";
-        const trimmedCorreo = correo.trim();
+        const trimmedCorreo = correoValue.trim();
         params.correo = trimmedCorreo || undefined;
       }
 
@@ -191,14 +214,35 @@ export default function AdministratorUsers() {
       console.error(e);
       setRows([]);
       setError(
-        "No se pudo obtener la lista. Verifica el tipo seleccionado o los parametros de busqueda."
+        e?.response?.data?.message ||
+          "No se pudo obtener la lista. Verifica el tipo seleccionado o los parametros de busqueda."
       );
     } finally {
       setCargando(false);
     }
   };
 
-  const cambiarEstatusEstudiante = async (fila, nuevoEstatus) => {
+  const cerrarStatusModal = () => {
+    setStatusModal(INITIAL_STATUS_MODAL);
+  };
+
+  const abrirStatusModal = (fila, nuevoEstatus) => {
+    if (nuevoEstatus === "Inactivo") {
+      enviarCambioEstatus(fila, nuevoEstatus);
+      return;
+    }
+
+    setStatusModal({
+      open: true,
+      row: fila,
+      nuevoEstatus,
+      empresa: fila.empresa || "",
+      numero_convenio: fila.numero_convenio || "",
+      motivo_baja: fila.motivo_baja || "",
+    });
+  };
+
+  const enviarCambioEstatus = async (fila, nuevoEstatus, extras = {}) => {
     if (tipo !== "students") return;
 
     try {
@@ -211,26 +255,76 @@ export default function AdministratorUsers() {
       }
 
       const idBack = fila._raw?.id ?? fila.id;
+      const payload = { estatus: nuevoEstatus, ...extras };
 
-      await axios.patch(
-        `/api/students/${idBack}/estatus`,
-        { estatus: nuevoEstatus },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      await axios.patch(`/api/students/${idBack}/estatus`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
 
       setRows((prev) =>
-        prev.map((r) => (r.id === fila.id ? { ...r, estatus: nuevoEstatus } : r))
+        prev.map((r) =>
+          r.id === fila.id
+            ? {
+                ...r,
+                estatus: nuevoEstatus,
+                empresa: payload.empresa ?? r.empresa,
+                numero_convenio: payload.numero_convenio ?? r.numero_convenio,
+                motivo_baja: payload.motivo_baja ?? (nuevoEstatus === "Baja" ? r.motivo_baja : ""),
+              }
+            : r
+        )
       );
+
+      cerrarStatusModal();
     } catch (e) {
       console.error(e);
-      alert("No se pudo actualizar el estatus del estudiante.");
+      alert(
+        e?.response?.data?.message || "No se pudo actualizar el estatus del estudiante."
+      );
     } finally {
       setActualizandoId(null);
+    }
+  };
+
+  const confirmarCambioConModal = async () => {
+    const fila = statusModal.row;
+    if (!fila) return;
+
+    if (statusModal.nuevoEstatus === "Activo") {
+      const empresa = statusModal.empresa.trim();
+      const numeroConvenio = statusModal.numero_convenio.trim();
+
+      if (!empresa) {
+        alert("Para activar al estudiante debes capturar la empresa.");
+        return;
+      }
+
+      if (!numeroConvenio) {
+        alert("Para activar al estudiante debes capturar el numero de convenio.");
+        return;
+      }
+
+      await enviarCambioEstatus(fila, "Activo", {
+        empresa,
+        numero_convenio: numeroConvenio,
+      });
+      return;
+    }
+
+    if (statusModal.nuevoEstatus === "Baja") {
+      const motivo = statusModal.motivo_baja.trim();
+
+      if (!motivo) {
+        alert("Debes capturar el motivo de baja.");
+        return;
+      }
+
+      await enviarCambioEstatus(fila, "Baja", {
+        motivo_baja: motivo,
+      });
     }
   };
 
@@ -239,23 +333,26 @@ export default function AdministratorUsers() {
     navigate(`/administrator/students/${idBack}`);
   };
 
+
   const badgeClassForStatus = (estatus) => {
     const val = (estatus || "").toLowerCase();
     if (val === "activo") return "badge rounded-pill bg-success";
     if (val === "inactivo") return "badge rounded-pill bg-danger";
+    if (val === "baja") return "badge rounded-pill bg-warning text-dark";
     if (val === "pendiente") return "badge rounded-pill bg-warning text-dark";
     if (val === "rechazado") return "badge rounded-pill bg-danger";
     return "badge rounded-pill bg-secondary";
   };
 
-  const colSpanExtra = columnas.length + (tipo === "students" ? 1 : 0);
+  const colSpanExtra = columnas.length + 1;
   const isStudents = tipo === "students";
 
   const resumen = useMemo(() => {
     const total = rows.length;
     const activos = rows.filter((r) => (r.estatus || "").toLowerCase() === "activo").length;
     const inactivos = rows.filter((r) => (r.estatus || "").toLowerCase() === "inactivo").length;
-    return { total, activos, inactivos };
+    const bajas = rows.filter((r) => (r.estatus || "").toLowerCase() === "baja").length;
+    return { total, activos, inactivos, bajas };
   }, [rows]);
 
   return (
@@ -263,7 +360,7 @@ export default function AdministratorUsers() {
       <div className="container-fluid" style={{ maxWidth: "1200px" }}>
         <section style={HERO_STYLE} className="mb-4">
           <p className="text-uppercase small mb-1" style={{ letterSpacing: "0.08em", opacity: 0.85 }}>
-            Usuarios {isStudents ? "— Estudiantes" : "— Coordinadores"}
+            Usuarios {isStudents ? "Ã¢â‚¬â€ Estudiantes" : "Ã¢â‚¬â€ Coordinadores"}
           </p>
           <div className="d-flex flex-wrap align-items-center gap-3">
             <div>
@@ -286,7 +383,7 @@ export default function AdministratorUsers() {
         </section>
 
         <div className="row g-3 mb-3">
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <p className="text-muted small mb-1">Total</p>
@@ -294,7 +391,7 @@ export default function AdministratorUsers() {
               </div>
             </div>
           </div>
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <p className="text-muted small mb-1">Activos</p>
@@ -302,11 +399,19 @@ export default function AdministratorUsers() {
               </div>
             </div>
           </div>
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <p className="text-muted small mb-1">Inactivos</p>
                 <h4 className="mb-0 text-danger">{resumen.inactivos}</h4>
+              </div>
+            </div>
+          </div>
+          <div className="col-12 col-md-3">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <p className="text-muted small mb-1">Bajas</p>
+                <h4 className="mb-0 text-warning">{resumen.bajas}</h4>
               </div>
             </div>
           </div>
@@ -424,7 +529,12 @@ export default function AdministratorUsers() {
                     setCorreo("");
                     setCarrera("");
                     setEstatus("");
-                    buscarUsuarios();
+                    buscarUsuarios(1, {
+                      nombre: "",
+                      correo: "",
+                      carrera: "",
+                      estatus: "",
+                    });
                   }}
                   disabled={cargando}
                 >
@@ -458,7 +568,7 @@ export default function AdministratorUsers() {
                     {columnas.map((c) => (
                       <th key={c.key} style={{ whiteSpace: "nowrap" }}>{c.label}</th>
                     ))}
-                    {isStudents && <th style={{ width: "200px" }}>Acciones</th>}
+                    <th style={{ width: isStudents ? "260px" : "140px" }}>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -481,9 +591,9 @@ export default function AdministratorUsers() {
                         return <td key={c.key}>{r[c.key] ?? "-"}</td>;
                       })}
 
-                      {isStudents && (
-                        <td>
-                          <div className="d-flex flex-wrap gap-2">
+                      <td className="text-nowrap">
+                        <div className="d-inline-flex align-items-center gap-2 flex-nowrap">
+                          {isStudents && (
                             <button
                               type="button"
                               className="btn btn-outline-primary btn-sm"
@@ -491,29 +601,47 @@ export default function AdministratorUsers() {
                             >
                               Ver
                             </button>
-                            <button
-                              type="button"
-                              className="btn btn-success btn-sm"
-                              disabled={
-                                actualizandoId === r.id || r.estatus === "Activo"
-                              }
-                              onClick={() => cambiarEstatusEstudiante(r, "Activo")}
+                          )}
+                          {isStudents && (
+                            <div
+                              className="btn-group btn-group-sm"
+                              role="group"
+                              aria-label="Cambiar estatus estudiante"
                             >
-                              Activo
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-danger btn-sm"
-                              disabled={
-                                actualizandoId === r.id || r.estatus === "Inactivo"
-                              }
-                              onClick={() => cambiarEstatusEstudiante(r, "Inactivo")}
-                            >
-                              Inactivo
-                            </button>
-                          </div>
-                        </td>
-                      )}
+                              <button
+                                type="button"
+                                className="btn btn-success"
+                                disabled={
+                                  actualizandoId === r.id || r.estatus === "Activo"
+                                }
+                                onClick={() => abrirStatusModal(r, "Activo")}
+                              >
+                                Activo
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-danger"
+                                disabled={
+                                  actualizandoId === r.id || r.estatus === "Inactivo"
+                                }
+                                onClick={() => abrirStatusModal(r, "Inactivo")}
+                              >
+                                Inactivo
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-warning"
+                                disabled={
+                                  actualizandoId === r.id || r.estatus === "Baja"
+                                }
+                                onClick={() => abrirStatusModal(r, "Baja")}
+                              >
+                                Baja
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
 
@@ -540,6 +668,99 @@ export default function AdministratorUsers() {
           </div>
         </div>
       </div>
+
+      {statusModal.open && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100"
+          style={{ background: "rgba(15, 23, 42, 0.55)", zIndex: 1050 }}
+          onClick={cerrarStatusModal}
+        >
+          <div
+            className="position-absolute top-50 start-50 translate-middle bg-white rounded-4 shadow-lg"
+            style={{ width: "92%", maxWidth: "540px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4">
+              <div className="d-flex justify-content-between align-items-start gap-3 mb-3">
+                <div>
+                  <p className="text-uppercase text-muted small mb-1" style={{ letterSpacing: "0.08em" }}>
+                    Cambio de estatus
+                  </p>
+                  <h5 className="mb-1">
+                    {statusModal.nuevoEstatus === "Activo" ? "Activar estudiante" : "Registrar baja"}
+                  </h5>
+                  <p className="text-muted mb-0 small">
+                    {statusModal.row?.nombre} {statusModal.row?.apellidos}
+                  </p>
+                </div>
+                <button type="button" className="btn btn-sm btn-outline-secondary" onClick={cerrarStatusModal}>
+                  Cerrar
+                </button>
+              </div>
+
+              {statusModal.nuevoEstatus === "Activo" && (
+                <div className="row g-3">
+                  <div className="col-12">
+                    <label className="form-label">Empresa</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={statusModal.empresa}
+                      onChange={(e) =>
+                        setStatusModal((prev) => ({ ...prev, empresa: e.target.value }))
+                      }
+                      placeholder="Nombre de la empresa"
+                    />
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label">Numero de convenio</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={statusModal.numero_convenio}
+                      onChange={(e) =>
+                        setStatusModal((prev) => ({ ...prev, numero_convenio: e.target.value }))
+                      }
+                      placeholder="Ej. CV-2026-014"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {statusModal.nuevoEstatus === "Baja" && (
+                <div>
+                  <label className="form-label">Motivo de baja</label>
+                  <textarea
+                    className="form-control"
+                    rows={4}
+                    value={statusModal.motivo_baja}
+                    onChange={(e) =>
+                      setStatusModal((prev) => ({ ...prev, motivo_baja: e.target.value }))
+                    }
+                    placeholder="Describe el motivo de la baja"
+                  />
+                </div>
+              )}
+
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" className="btn btn-outline-secondary" onClick={cerrarStatusModal}>
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className={`btn ${statusModal.nuevoEstatus === "Baja" ? "btn-warning" : "btn-success"}`}
+                  onClick={confirmarCambioConModal}
+                  disabled={actualizandoId === statusModal.row?.id}
+                >
+                  {actualizandoId === statusModal.row?.id ? "Guardando..." : "Confirmar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
 const SIDEBAR_STYLE = {
@@ -42,6 +42,7 @@ const menuGroups = [
     title: "Administracion",
     links: [
       { label: "Inicio", to: "/administrator-home" },
+      { label: "Periodos", to: "/administrator-periods" },
       { label: "Usuarios", to: "/administrator-users" },
       { label: "Seguimiento", to: "/administrator-tracking" },
     ],
@@ -50,6 +51,7 @@ const menuGroups = [
     title: "Publicaciones",
     links: [
       { label: "Evidencias", to: "/administrator-evidence" },
+      { label: "Documentos", to: "/administrator-documents" },
       { label: "Anuncios", to: "/administrator-advertisements" },
     ],
   },
@@ -100,3 +102,4 @@ export default function Sidebar() {
     </aside>
   );
 }
+

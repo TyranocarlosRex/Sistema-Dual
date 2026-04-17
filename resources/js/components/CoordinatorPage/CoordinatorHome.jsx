@@ -3,54 +3,77 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import AnnouncementsPanel from "../Shared/AnnouncementsPanel";
 
+const safeJSON = (raw, fallback = null) => {
+  try {
+    if (!raw || raw === "null") return fallback;
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+};
+
 const CoordinatorHome = () => {
   const navigate = useNavigate();
-  const [coordinator, setCoordinator] = useState(() => {
-    const raw = localStorage.getItem('coordinator');
-    return raw ? JSON.parse(raw) : null;
-  });
-
-  const [userEmail, setUserEmail] = useState(() => {
-    const u = localStorage.getItem('user');
-    return u ? JSON.parse(u).email : '';
-  });
-
+  const [coordinator, setCoordinator] = useState(() =>
+    safeJSON(localStorage.getItem("coordinator"), null)
+  );
+  const [userEmail, setUserEmail] = useState(
+    () => safeJSON(localStorage.getItem("user"), null)?.email ?? ""
+  );
   const [stats, setStats] = useState({
     students: 0,
     activeProcesses: 0,
-    pendingDocuments: 0
+    pendingDocuments: 0,
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    const token = localStorage.getItem("token");
 
-    axios.get('/api/coordinator/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    .then(({ data }) => {
-      if (data?.coordinator) {
-        setCoordinator(data.coordinator);
-        localStorage.setItem('coordinator', JSON.stringify(data.coordinator));
-      }
-      if (data?.user?.email) {
-        setUserEmail(data.user.email);
-        localStorage.setItem('user', JSON.stringify(data.user));
-      }
-    })
-    .catch(error => console.error('Error al cargar datos:', error));
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
 
-    setStats({
-      students: 45,
-      activeProcesses: 12,
-      pendingDocuments: 7
-    });
+    axios
+      .get("/api/coordinator/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then(({ data }) => {
+        if (data?.coordinator) {
+          setCoordinator(data.coordinator);
+          localStorage.setItem("coordinator", JSON.stringify(data.coordinator));
+        }
+
+        if (data?.user) {
+          setUserEmail(data.user.email ?? "");
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
+
+        if (data?.stats) {
+          setStats({
+            students: Number(data.stats.students ?? 0),
+            activeProcesses: Number(data.stats.activeProcesses ?? 0),
+            pendingDocuments: Number(data.stats.pendingDocuments ?? 0),
+          });
+        }
+      })
+      .catch((error) => console.error("Error al cargar datos:", error))
+      .finally(() => setIsLoading(false));
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="p-6 text-center">
+        <p>Cargando informacion del coordinador...</p>
+      </div>
+    );
+  }
 
   if (!coordinator) {
     return (
       <div className="p-6 text-center">
-        <p>Cargando información del coordinador...</p>
+        <p>No se pudo cargar la informacion del coordinador.</p>
       </div>
     );
   }
@@ -107,8 +130,8 @@ const CoordinatorHome = () => {
         <div className="col-12 col-lg-8">
           <div className="card h-100">
             <div className="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">Accesos rápidos</h5>
-              <span className="text-muted small">Módulos clave</span>
+              <h5 className="mb-0">Accesos rapidos</h5>
+              <span className="text-muted small">Modulos clave</span>
             </div>
             <div className="card-body">
               <div className="row g-3">
@@ -130,7 +153,7 @@ const CoordinatorHome = () => {
                 <div className="col-12 col-md-6">
                   <div className="border rounded p-3 h-100">
                     <p className="text-muted small mb-1">Reportes</p>
-                    <h6 className="mb-2">Entregas y validación</h6>
+                    <h6 className="mb-2">Entregas y validacion</h6>
                     <p className="text-secondary small mb-3">
                       Valida reportes enviados y descarga archivos.
                     </p>
@@ -145,7 +168,7 @@ const CoordinatorHome = () => {
                 <div className="col-12 col-md-6">
                   <div className="border rounded p-3 h-100">
                     <p className="text-muted small mb-1">Documentos</p>
-                    <h6 className="mb-2">Gestión documental</h6>
+                    <h6 className="mb-2">Gestion documental</h6>
                     <p className="text-secondary small mb-3">
                       Consulta y gestiona evidencias requeridas a tus estudiantes.
                     </p>
@@ -188,7 +211,7 @@ const CoordinatorHome = () => {
                 </div>
               </div>
               <div>
-                <label className="form-label text-muted mb-1">Teléfono</label>
+                <label className="form-label text-muted mb-1">Telefono</label>
                 <div className="form-control form-control-sm">
                   {coordinator.Telefono || "No especificado"}
                 </div>
@@ -202,10 +225,10 @@ const CoordinatorHome = () => {
             </div>
             <div className="card-body">
               <ul className="list-unstyled mb-0 text-secondary small">
-                <li className="mb-2">• Revisa entregas recientes cada semana.</li>
-                <li className="mb-2">• Valida documentos pendientes de tu carrera.</li>
-                <li className="mb-2">• Da seguimiento a procesos activos.</li>
-                <li className="mb-0">• Mantén actualizada la lista de estudiantes.</li>
+                <li className="mb-2">- Revisa entregas recientes cada semana.</li>
+                <li className="mb-2">- Valida documentos pendientes de tu carrera.</li>
+                <li className="mb-2">- Da seguimiento a procesos activos.</li>
+                <li className="mb-0">- Manten actualizada la lista de estudiantes.</li>
               </ul>
             </div>
           </div>

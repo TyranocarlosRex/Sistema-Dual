@@ -15,7 +15,6 @@ export default function CoordinatorTracking() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filterCarrera, setFilterCarrera] = useState("todos");
   const [filterEstatus, setFilterEstatus] = useState("todos");
   const [search, setSearch] = useState("");
 
@@ -48,7 +47,7 @@ export default function CoordinatorTracking() {
     fetchStudents();
   }, []);
 
-  const getCarrera = (s) => s.carrera ?? s.Carrera ?? s.career ?? "Sin carrera";
+  const getEmpresa = (s) => s.empresa ?? s.Empresa ?? "Sin empresa";
   const getEstatus = (s) => s.estatus ?? s.Estatus ?? s.status ?? "Sin estatus";
   const getNombreCompleto = (s) => {
     const nombre = s.Nombre ?? s.nombre ?? s.name ?? "";
@@ -56,13 +55,18 @@ export default function CoordinatorTracking() {
     return `${nombre} ${apellidos}`.trim() || "Sin nombre";
   };
   const getNoControl = (s) => s.No_control ?? s.no_control ?? s.noControl ?? "";
-  const getPeriodo = (s) => s.periodo ?? s.Periodo ?? s.period ?? "-";
+  const getPeriodo = (s) => {
+    const period = s.periodo ?? s.Periodo ?? s.period ?? null;
 
-  const carreras = useMemo(() => {
-    const set = new Set();
-    students.forEach((s) => set.add(getCarrera(s)));
-    return Array.from(set);
-  }, [students]);
+    if (!period) return "-";
+    if (typeof period === "string" || typeof period === "number") return String(period);
+    if (typeof period === "object") {
+      return period.codigo ?? period.nombre ?? period.name ?? String(period.id ?? "-");
+    }
+
+    return "-";
+  };
+  const getStatusKey = (s) => String(getEstatus(s) || "").trim().toLowerCase();
 
   const estados = useMemo(() => {
     const set = new Set();
@@ -73,12 +77,10 @@ export default function CoordinatorTracking() {
   const filteredStudents = useMemo(() => {
     const searchLower = search.toLowerCase();
     return students.filter((s) => {
-      const carrera = getCarrera(s);
       const estatus = getEstatus(s);
       const nombre = getNombreCompleto(s);
       const noCtrl = getNoControl(s);
 
-      if (filterCarrera !== "todos" && carrera !== filterCarrera) return false;
       if (filterEstatus !== "todos" && estatus !== filterEstatus) return false;
       if (searchLower) {
         const texto = `${nombre} ${noCtrl}`.toLowerCase();
@@ -86,20 +88,22 @@ export default function CoordinatorTracking() {
       }
       return true;
     });
-  }, [students, filterCarrera, filterEstatus, search]);
+  }, [students, filterEstatus, search]);
 
   const totalFiltrados = filteredStudents.length;
 
   const getProgreso = (s) => {
-    const base = Number(s.id ?? 0);
-    return (base * 17) % 101;
+    const value = Number(s.progress_percent ?? 0);
+    if (!Number.isFinite(value)) return 0;
+    return Math.max(0, Math.min(100, Math.round(value)));
   };
 
   const resumen = useMemo(() => {
     const total = filteredStudents.length;
-    const activos = filteredStudents.filter((s) => /activo/i.test(getEstatus(s))).length;
-    const inactivos = filteredStudents.filter((s) => /inactivo/i.test(getEstatus(s))).length;
-    return { total, activos, inactivos };
+    const activos = filteredStudents.filter((s) => getStatusKey(s) === "activo").length;
+    const inactivos = filteredStudents.filter((s) => getStatusKey(s) === "inactivo").length;
+    const bajas = filteredStudents.filter((s) => getStatusKey(s) === "baja").length;
+    return { total, activos, inactivos, bajas };
   }, [filteredStudents]);
 
   if (loading) {
@@ -121,7 +125,7 @@ export default function CoordinatorTracking() {
             <div>
               <h1 className="h4 mb-1">Visualiza avance y entregas</h1>
               <p className="mb-0" style={{ maxWidth: "540px", opacity: 0.9 }}>
-                Filtra por carrera o estatus y revisa el progreso de tus estudiantes.
+                Filtra por estatus y revisa el progreso de tus estudiantes.
               </p>
             </div>
             <div className="ms-auto d-flex gap-2">
@@ -137,7 +141,7 @@ export default function CoordinatorTracking() {
         </section>
 
         <div className="row g-3 mb-3">
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <p className="text-muted small mb-1">Total filtrado</p>
@@ -145,7 +149,7 @@ export default function CoordinatorTracking() {
               </div>
             </div>
           </div>
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <p className="text-muted small mb-1">Activos</p>
@@ -153,11 +157,19 @@ export default function CoordinatorTracking() {
               </div>
             </div>
           </div>
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <p className="text-muted small mb-1">Inactivos</p>
                 <h4 className="mb-0 text-danger">{resumen.inactivos}</h4>
+              </div>
+            </div>
+          </div>
+          <div className="col-12 col-md-3">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <p className="text-muted small mb-1">Bajas</p>
+                <h4 className="mb-0 text-warning">{resumen.bajas}</h4>
               </div>
             </div>
           </div>
@@ -166,7 +178,7 @@ export default function CoordinatorTracking() {
         <div className="card border-0 shadow-sm mb-4">
           <div className="card-body">
             <div className="row g-3 align-items-end">
-              <div className="col-md-4">
+              <div className="col-md-6">
                 <label className="form-label">Buscar</label>
                 <input
                   type="text"
@@ -176,22 +188,7 @@ export default function CoordinatorTracking() {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-              <div className="col-md-4">
-                <label className="form-label">Carrera</label>
-                <select
-                  className="form-select"
-                  value={filterCarrera}
-                  onChange={(e) => setFilterCarrera(e.target.value)}
-                >
-                  <option value="todos">Todas</option>
-                  {carreras.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-4">
+              <div className="col-md-6">
                 <label className="form-label">Estatus</label>
                 <select
                   className="form-select"
@@ -222,7 +219,7 @@ export default function CoordinatorTracking() {
                   <tr>
                     <th>Estudiante</th>
                     <th>No. Control</th>
-                    <th>Carrera</th>
+                    <th>Empresa</th>
                     <th>Periodo</th>
                     <th>Progreso</th>
                     <th>Estado</th>
@@ -241,15 +238,16 @@ export default function CoordinatorTracking() {
                   {filteredStudents.slice(0, 20).map((s) => {
                     const nombre = getNombreCompleto(s);
                     const noCtrl = getNoControl(s);
-                    const carrera = getCarrera(s);
+                    const empresa = getEmpresa(s);
                     const periodo = getPeriodo(s);
                     const estatus = getEstatus(s);
                     const progreso = getProgreso(s);
                     const studentId = s.id ?? s.student_id ?? s.studentId;
+                    const statusKey = getStatusKey(s);
 
                     let estadoClass = "secondary";
-                    if (/activo/i.test(estatus)) estadoClass = "success";
-                    else if (/baja/i.test(estatus)) estadoClass = "warning";
+                    if (statusKey === "activo") estadoClass = "success";
+                    else if (statusKey === "baja") estadoClass = "warning text-dark";
                     else if (/egresado/i.test(estatus)) estadoClass = "primary";
                     else if (/proceso/i.test(estatus)) estadoClass = "info";
 
@@ -257,7 +255,7 @@ export default function CoordinatorTracking() {
                       <tr key={s.id || `${nombre}-${noCtrl}`}>
                         <td className="text-break" style={{ whiteSpace: "normal" }}>{nombre}</td>
                         <td>{noCtrl}</td>
-                        <td className="text-break" style={{ whiteSpace: "normal" }}>{carrera}</td>
+                        <td className="text-break" style={{ whiteSpace: "normal" }}>{empresa}</td>
                         <td>{periodo}</td>
                         <td style={{ whiteSpace: "normal" }}>
                           <div className="d-flex align-items-center">

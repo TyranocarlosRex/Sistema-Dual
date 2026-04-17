@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { parseDownloadFilename } from "../../../utils/downloadFilename";
 
 export default function CoordinatorPending() {
   const [submissions, setSubmissions] = useState([]);
@@ -17,7 +18,17 @@ export default function CoordinatorPending() {
     return `${nombre} ${apellidos}`.trim() || "Sin nombre";
   };
   const getNoControl = (s) => s?.No_control ?? s?.no_control ?? s?.noControl ?? "";
-  const getPeriodo = (s) => s?.periodo ?? s?.Periodo ?? s?.period ?? "-";
+  const getPeriodo = (s) => {
+    const period = s?.periodo ?? s?.Periodo ?? s?.period ?? null;
+
+    if (!period) return "-";
+    if (typeof period === "string" || typeof period === "number") return String(period);
+    if (typeof period === "object") {
+      return period.codigo ?? period.nombre ?? period.name ?? String(period.id ?? "-");
+    }
+
+    return "-";
+  };
 
   useEffect(() => {
     const fetchSubmissions = async () => {
@@ -98,10 +109,10 @@ export default function CoordinatorPending() {
         }
       );
 
-      const disposition = headers["content-disposition"] || "";
-      const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
-      const rawName = match ? match[1] : null;
-      const filename = rawName ? rawName.replace(/['"]/g, "") : submission.original_name || `entrega-${submission.id}`;
+      const filename = parseDownloadFilename(
+        headers,
+        submission.original_name || `entrega-${submission.id}`
+      );
 
       const blob = new Blob([data], { type: headers["content-type"] || "application/octet-stream" });
       const url = window.URL.createObjectURL(blob);
@@ -127,10 +138,10 @@ export default function CoordinatorPending() {
         }
       );
 
-      const disposition = headers["content-disposition"] || "";
-      const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
-      const rawName = match ? match[1] : null;
-      const filename = rawName ? rawName.replace(/['"]/g, "") : submission.original_name || `entrega-${submission.id}`;
+      const filename = parseDownloadFilename(
+        headers,
+        submission.original_name || `entrega-${submission.id}`
+      );
 
       const blob = new Blob([data], { type: headers["content-type"] || "application/octet-stream" });
       const url = window.URL.createObjectURL(blob);
@@ -193,8 +204,12 @@ export default function CoordinatorPending() {
                     {submissions.map((s) => (
                       <tr key={s.id}>
                         <td className="text-break" style={{ whiteSpace: "normal" }}>
-                          <div className="fw-semibold">{s.report?.titulo || "Reporte"}</div>
-                          <div className="text-muted small">{getPeriodo(s.report || {})}</div>
+                          <div className="fw-semibold">
+                            {s.report?.titulo || `Entrega #${s.id}`}
+                          </div>
+                          <div className="text-muted small">
+                            {getPeriodo(s.report || {})}
+                          </div>
                         </td>
                         <td className="text-break" style={{ whiteSpace: "normal" }}>
                           <div className="fw-semibold">{getNombreCompleto(s.student || {})}</div>

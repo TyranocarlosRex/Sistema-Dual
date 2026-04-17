@@ -19,6 +19,8 @@ class StoreReportRequest extends FormRequest
     {
         return [
             'evidence_id' => ['required', 'exists:evidences,id'],
+            'periodo_id'  => ['nullable', 'exists:periods,id'],
+            'period_id'   => ['nullable', 'exists:periods,id'],
             'titulo'       => ['required', 'string', 'max:255'],
             'descripcion'  => ['nullable', 'string'],
             'fecha_limite' => ['nullable', 'date'],

@@ -26,6 +26,8 @@ class UpdateReportRequest extends FormRequest
     {
         return [
             'evidence_id' => ['sometimes', 'required', 'exists:evidences,id'],
+            'periodo_id'  => ['sometimes', 'nullable', 'exists:periods,id'],
+            'period_id'   => ['sometimes', 'nullable', 'exists:periods,id'],
             'titulo'       => ['required', 'string', 'max:255'],
             'descripcion'  => ['nullable', 'string'],
             'fecha_limite' => ['nullable', 'date'],

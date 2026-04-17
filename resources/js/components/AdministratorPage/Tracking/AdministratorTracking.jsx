@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { parseDownloadFilename } from "../../../utils/downloadFilename";
 
 const HERO_STYLE = {
   background: "linear-gradient(135deg, #2563eb 0%, #1e293b 100%)",
@@ -97,7 +98,18 @@ export default function AdministratorTracking() {
     return `${nombre} ${apellidos}`.trim() || "Sin nombre";
   };
   const getNoControl = (s) => s.No_control ?? s.no_control ?? s.noControl ?? "";
-  const getPeriodo = (s) => s.periodo ?? s.Periodo ?? s.period ?? "-";
+  const getPeriodo = (s) => {
+    const period = s.periodo ?? s.Periodo ?? s.period ?? null;
+
+    if (!period) return "-";
+    if (typeof period === "string" || typeof period === "number") return String(period);
+    if (typeof period === "object") {
+      return period.codigo ?? period.nombre ?? period.name ?? String(period.id ?? "-");
+    }
+
+    return "-";
+  };
+  const getStatusKey = (s) => String(getEstatus(s) || "").trim().toLowerCase();
 
   const carreras = useMemo(() => {
     const set = new Set();
@@ -150,8 +162,9 @@ export default function AdministratorTracking() {
   }, [filteredStudents]);
 
   const getProgreso = (s) => {
-    const base = Number(s.id ?? 0);
-    return (base * 17) % 101;
+    const value = Number(s.progress_percent ?? 0);
+    if (!Number.isFinite(value)) return 0;
+    return Math.max(0, Math.min(100, Math.round(value)));
   };
 
   const handleStatusChange = async (submissionId, status) => {
@@ -214,12 +227,10 @@ export default function AdministratorTracking() {
         }
       );
 
-      const disposition = headers["content-disposition"] || "";
-      const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
-      const rawName = match ? match[1] : null;
-      const filename = rawName
-        ? rawName.replace(/['"]/g, "")
-        : submission.original_name || `entrega-${submission.id}`;
+      const filename = parseDownloadFilename(
+        headers,
+        submission.original_name || `entrega-${submission.id}`
+      );
 
       const blob = new Blob([data], { type: headers["content-type"] || "application/octet-stream" });
       const url = window.URL.createObjectURL(blob);
@@ -245,12 +256,10 @@ export default function AdministratorTracking() {
         }
       );
 
-      const disposition = headers["content-disposition"] || "";
-      const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
-      const rawName = match ? match[1] : null;
-      const filename = rawName
-        ? rawName.replace(/['"]/g, "")
-        : submission.original_name || `entrega-${submission.id}`;
+      const filename = parseDownloadFilename(
+        headers,
+        submission.original_name || `entrega-${submission.id}`
+      );
 
       const blob = new Blob([data], { type: headers["content-type"] || "application/octet-stream" });
       const url = window.URL.createObjectURL(blob);
@@ -271,10 +280,11 @@ export default function AdministratorTracking() {
 
   const resumen = useMemo(() => {
     const total = filteredStudents.length;
-    const activos = filteredStudents.filter((s) => /activo/i.test(getEstatus(s))).length;
-    const inactivos = filteredStudents.filter((s) => /inactivo/i.test(getEstatus(s))).length;
-    return { total, activos, inactivos };
-  }, [filteredStudents, getEstatus]);
+    const activos = filteredStudents.filter((s) => getStatusKey(s) === "activo").length;
+    const inactivos = filteredStudents.filter((s) => getStatusKey(s) === "inactivo").length;
+    const bajas = filteredStudents.filter((s) => getStatusKey(s) === "baja").length;
+    return { total, activos, inactivos, bajas };
+  }, [filteredStudents]);
 
   return (
     <>
@@ -304,7 +314,7 @@ export default function AdministratorTracking() {
         </section>
 
         <div className="row g-3 mb-3">
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <p className="text-muted small mb-1">Total filtrado</p>
@@ -312,7 +322,7 @@ export default function AdministratorTracking() {
               </div>
             </div>
           </div>
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <p className="text-muted small mb-1">Activos</p>
@@ -320,11 +330,19 @@ export default function AdministratorTracking() {
               </div>
             </div>
           </div>
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
                 <p className="text-muted small mb-1">Inactivos</p>
                 <h4 className="mb-0 text-danger">{resumen.inactivos}</h4>
+              </div>
+            </div>
+          </div>
+          <div className="col-12 col-md-3">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <p className="text-muted small mb-1">Bajas</p>
+                <h4 className="mb-0 text-warning">{resumen.bajas}</h4>
               </div>
             </div>
           </div>
@@ -485,10 +503,11 @@ export default function AdministratorTracking() {
                         const periodo = getPeriodo(s);
                         const estatus = getEstatus(s);
                         const progreso = getProgreso(s);
+                        const statusKey = getStatusKey(s);
 
                         let estadoClass = "secondary";
-                        if (/activo/i.test(estatus)) estadoClass = "success";
-                        else if (/baja/i.test(estatus)) estadoClass = "warning";
+                        if (statusKey === "activo") estadoClass = "success";
+                        else if (statusKey === "baja") estadoClass = "warning text-dark";
                         else if (/egresado/i.test(estatus)) estadoClass = "primary";
                         else if (/proceso/i.test(estatus)) estadoClass = "info";
 
@@ -574,14 +593,21 @@ export default function AdministratorTracking() {
                     {submissions.map((sub) => {
                       const student = sub.student || {};
                       const report = sub.report || {};
+                      const evidence = report.evidence || {};
+                      const submissionPeriod = report.period || {};
                       const estado = sub.status || "enviado";
                       const badge = estado === "aceptado" ? "success" : estado === "rechazado" ? "danger" : "warning";
 
                       return (
                         <tr key={sub.id}>
                           <td>
-                            <div className="fw-semibold">{report.titulo || `Reporte #${report.id || ""}`}</div>
-                            <div className="small text-muted">{report.tipo || "Reporte"}</div>
+                            <div className="fw-semibold">
+                              {report.titulo || `Entrega #${sub.id}`}
+                            </div>
+                            <div className="small text-muted">
+                              Reporte
+                              {submissionPeriod?.codigo ? ` - ${submissionPeriod.codigo}` : ""}
+                            </div>
                           </td>
                           <td>
                             <div className="fw-semibold">{student.Nombre || ""} {student.Apellidos || ""}</div>

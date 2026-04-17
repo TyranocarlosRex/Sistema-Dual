@@ -138,6 +138,8 @@ function CoordinatorUsers() {
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroNoControl, setFiltroNoControl] = useState("");
   const [filtroEstatus, setFiltroEstatus] = useState("");
+  const getEmpresa = (student) =>
+    student?.Empresa ?? student?.empresa ?? "Sin empresa";
 
   const coordinator = useMemo(() => {
     const raw = localStorage.getItem("coordinator");
@@ -232,6 +234,7 @@ function CoordinatorUsers() {
                 <option value="">Todos</option>
                 <option value="Activo">Activo</option>
                 <option value="Inactivo">Inactivo</option>
+                <option value="Baja">Baja</option>
               </select>
             </div>
             <div className="col-12 col-md-2">
@@ -252,7 +255,7 @@ function CoordinatorUsers() {
                 <tr>
                   <th>Nombre</th>
                   <th>Correo</th>
-                  <th>Carrera</th>
+                  <th>Empresa</th>
                   <th>No. Control</th>
                   <th>Estatus</th>
                 </tr>
@@ -282,13 +285,15 @@ function CoordinatorUsers() {
                         </div>
                       </td>
                       <td>{s.Correo || "-"}</td>
-                      <td>{s.Carrera || "-"}</td>
+                      <td>{getEmpresa(s)}</td>
                       <td>{s.No_control || "-"}</td>
                       <td>
                         <span
                           className={`badge text-bg-${
                             (s.estatus || s.Estatus || "").toLowerCase() === "activo"
                               ? "success"
+                              : (s.estatus || s.Estatus || "").toLowerCase() === "baja"
+                              ? "warning"
                               : "secondary"
                           }`}
                         >

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import { parseDownloadFilename } from "../../../utils/downloadFilename";
+import { useToast } from "../../Shared/ToastProvider";
 
 const API_URL = "/api";
 
@@ -10,6 +12,7 @@ const LABEL_TIPO = {
 };
 
 export default function StudentReports() {
+  const { showToast } = useToast();
   const [evidences, setEvidences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -103,7 +106,11 @@ export default function StudentReports() {
     const file = selectedFiles[reportId];
 
     if (!file) {
-      alert("Selecciona un archivo primero.");
+      showToast({
+        title: "Archivo pendiente",
+        message: "Selecciona un archivo primero.",
+        variant: "warning",
+      });
       return;
     }
 
@@ -129,7 +136,11 @@ export default function StudentReports() {
       );
 
       console.log("SUBMISSION OK:", res.data);
-      alert("Archivo enviado correctamente.");
+      showToast({
+        title: "Entrega enviada",
+        message: "Archivo enviado correctamente.",
+        variant: "success",
+      });
 
       // limpiar input para ese reporte
       setSelectedFiles((prev) => ({ ...prev, [reportId]: null }));
@@ -183,13 +194,10 @@ export default function StudentReports() {
         }
       );
 
-      // Intenta obtener el nombre del archivo desde el header; usa fallback si no viene.
-      const disposition = response.headers["content-disposition"] || "";
-      const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
-      const rawName = match ? match[1] : null;
-      const cleanName = rawName
-        ? rawName.replace(/['"]/g, "")
-        : `${report.titulo || "reporte"}-adjunto`;
+      const cleanName = parseDownloadFilename(
+        response.headers,
+        `${report.titulo || "reporte"}-adjunto`
+      );
 
       const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
@@ -291,7 +299,7 @@ export default function StudentReports() {
                       className="btn btn-outline-success btn-sm"
                       onClick={() => navigate(`/student-report?evidence=${ev.id}`)}
                     >
-                      Ver reportes
+                      Abrir evidencia
                     </button>
                   </div>
                 </div>

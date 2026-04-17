@@ -48,4 +48,9 @@ class Evidence extends Model
         // IMPORTANTE: el FK se llama evidences_id, no evidence_id
         return $this->hasMany(Report::class, 'evidence_id');
     }
+
+    public function submissions()
+    {
+        return $this->hasMany(Submission::class, 'evidence_id');
+    }
 }

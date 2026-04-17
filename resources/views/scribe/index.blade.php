@@ -90,16 +90,16 @@
                                 <a href="#endpoints-GETapi-student-reports--report_id--attachment">GET api/student/reports/{report_id}/attachment</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-POSTapi-student-reports--report_id--submit">
-                                <a href="#endpoints-POSTapi-student-reports--report_id--submit">Alumno sube archivo de un reporte</a>
+                                <a href="#endpoints-POSTapi-student-reports--report_id--submit">POST api/student/reports/{report_id}/submit</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-GETapi-coordinator-report-submissions">
-                                <a href="#endpoints-GETapi-coordinator-report-submissions">Coordinador/Admin: ver todas las entregas (filtros opcionales)</a>
+                                <a href="#endpoints-GETapi-coordinator-report-submissions">GET api/coordinator/report-submissions</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-GETapi-coordinator-report-submissions--submission_id--download">
-                                <a href="#endpoints-GETapi-coordinator-report-submissions--submission_id--download">Descargar archivo ya subido (para coord/admin)</a>
+                                <a href="#endpoints-GETapi-coordinator-report-submissions--submission_id--download">GET api/coordinator/report-submissions/{submission_id}/download</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-PATCHapi-coordinator-report-submissions--submission_id-">
-                                <a href="#endpoints-PATCHapi-coordinator-report-submissions--submission_id-">Coord/Admin: actualizar estado y feedback</a>
+                                <a href="#endpoints-PATCHapi-coordinator-report-submissions--submission_id-">PATCH api/coordinator/report-submissions/{submission_id}</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-GETapi-students--student_id--details">
                                 <a href="#endpoints-GETapi-students--student_id--details">GET api/students/{student_id}/details</a>
@@ -147,13 +147,13 @@
                                 <a href="#endpoints-GETapi-reports--report_id--attachment">GET api/reports/{report_id}/attachment</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-GETapi-admin-report-submissions">
-                                <a href="#endpoints-GETapi-admin-report-submissions">Coordinador/Admin: ver todas las entregas (filtros opcionales)</a>
+                                <a href="#endpoints-GETapi-admin-report-submissions">GET api/admin/report-submissions</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-GETapi-admin-report-submissions--submission_id--download">
-                                <a href="#endpoints-GETapi-admin-report-submissions--submission_id--download">Descargar archivo ya subido (para coord/admin)</a>
+                                <a href="#endpoints-GETapi-admin-report-submissions--submission_id--download">GET api/admin/report-submissions/{submission_id}/download</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-PATCHapi-admin-report-submissions--submission_id-">
-                                <a href="#endpoints-PATCHapi-admin-report-submissions--submission_id-">Coord/Admin: actualizar estado y feedback</a>
+                                <a href="#endpoints-PATCHapi-admin-report-submissions--submission_id-">PATCH api/admin/report-submissions/{submission_id}</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-POSTapi-advertisements">
                                 <a href="#endpoints-POSTapi-advertisements">POST api/advertisements</a>
@@ -169,7 +169,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: February 27, 2026</li>
+        <li>Last updated: March 6, 2026</li>
     </ul>
 </div>
 
@@ -1024,7 +1024,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                     </form>
 
-                    <h2 id="endpoints-POSTapi-student-reports--report_id--submit">Alumno sube archivo de un reporte</h2>
+                    <h2 id="endpoints-POSTapi-student-reports--report_id--submit">POST api/student/reports/{report_id}/submit</h2>
 
 <p>
 </p>
@@ -1040,7 +1040,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     "http://localhost/api/student/reports/1/submit" \
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
-    --form "file=@C:\Users\Carlos\AppData\Local\Temp\phpC4AE.tmp" </code></pre></div>
+    --form "file=@C:\Users\Carlos\AppData\Local\Temp\php9BB2.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1161,11 +1161,11 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Must be a file. Must not be greater than 4096 kilobytes. Example: <code>C:\Users\Carlos\AppData\Local\Temp\phpC4AE.tmp</code></p>
+<p>Must be a file. Must not be greater than 4096 kilobytes. Example: <code>C:\Users\Carlos\AppData\Local\Temp\php9BB2.tmp</code></p>
         </div>
         </form>
 
-                    <h2 id="endpoints-GETapi-coordinator-report-submissions">Coordinador/Admin: ver todas las entregas (filtros opcionales)</h2>
+                    <h2 id="endpoints-GETapi-coordinator-report-submissions">GET api/coordinator/report-submissions</h2>
 
 <p>
 </p>
@@ -1292,7 +1292,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                         </form>
 
-                    <h2 id="endpoints-GETapi-coordinator-report-submissions--submission_id--download">Descargar archivo ya subido (para coord/admin)</h2>
+                    <h2 id="endpoints-GETapi-coordinator-report-submissions--submission_id--download">GET api/coordinator/report-submissions/{submission_id}/download</h2>
 
 <p>
 </p>
@@ -1432,7 +1432,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                     </form>
 
-                    <h2 id="endpoints-PATCHapi-coordinator-report-submissions--submission_id-">Coord/Admin: actualizar estado y feedback</h2>
+                    <h2 id="endpoints-PATCHapi-coordinator-report-submissions--submission_id-">PATCH api/coordinator/report-submissions/{submission_id}</h2>
 
 <p>
 </p>
@@ -1449,7 +1449,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"status\": \"aceptado\",
+    \"status\": \"enviado\",
     \"feedback\": \"consequatur\",
     \"calificacion\": 13
 }"
@@ -1467,7 +1467,7 @@ const headers = {
 };
 
 let body = {
-    "status": "aceptado",
+    "status": "enviado",
     "feedback": "consequatur",
     "calificacion": 13
 };
@@ -1574,10 +1574,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="status"                data-endpoint="PATCHapi-coordinator-report-submissions--submission_id-"
-               value="aceptado"
+               value="enviado"
                data-component="body">
     <br>
-<p>This field is required when none of <code>calificacion</code> and <code>feedback</code> are present. Example: <code>aceptado</code></p>
+<p>This field is required when none of <code>calificacion</code> and <code>feedback</code> are present. Example: <code>enviado</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>enviado</code></li> <li><code>aceptado</code></li> <li><code>rechazado</code></li></ul>
         </div>
@@ -2548,7 +2548,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --data "{
     \"titulo\": \"vmqeopfuudtdsufvyvddq\",
     \"descripcion\": \"consequatur\",
-    \"tipo\": \"inscripcion\"
+    \"tipo\": \"programa\"
 }"
 </code></pre></div>
 
@@ -2566,7 +2566,7 @@ const headers = {
 let body = {
     "titulo": "vmqeopfuudtdsufvyvddq",
     "descripcion": "consequatur",
-    "tipo": "inscripcion"
+    "tipo": "programa"
 };
 
 fetch(url, {
@@ -2682,10 +2682,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="tipo"                data-endpoint="POSTapi-evidences"
-               value="inscripcion"
+               value="programa"
                data-component="body">
     <br>
-<p>Example: <code>inscripcion</code></p>
+<p>Example: <code>programa</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>inscripcion</code></li> <li><code>programa</code></li></ul>
         </div>
@@ -3152,8 +3152,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "evidence_id=consequatur"\
     --form "titulo=mqeopfuudtdsufvyvddqa"\
     --form "descripcion=consequatur"\
-    --form "fecha_limite=2026-02-27T19:24:52"\
-    --form "attachment=@C:\Users\Carlos\AppData\Local\Temp\phpC51D.tmp" </code></pre></div>
+    --form "fecha_limite=2026-03-06T04:31:10"\
+    --form "attachment=@C:\Users\Carlos\AppData\Local\Temp\phpA086.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -3170,7 +3170,7 @@ const body = new FormData();
 body.append('evidence_id', 'consequatur');
 body.append('titulo', 'mqeopfuudtdsufvyvddqa');
 body.append('descripcion', 'consequatur');
-body.append('fecha_limite', '2026-02-27T19:24:52');
+body.append('fecha_limite', '2026-03-06T04:31:10');
 body.append('attachment', document.querySelector('input[name="attachment"]').files[0]);
 
 fetch(url, {
@@ -3298,10 +3298,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="fecha_limite"                data-endpoint="POSTapi-reports"
-               value="2026-02-27T19:24:52"
+               value="2026-03-06T04:31:10"
                data-component="body">
     <br>
-<p>Must be a valid date. Example: <code>2026-02-27T19:24:52</code></p>
+<p>Must be a valid date. Example: <code>2026-03-06T04:31:10</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>attachment</code></b>&nbsp;&nbsp;
@@ -3313,7 +3313,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Must be a file. Must not be greater than 4096 kilobytes. Example: <code>C:\Users\Carlos\AppData\Local\Temp\phpC51D.tmp</code></p>
+<p>Must be a file. Must not be greater than 4096 kilobytes. Example: <code>C:\Users\Carlos\AppData\Local\Temp\phpA086.tmp</code></p>
         </div>
         </form>
 
@@ -3335,9 +3335,9 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Accept: application/json" \
     --form "titulo=vmqeopfuudtdsufvyvddq"\
     --form "descripcion=consequatur"\
-    --form "fecha_limite=2026-02-27T19:24:52"\
-    --form "remove_attachment="\
-    --form "attachment=@C:\Users\Carlos\AppData\Local\Temp\phpC52D.tmp" </code></pre></div>
+    --form "fecha_limite=2026-03-06T04:31:10"\
+    --form "remove_attachment=1"\
+    --form "attachment=@C:\Users\Carlos\AppData\Local\Temp\phpA0B6.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -3353,8 +3353,8 @@ const headers = {
 const body = new FormData();
 body.append('titulo', 'vmqeopfuudtdsufvyvddq');
 body.append('descripcion', 'consequatur');
-body.append('fecha_limite', '2026-02-27T19:24:52');
-body.append('remove_attachment', '');
+body.append('fecha_limite', '2026-03-06T04:31:10');
+body.append('remove_attachment', '1');
 body.append('attachment', document.querySelector('input[name="attachment"]').files[0]);
 
 fetch(url, {
@@ -3495,10 +3495,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="fecha_limite"                data-endpoint="PUTapi-reports--report_id-"
-               value="2026-02-27T19:24:52"
+               value="2026-03-06T04:31:10"
                data-component="body">
     <br>
-<p>Must be a valid date. Example: <code>2026-02-27T19:24:52</code></p>
+<p>Must be a valid date. Example: <code>2026-03-06T04:31:10</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>attachment</code></b>&nbsp;&nbsp;
@@ -3510,7 +3510,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Must be a file. Must not be greater than 4096 kilobytes. Example: <code>C:\Users\Carlos\AppData\Local\Temp\phpC52D.tmp</code></p>
+<p>Must be a file. Must not be greater than 4096 kilobytes. Example: <code>C:\Users\Carlos\AppData\Local\Temp\phpA0B6.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>remove_attachment</code></b>&nbsp;&nbsp;
@@ -3532,7 +3532,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             <code>false</code>
         </label>
     <br>
-<p>Example: <code>false</code></p>
+<p>Example: <code>true</code></p>
         </div>
         </form>
 
@@ -3800,7 +3800,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                     </form>
 
-                    <h2 id="endpoints-GETapi-admin-report-submissions">Coordinador/Admin: ver todas las entregas (filtros opcionales)</h2>
+                    <h2 id="endpoints-GETapi-admin-report-submissions">GET api/admin/report-submissions</h2>
 
 <p>
 </p>
@@ -3927,7 +3927,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                         </form>
 
-                    <h2 id="endpoints-GETapi-admin-report-submissions--submission_id--download">Descargar archivo ya subido (para coord/admin)</h2>
+                    <h2 id="endpoints-GETapi-admin-report-submissions--submission_id--download">GET api/admin/report-submissions/{submission_id}/download</h2>
 
 <p>
 </p>
@@ -4067,7 +4067,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                     </form>
 
-                    <h2 id="endpoints-PATCHapi-admin-report-submissions--submission_id-">Coord/Admin: actualizar estado y feedback</h2>
+                    <h2 id="endpoints-PATCHapi-admin-report-submissions--submission_id-">PATCH api/admin/report-submissions/{submission_id}</h2>
 
 <p>
 </p>
@@ -4084,7 +4084,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"status\": \"enviado\",
+    \"status\": \"aceptado\",
     \"feedback\": \"consequatur\",
     \"calificacion\": 13
 }"
@@ -4102,7 +4102,7 @@ const headers = {
 };
 
 let body = {
-    "status": "enviado",
+    "status": "aceptado",
     "feedback": "consequatur",
     "calificacion": 13
 };
@@ -4209,10 +4209,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="status"                data-endpoint="PATCHapi-admin-report-submissions--submission_id-"
-               value="enviado"
+               value="aceptado"
                data-component="body">
     <br>
-<p>This field is required when none of <code>calificacion</code> and <code>feedback</code> are present. Example: <code>enviado</code></p>
+<p>This field is required when none of <code>calificacion</code> and <code>feedback</code> are present. Example: <code>aceptado</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>enviado</code></li> <li><code>aceptado</code></li> <li><code>rechazado</code></li></ul>
         </div>
@@ -4260,10 +4260,10 @@ Must be one of:
     --header "Accept: application/json" \
     --form "titulo=vmqeopfuudtdsufvyvddq"\
     --form "mensaje=consequatur"\
-    --form "target_role=coordinator"\
+    --form "target_role=all"\
     --form "target_carrera=mqeopfuudtdsufvyvddqa"\
-    --form "visible_from=2026-02-27T19:24:52"\
-    --form "attachment=@C:\Users\Carlos\AppData\Local\Temp\phpC54E.tmp" </code></pre></div>
+    --form "visible_from=2026-03-06T04:31:10"\
+    --form "attachment=@C:\Users\Carlos\AppData\Local\Temp\phpA0E6.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -4279,9 +4279,9 @@ const headers = {
 const body = new FormData();
 body.append('titulo', 'vmqeopfuudtdsufvyvddq');
 body.append('mensaje', 'consequatur');
-body.append('target_role', 'coordinator');
+body.append('target_role', 'all');
 body.append('target_carrera', 'mqeopfuudtdsufvyvddqa');
-body.append('visible_from', '2026-02-27T19:24:52');
+body.append('visible_from', '2026-03-06T04:31:10');
 body.append('attachment', document.querySelector('input[name="attachment"]').files[0]);
 
 fetch(url, {
@@ -4397,10 +4397,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="target_role"                data-endpoint="POSTapi-advertisements"
-               value="coordinator"
+               value="all"
                data-component="body">
     <br>
-<p>Example: <code>coordinator</code></p>
+<p>Example: <code>all</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>all</code></li> <li><code>student</code></li> <li><code>coordinator</code></li> <li><code>admin</code></li></ul>
         </div>
@@ -4423,10 +4423,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="visible_from"                data-endpoint="POSTapi-advertisements"
-               value="2026-02-27T19:24:52"
+               value="2026-03-06T04:31:10"
                data-component="body">
     <br>
-<p>Must be a valid date. Example: <code>2026-02-27T19:24:52</code></p>
+<p>Must be a valid date. Example: <code>2026-03-06T04:31:10</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>attachment</code></b>&nbsp;&nbsp;
@@ -4438,7 +4438,7 @@ Must be one of:
                value=""
                data-component="body">
     <br>
-<p>Must be a file. Must not be greater than 4096 kilobytes. Example: <code>C:\Users\Carlos\AppData\Local\Temp\phpC54E.tmp</code></p>
+<p>Must be a file. Must not be greater than 4096 kilobytes. Example: <code>C:\Users\Carlos\AppData\Local\Temp\phpA0E6.tmp</code></p>
         </div>
         </form>
 

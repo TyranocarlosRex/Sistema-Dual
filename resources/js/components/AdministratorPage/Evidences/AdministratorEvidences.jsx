@@ -13,6 +13,7 @@ export default function AdminEvidences() {
   const [evidences, setEvidences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [showReportsModal, setShowReportsModal] = useState(false);
 
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -25,6 +26,7 @@ export default function AdminEvidences() {
   const [editTipo, setEditTipo] = useState("inscripcion");
   const [editDescripcion, setEditDescripcion] = useState("");
   const [editError, setEditError] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
 
   const [activeEvidenceId, setActiveEvidenceId] = useState(null);
   const [repTitulo, setRepTitulo] = useState("");
@@ -47,6 +49,7 @@ export default function AdminEvidences() {
   const cargarEvidences = async () => {
     try {
       setLoading(true);
+      setError("");
       const res = await axiosAuth.get("/evidences?with_reports=1");
       setEvidences(res.data);
     } catch (err) {
@@ -64,6 +67,7 @@ export default function AdminEvidences() {
   const handleCrearEvidence = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     try {
       await axiosAuth.post("/evidences", {
@@ -76,11 +80,12 @@ export default function AdminEvidences() {
       setDescripcion("");
       setTipo("inscripcion");
       setShowCreateForm(false);
+      setSuccess("Espacio creado correctamente.");
 
       await cargarEvidences();
     } catch (err) {
       console.error(err);
-      setError("No se pudo crear el espacio.");
+      setError(err.response?.data?.message || "No se pudo crear el espacio.");
     }
   };
 
@@ -104,6 +109,8 @@ export default function AdminEvidences() {
     e.preventDefault();
     if (!editingId) return;
     setEditError("");
+    setError("");
+    setSuccess("");
 
     try {
       await axiosAuth.put(`/evidences/${editingId}`, {
@@ -113,10 +120,49 @@ export default function AdminEvidences() {
       });
 
       cancelarEdicion();
+      setSuccess("Espacio actualizado correctamente.");
       await cargarEvidences();
     } catch (err) {
       console.error(err);
-      setEditError("No se pudo actualizar el espacio.");
+      setEditError(err.response?.data?.message || "No se pudo actualizar el espacio.");
+    }
+  };
+
+  const handleEliminarEvidence = async (ev) => {
+    const confirmDelete = window.confirm(
+      `Vas a eliminar el espacio "${ev.titulo}". Los reportes asociados quedaran sin espacio.`
+    );
+
+    if (!confirmDelete) return;
+
+    setDeletingId(ev.id);
+    setError("");
+    setSuccess("");
+    setEditError("");
+
+    try {
+      const res = await axiosAuth.delete(`/evidences/${ev.id}`);
+
+      if (editingId === ev.id) {
+        cancelarEdicion();
+      }
+
+      if (activeEvidenceId === ev.id) {
+        setShowReportsModal(false);
+        setActiveEvidenceId(null);
+      }
+
+      setSuccess(res.data?.message || "Espacio eliminado.");
+      await cargarEvidences();
+    } catch (err) {
+      console.error(err);
+      const message = err.response?.data?.message || "No se pudo eliminar el espacio.";
+      setError(message);
+      if (editingId === ev.id) {
+        setEditError(message);
+      }
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -232,11 +278,13 @@ export default function AdminEvidences() {
           </div>
         </div>
 
+        {error && <div className="alert alert-danger py-2">{error}</div>}
+        {success && <div className="alert alert-success py-2">{success}</div>}
+
         {showCreateForm && (
           <div className="card shadow-sm border-0 mb-4">
             <div className="card-body">
               <h5 className="mb-3">Crear nuevo espacio</h5>
-              {error && <div className="alert alert-danger py-2">{error}</div>}
               <form onSubmit={handleCrearEvidence} className="row g-3">
                 <div className="col-12 col-md-6">
                   <label className="form-label">Titulo del espacio</label>
@@ -304,8 +352,17 @@ export default function AdminEvidences() {
                         <div className="d-flex gap-2">
                           <button
                             type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => handleEliminarEvidence(ev)}
+                            disabled={deletingId === ev.id}
+                          >
+                            {deletingId === ev.id ? "Eliminando..." : "Eliminar"}
+                          </button>
+                          <button
+                            type="button"
                             className="btn btn-sm btn-outline-primary"
                             onClick={() => empezarEdicion(ev)}
+                            disabled={deletingId === ev.id}
                           >
                             Editar
                           </button>
@@ -313,6 +370,7 @@ export default function AdminEvidences() {
                             type="button"
                             className="btn btn-sm btn-success"
                             onClick={() => abrirFormReporte(ev.id)}
+                            disabled={deletingId === ev.id}
                           >
                             Agregar reporte
                           </button>

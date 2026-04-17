@@ -19,7 +19,7 @@ return new class extends Migration
            $table->integer('No_control');
            $table->text('Semestre'); 
            $table->string('Direccion')->nullable(); 
-           $table->integer('Telefono')->nullable(); 
+           $table->string('Telefono', 20)->nullable(); 
            $table->string('Correo_institucional')->nullable(); 
            $table->timestamps();
         });

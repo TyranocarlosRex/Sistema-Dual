@@ -2,36 +2,37 @@
 
 namespace App\Http\Controllers\AdminControllers;
 
+use App\Http\Controllers\Concerns\ResolvesPeriodContext;
 use App\Http\Controllers\Controller;
 use App\Models\Evidence;
+use App\Models\Period;
 use Illuminate\Http\Request;
-
-
-/*Este código define el controlador EvidenceController que maneja las 
-solicitudes relacionadas con las evidencias.
-
-El método index devuelve una lista de evidencias ordenadas por tipo y título, con la opción de incluir los reportes relacionados.
-
-El método store permite crear una nueva evidencia validando los datos de entrada.
-
-El método show devuelve los detalles de una evidencia específica, incluyendo sus reportes.
-
-El método update permite actualizar una evidencia existente validando los datos de entrada.
-
-El método indexForStudent devuelve una lista de evidencias visibles para un estudiante 
-autenticado, filtrando por el estatus del estudiante y ordenando los reportes por 
-fecha límite y fecha de creación.*/
 
 class EvidenceController extends Controller
 {
+    use ResolvesPeriodContext;
+
     public function index(Request $request)
     {
+        $period = $this->resolvePeriodFromRequest($request);
         $query = Evidence::query()
             ->orderBy('tipo')
             ->orderBy('titulo');
 
         if ($request->boolean('with_reports')) {
-            $query->with('reports');
+            $query->with([
+                'reports' => function ($q) use ($period) {
+                    if ($period) {
+                        $q->where('periodo_id', $period->id);
+                    }
+                },
+            ]);
+        }
+
+        if ($period && $request->boolean('only_with_reports')) {
+            $query->whereHas('reports', function ($q) use ($period) {
+                $q->where('periodo_id', $period->id);
+            });
         }
 
         return response()->json($query->get());
@@ -40,9 +41,9 @@ class EvidenceController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'titulo'      => ['required', 'string', 'max:255'],
+            'titulo' => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string'],
-            'tipo'        => ['required', 'in:inscripcion,programa'],
+            'tipo' => ['required', 'in:inscripcion,programa'],
         ]);
 
         $data['created_by'] = $request->user()->id;
@@ -61,14 +62,33 @@ class EvidenceController extends Controller
     public function update(Request $request, Evidence $evidence)
     {
         $data = $request->validate([
-            'titulo'      => ['required', 'string', 'max:255'],
+            'titulo' => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string'],
-            'tipo'        => ['required', 'in:inscripcion,programa'],
+            'tipo' => ['required', 'in:inscripcion,programa'],
         ]);
 
         $evidence->update($data);
 
         return response()->json($evidence);
+    }
+
+    public function destroy(Evidence $evidence)
+    {
+        $hasClosedPeriodReports = $evidence->reports()
+            ->whereHas('period', function ($q) {
+                $q->where('estatus', Period::ESTATUS_CERRADO);
+            })
+            ->exists();
+
+        if ($hasClosedPeriodReports) {
+            return response()->json([
+                'message' => 'No puedes eliminar evidencias con reportes en periodos cerrados.',
+            ], 422);
+        }
+
+        $evidence->delete();
+
+        return response()->json(['message' => 'Espacio eliminado']);
     }
 
     public function indexForStudent(Request $request)
@@ -78,33 +98,45 @@ class EvidenceController extends Controller
 
         if (!$student) {
             return response()->json([
-                'message' => 'No tienes perfil de estudiante.'
+                'message' => 'No tienes perfil de estudiante.',
             ], 403);
         }
 
-        // tomar estatus sin importar si la columna es estatus o Estatus
-        $rawEstatus = $student->estatus ?? $student->Estatus ?? '';
-        $estatus    = strtolower(trim((string) $rawEstatus));
+        $period = $this->resolvePeriodFromRequest($request);
+        if ($period === null) {
+            return response()->json(['message' => 'No hay un periodo activo disponible.'], 422);
+        }
+
+        $assignment = $student->ensureEnrollmentForPeriod($period->id);
+
+        if ($assignment === null) {
+            return response()->json([
+                'message' => 'No perteneces al periodo activo.',
+            ], 403);
+        }
 
         $tiposVisibles = ['inscripcion'];
-        if ($estatus === 'activo') {
+        if (mb_strtolower(trim((string)$assignment->Estatus)) === 'activo') {
             $tiposVisibles[] = 'programa';
         }
 
         $evidences = Evidence::query()
             ->with([
-                'reports' => function ($q) use ($student) {
-                    $q->with([
-                        // 👇 solo las entregas de ESTE alumno
-                        'submissions' => function ($qq) use ($student) {
-                            $qq->where('student_id', $student->id);
-                        }
-                    ])
-                    ->orderBy('fecha_limite', 'asc')
-                    ->orderBy('created_at', 'asc');
-                }
+                'reports' => function ($q) use ($student, $period) {
+                    $q->where('periodo_id', $period->id)
+                        ->with([
+                            'submissions' => function ($qq) use ($student) {
+                                $qq->where('student_id', $student->id);
+                            },
+                        ])
+                        ->orderBy('fecha_limite', 'asc')
+                        ->orderBy('created_at', 'asc');
+                },
             ])
             ->whereIn('tipo', $tiposVisibles)
+            ->whereHas('reports', function ($qq) use ($period) {
+                $qq->where('periodo_id', $period->id);
+            })
             ->orderByRaw("FIELD(tipo, 'inscripcion','programa')")
             ->orderBy('titulo')
             ->get();

@@ -15,7 +15,7 @@ use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
  * Aquí se configura la aplicación, incluyendo rutas, middleware y excepciones.
  * Se utiliza el nuevo sistema de configuración fluida introducido en Laravel 10.2.
  */
-return Application::configure(basePath: dirname(__DIR__))
+$app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
@@ -47,3 +47,10 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->create();
+
+$app->singleton(
+    \Illuminate\Contracts\Console\Kernel::class,
+    \App\Console\Kernel::class,
+);
+
+return $app;

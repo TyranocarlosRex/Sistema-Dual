@@ -25,6 +25,7 @@ class Report extends Model
 
     protected $fillable = [
         'evidence_id',
+        'periodo_id',
         'titulo',
         'descripcion',
         'fecha_limite',
@@ -41,6 +42,11 @@ class Report extends Model
     public function evidence()
     {
         return $this->belongsTo(Evidence::class, 'evidence_id');
+    }
+
+    public function period()
+    {
+        return $this->belongsTo(Period::class, 'periodo_id');
     }
 
     public function submissions()

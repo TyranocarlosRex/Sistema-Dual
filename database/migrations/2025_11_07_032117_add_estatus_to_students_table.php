@@ -59,9 +59,9 @@ return new class extends Migration
                 $table->dropColumn('Estatus');
             }
 
-            // Revertir Telefono a integer nullable (como estaba en tu create)
+            // Keep Telefono as a string so rollback remains compatible with real phone values.
             if (Schema::hasColumn('students', 'Telefono')) {
-                $table->integer('Telefono')->nullable()->change();
+                $table->string('Telefono', 20)->nullable()->change();
             }
         });
     }

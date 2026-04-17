@@ -14,7 +14,7 @@ class SanctumTokenIssuer implements TokenIssuer
 
     public function issue(User $user, array $abilities, ?string $name = 'api'): string
     {
-        // 1) registra/actualiza en candidate
+        // 1) registra/actualiza el acceso del alumno en el periodo activo
         $this->tracker->track($user);
 
         // 2) emite el token Sanctum

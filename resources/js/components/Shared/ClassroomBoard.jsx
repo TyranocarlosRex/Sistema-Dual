@@ -23,6 +23,7 @@ const toTimestamp = (value) => {
 };
 
 const nextReportLabel = (reports = []) => {
+  if ((reports || []).length === 0) return "Sin reportes";
   const conFecha = (reports || []).filter((r) => r.fecha_limite);
   if (conFecha.length === 0) return "Sin fecha limite";
   const sorted = [...conFecha].sort((a, b) => new Date(a.fecha_limite) - new Date(b.fecha_limite));

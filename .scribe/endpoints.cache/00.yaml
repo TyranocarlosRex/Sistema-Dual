@@ -311,7 +311,7 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Alumno sube archivo de un reporte'
+      title: ''
       description: ''
       authenticated: false
       deprecated: false
@@ -366,7 +366,7 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Coordinador/Admin: ver todas las entregas (filtros opcionales)'
+      title: ''
       description: ''
       authenticated: false
       deprecated: false
@@ -406,7 +406,7 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Descargar archivo ya subido (para coord/admin)'
+      title: ''
       description: ''
       authenticated: false
       deprecated: false
@@ -458,7 +458,7 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Coord/Admin: actualizar estado y feedback'
+      title: ''
       description: ''
       authenticated: false
       deprecated: false
@@ -487,7 +487,7 @@ endpoints:
         name: status
         description: 'This field is required when none of <code>calificacion</code> and <code>feedback</code> are present.'
         required: false
-        example: aceptado
+        example: enviado
         type: string
         enumValues:
           - enviado
@@ -519,7 +519,7 @@ endpoints:
         nullable: true
         deprecated: false
     cleanBodyParameters:
-      status: aceptado
+      status: enviado
       feedback: consequatur
       calificacion: 13
     fileParameters: []
@@ -888,7 +888,7 @@ endpoints:
         name: tipo
         description: ''
         required: true
-        example: inscripcion
+        example: programa
         type: string
         enumValues:
           - inscripcion
@@ -899,7 +899,7 @@ endpoints:
     cleanBodyParameters:
       titulo: vmqeopfuudtdsufvyvddq
       descripcion: consequatur
-      tipo: inscripcion
+      tipo: programa
     fileParameters: []
     responses: []
     responseFields: []
@@ -1141,7 +1141,7 @@ endpoints:
         name: fecha_limite
         description: 'Must be a valid date.'
         required: false
-        example: '2026-02-27T19:24:52'
+        example: '2026-03-06T04:31:10'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1162,7 +1162,7 @@ endpoints:
       evidence_id: consequatur
       titulo: mqeopfuudtdsufvyvddqa
       descripcion: consequatur
-      fecha_limite: '2026-02-27T19:24:52'
+      fecha_limite: '2026-03-06T04:31:10'
     fileParameters:
       attachment: null
     responses: []
@@ -1244,7 +1244,7 @@ endpoints:
         name: fecha_limite
         description: 'Must be a valid date.'
         required: false
-        example: '2026-02-27T19:24:52'
+        example: '2026-03-06T04:31:10'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1266,7 +1266,7 @@ endpoints:
         name: remove_attachment
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -1275,8 +1275,8 @@ endpoints:
     cleanBodyParameters:
       titulo: vmqeopfuudtdsufvyvddq
       descripcion: consequatur
-      fecha_limite: '2026-02-27T19:24:52'
-      remove_attachment: false
+      fecha_limite: '2026-03-06T04:31:10'
+      remove_attachment: true
     fileParameters:
       attachment: null
     responses: []
@@ -1391,7 +1391,7 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Coordinador/Admin: ver todas las entregas (filtros opcionales)'
+      title: ''
       description: ''
       authenticated: false
       deprecated: false
@@ -1431,7 +1431,7 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Descargar archivo ya subido (para coord/admin)'
+      title: ''
       description: ''
       authenticated: false
       deprecated: false
@@ -1483,7 +1483,7 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Coord/Admin: actualizar estado y feedback'
+      title: ''
       description: ''
       authenticated: false
       deprecated: false
@@ -1512,7 +1512,7 @@ endpoints:
         name: status
         description: 'This field is required when none of <code>calificacion</code> and <code>feedback</code> are present.'
         required: false
-        example: enviado
+        example: aceptado
         type: string
         enumValues:
           - enviado
@@ -1544,7 +1544,7 @@ endpoints:
         nullable: true
         deprecated: false
     cleanBodyParameters:
-      status: enviado
+      status: aceptado
       feedback: consequatur
       calificacion: 13
     fileParameters: []
@@ -1604,7 +1604,7 @@ endpoints:
         name: target_role
         description: ''
         required: true
-        example: coordinator
+        example: all
         type: string
         enumValues:
           - all
@@ -1630,7 +1630,7 @@ endpoints:
         name: visible_from
         description: 'Must be a valid date.'
         required: false
-        example: '2026-02-27T19:24:52'
+        example: '2026-03-06T04:31:10'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1650,9 +1650,9 @@ endpoints:
     cleanBodyParameters:
       titulo: vmqeopfuudtdsufvyvddq
       mensaje: consequatur
-      target_role: coordinator
+      target_role: all
       target_carrera: mqeopfuudtdsufvyvddqa
-      visible_from: '2026-02-27T19:24:52'
+      visible_from: '2026-03-06T04:31:10'
     fileParameters:
       attachment: null
     responses: []
