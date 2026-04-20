@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const HERO_STYLE = {
@@ -9,43 +9,83 @@ const HERO_STYLE = {
   boxShadow: "0 22px 40px -32px rgba(29, 78, 216, 0.6)",
 };
 
-export default function AdministratorReports({ embedded = false, onClose, evidenceId }) {
+const buildAuthConfig = (overrides = {}) => {
+  const token = localStorage.getItem("token");
+
+  return {
+    ...overrides,
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(overrides.headers || {}),
+    },
+  };
+};
+
+export default function AdministratorReports({
+  embedded = false,
+  evidenceId = null,
+  onChange,
+}) {
+  const fixedEvidenceId = evidenceId ? String(evidenceId) : "";
+
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [fechaLimite, setFechaLimite] = useState("");
   const [attachment, setAttachment] = useState(null);
   const [tipo, setTipo] = useState("programa");
+  const [selectedEvidenceId, setSelectedEvidenceId] = useState(fixedEvidenceId);
 
+  const [evidences, setEvidences] = useState([]);
   const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
   const [editingId, setEditingId] = useState(null);
 
+  const activeEvidenceId = fixedEvidenceId || selectedEvidenceId;
+
+  const loadEvidences = async () => {
+    try {
+      const res = await axios.get("/api/evidences", buildAuthConfig());
+      setEvidences(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const loadReports = async (targetEvidenceId = activeEvidenceId) => {
+    try {
+      setLoadingReports(true);
+      setError("");
+
+      const params = targetEvidenceId ? { evidence_id: targetEvidenceId } : {};
+      const res = await axios.get("/api/reports", buildAuthConfig({ params }));
+      setReports(res.data);
+    } catch (err) {
+      console.error(err.response?.status, err.response?.data);
+      setError("No se pudieron cargar los reportes.");
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (token) {
-          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        }
+    if (fixedEvidenceId) {
+      setSelectedEvidenceId(fixedEvidenceId);
+    }
+  }, [fixedEvidenceId]);
 
-        const res = await axios.get("/api/reports", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params: evidenceId ? { evidence_id: evidenceId } : {},
-        });
+  useEffect(() => {
+    if (!fixedEvidenceId) {
+      loadEvidences();
+    }
+  }, [fixedEvidenceId]);
 
-        setReports(res.data);
-      } catch (err) {
-        console.error(err.response?.status, err.response?.data);
-      }
-    };
-
-    fetchReports();
-  }, [evidenceId]);
+  useEffect(() => {
+    loadReports();
+  }, [fixedEvidenceId, selectedEvidenceId]);
 
   const resetForm = () => {
     setTitulo("");
@@ -58,43 +98,54 @@ export default function AdministratorReports({ embedded = false, onClose, eviden
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+
+    if (!activeEvidenceId) {
+      setError("Selecciona un espacio de evidencia antes de guardar el reporte.");
+      return;
+    }
+
+    setSubmitting(true);
     setError("");
     setSuccess("");
 
     try {
       const formData = new FormData();
+      formData.append("evidence_id", activeEvidenceId);
       formData.append("titulo", titulo);
       formData.append("tipo", tipo);
       if (descripcion) formData.append("descripcion", descripcion);
       if (fechaLimite) formData.append("fecha_limite", fechaLimite);
       if (attachment) formData.append("attachment", attachment);
-      if (evidenceId) formData.append("evidence_id", evidenceId);
 
       let url = "/api/reports";
+      const isEditing = editingId !== null;
 
-      if (editingId) {
+      if (isEditing) {
         formData.append("_method", "PUT");
         url = `/api/reports/${editingId}`;
       }
 
-      const res = await axios.post(url, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (editingId) {
-        setSuccess("Reporte actualizado correctamente.");
-        const updated = res.data;
-        setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
-      } else {
-        setSuccess("Reporte creado correctamente.");
-        setReports((prev) => [res.data, ...prev]);
-      }
+      await axios.post(
+        url,
+        formData,
+        buildAuthConfig({
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+      );
 
       resetForm();
+      await loadReports(activeEvidenceId);
+      if (onChange) {
+        await onChange();
+      }
+
+      setSuccess(
+        isEditing
+          ? "Reporte actualizado correctamente."
+          : "Reporte creado correctamente."
+      );
     } catch (err) {
       console.error(err);
       if (err.response?.data?.message) {
@@ -103,7 +154,7 @@ export default function AdministratorReports({ embedded = false, onClose, eviden
         setError("Ocurrio un error al guardar el reporte.");
       }
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -114,6 +165,11 @@ export default function AdministratorReports({ embedded = false, onClose, eviden
     setFechaLimite(report.fecha_limite || "");
     setTipo(report.tipo || "programa");
     setAttachment(null);
+
+    if (!fixedEvidenceId && report.evidence_id) {
+      setSelectedEvidenceId(String(report.evidence_id));
+    }
+
     setError("");
     setSuccess("");
   };
@@ -125,23 +181,31 @@ export default function AdministratorReports({ embedded = false, onClose, eviden
   };
 
   const deleteReport = async (id) => {
-    const confirmDelete = window.confirm("¿Eliminar este reporte?");
+    const confirmDelete = window.confirm("Eliminar este reporte?");
     if (!confirmDelete) return;
+
     try {
-      setLoading(true);
-      await axios.delete(`/api/reports/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setReports((prev) => prev.filter((r) => r.id !== id));
+      setDeletingId(id);
+      setError("");
+      setSuccess("");
+
+      await axios.delete(`/api/reports/${id}`, buildAuthConfig());
+
       if (editingId === id) {
         resetForm();
       }
+
+      await loadReports();
+      if (onChange) {
+        await onChange();
+      }
+
       setSuccess("Reporte eliminado.");
     } catch (err) {
       console.error(err);
       setError("No se pudo eliminar el reporte.");
     } finally {
-      setLoading(false);
+      setDeletingId(null);
     }
   };
 
@@ -151,12 +215,16 @@ export default function AdministratorReports({ embedded = false, onClose, eviden
     <div className={wrapperClass}>
       {!embedded && (
         <section style={HERO_STYLE} className="mb-3">
-          <p className="text-uppercase small mb-1" style={{ letterSpacing: "0.08em", opacity: 0.85 }}>
+          <p
+            className="text-uppercase small mb-1"
+            style={{ letterSpacing: "0.08em", opacity: 0.85 }}
+          >
             Reportes
           </p>
           <h2 className="h5 mb-1">Asignaciones y formatos</h2>
           <p className="mb-0" style={{ opacity: 0.9 }}>
-            Crea areas para subir evidencia, define plazos y adjunta formatos base.
+            Crea areas para subir evidencia, define plazos y adjunta formatos
+            base.
           </p>
         </section>
       )}
@@ -165,11 +233,36 @@ export default function AdministratorReports({ embedded = false, onClose, eviden
         <div className="col-12 col-lg-5">
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
-              <h5 className="mb-3">{editingId ? "Editar reporte" : "Nuevo reporte"}</h5>
+              <h5 className="mb-3">
+                {editingId ? "Editar reporte" : "Nuevo reporte"}
+              </h5>
               {error && <div className="alert alert-danger">{error}</div>}
               {success && <div className="alert alert-success">{success}</div>}
 
               <form onSubmit={handleSubmit} className="d-grid gap-3">
+                {!fixedEvidenceId && (
+                  <div>
+                    <label className="form-label">Espacio de evidencia</label>
+                    <select
+                      className="form-select"
+                      value={selectedEvidenceId}
+                      onChange={(e) => setSelectedEvidenceId(e.target.value)}
+                      required
+                    >
+                      <option value="">Selecciona un espacio</option>
+                      {evidences.map((evidence) => (
+                        <option key={evidence.id} value={evidence.id}>
+                          {evidence.titulo} [{evidence.tipo}]
+                        </option>
+                      ))}
+                    </select>
+                    <div className="form-text">
+                      El reporte se crea dentro del espacio seleccionado y la
+                      lista se filtra con ese contexto.
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="form-label">Titulo</label>
                   <input
@@ -225,17 +318,24 @@ export default function AdministratorReports({ embedded = false, onClose, eviden
                 </div>
 
                 <div className="d-flex gap-2">
-                  <button className="btn btn-primary" type="submit" disabled={loading}>
-                    {loading ? "Guardando..." : editingId ? "Guardar cambios" : "Crear reporte"}
+                  <button
+                    className="btn btn-primary"
+                    type="submit"
+                    disabled={submitting}
+                  >
+                    {submitting
+                      ? "Guardando..."
+                      : editingId
+                      ? "Guardar cambios"
+                      : "Crear reporte"}
                   </button>
                   {editingId && (
-                    <button type="button" className="btn btn-outline-secondary" onClick={cancelEdit}>
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary"
+                      onClick={cancelEdit}
+                    >
                       Cancelar
-                    </button>
-                  )}
-                  {onClose && embedded && (
-                    <button type="button" className="btn btn-light ms-auto" onClick={onClose}>
-                      Cerrar
                     </button>
                   )}
                 </div>
@@ -248,7 +348,9 @@ export default function AdministratorReports({ embedded = false, onClose, eviden
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="mb-0">Reportes creados</h5>
+                <h5 className="mb-0">
+                  {activeEvidenceId ? "Reportes del espacio" : "Reportes creados"}
+                </h5>
                 <div className="d-flex align-items-center gap-2">
                   <span className="text-muted small">{reports.length} en total</span>
                   <button
@@ -265,8 +367,14 @@ export default function AdministratorReports({ embedded = false, onClose, eviden
                 </div>
               </div>
 
-              {reports.length === 0 ? (
-                <p className="text-muted">No hay reportes aun.</p>
+              {loadingReports ? (
+                <p className="text-muted">Cargando reportes...</p>
+              ) : reports.length === 0 ? (
+                <p className="text-muted">
+                  {activeEvidenceId
+                    ? "No hay reportes en este espacio."
+                    : "No hay reportes aun."}
+                </p>
               ) : (
                 <div className="d-grid gap-3">
                   {reports.map((report) => (
@@ -275,15 +383,23 @@ export default function AdministratorReports({ embedded = false, onClose, eviden
                         <div>
                           <div className="fw-semibold">{report.titulo}</div>
                           <div className="small text-muted">
-                            {report.tipo && `[${report.tipo}]`} {report.fecha_limite && `- Limite: ${report.fecha_limite}`} {" "}
+                            {report.tipo && `[${report.tipo}]`}{" "}
+                            {report.fecha_limite &&
+                              `- Limite: ${report.fecha_limite}`}{" "}
                             {report.has_attachment && "- Tiene archivo base"}
                           </div>
+                          {!fixedEvidenceId && report.evidence?.titulo && (
+                            <div className="small text-muted">
+                              Espacio: {report.evidence.titulo}
+                            </div>
+                          )}
                         </div>
                         <div className="d-flex flex-wrap gap-2">
                           <button
                             type="button"
                             className="btn btn-sm btn-outline-primary"
                             onClick={() => startEdit(report)}
+                            disabled={deletingId === report.id}
                           >
                             Editar
                           </button>
@@ -291,13 +407,19 @@ export default function AdministratorReports({ embedded = false, onClose, eviden
                             type="button"
                             className="btn btn-sm btn-outline-danger"
                             onClick={() => deleteReport(report.id)}
+                            disabled={deletingId === report.id}
                           >
-                            Eliminar
+                            {deletingId === report.id
+                              ? "Eliminando..."
+                              : "Eliminar"}
                           </button>
                         </div>
                       </div>
                       {report.descripcion && (
-                        <p className="mb-0 mt-2 text-muted" style={{ whiteSpace: "pre-line" }}>
+                        <p
+                          className="mb-0 mt-2 text-muted"
+                          style={{ whiteSpace: "pre-line" }}
+                        >
                           {report.descripcion}
                         </p>
                       )}

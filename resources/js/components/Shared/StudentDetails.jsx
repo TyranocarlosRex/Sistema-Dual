@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { parseDownloadFilename } from "../../utils/downloadFilename";
+import { useToast } from "./ToastProvider";
 
 const HERO_STYLE = {
   background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 45%, #0f172a 100%)",
@@ -11,13 +12,26 @@ const HERO_STYLE = {
   boxShadow: "0 24px 54px -35px rgba(37, 99, 235, 0.7)",
 };
 
+const buildAssignmentForm = (student) => ({
+  empresa: student?.Empresa ?? "",
+  numero_convenio: student?.Numero_convenio ?? "",
+});
+
+const normalizeOptionalText = (value) => {
+  const trimmed = String(value ?? "").trim();
+  return trimmed === "" ? null : trimmed;
+};
+
 export default function StudentDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const isAdmin = Boolean(localStorage.getItem("admin"));
   const staffSubmissionBasePath = localStorage.getItem("admin")
     ? "/api/admin/report-submissions"
     : "/api/coordinator/report-submissions";
 
+  const [period, setPeriod] = useState(null);
   const [student, setStudent] = useState(null);
   const [evidences, setEvidences] = useState({ spaces: [], sent: [], missing: [] });
   const [grades, setGrades] = useState({});
@@ -27,6 +41,9 @@ export default function StudentDetailsPage() {
   const [updatingId, setUpdatingId] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
   const [previewFile, setPreviewFile] = useState(null);
+  const [editingAssignment, setEditingAssignment] = useState(false);
+  const [assignmentForm, setAssignmentForm] = useState(() => buildAssignmentForm(null));
+  const [savingAssignment, setSavingAssignment] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -42,12 +59,15 @@ export default function StudentDetailsPage() {
           },
         });
 
-      setStudent(data.student);
-      setEvidences({
-        spaces: Array.isArray(data.documents?.spaces) ? data.documents.spaces : [],
-        sent: Array.isArray(data.documents?.sent) ? data.documents.sent : [],
-        missing: Array.isArray(data.documents?.missing) ? data.documents.missing : [],
-      });
+        setPeriod(data.period ?? null);
+        setStudent(data.student);
+        setAssignmentForm(buildAssignmentForm(data.student));
+        setEditingAssignment(false);
+        setEvidences({
+          spaces: Array.isArray(data.documents?.spaces) ? data.documents.spaces : [],
+          sent: Array.isArray(data.documents?.sent) ? data.documents.sent : [],
+          missing: Array.isArray(data.documents?.missing) ? data.documents.missing : [],
+        });
         if (Array.isArray(data.documents?.sent)) {
           const initialGrades = {};
           const initialFeedbacks = {};
@@ -120,6 +140,113 @@ export default function StudentDetailsPage() {
       : student.Estatus && student.Estatus.toLowerCase() === "baja"
       ? "warning text-dark"
       : "secondary";
+  const canEditAssignment = isAdmin && Boolean(period?.id);
+  const assignmentCardStyle = editingAssignment
+    ? {
+        background: "#ffffff",
+        borderColor: "#bfdbfe",
+        boxShadow: "0 0 0 1px rgba(59, 130, 246, 0.18)",
+      }
+    : {};
+
+  const handleStartAssignmentEdit = () => {
+    setAssignmentForm(buildAssignmentForm(student));
+    setEditingAssignment(true);
+  };
+
+  const handleCancelAssignmentEdit = () => {
+    setAssignmentForm(buildAssignmentForm(student));
+    setEditingAssignment(false);
+  };
+
+  const handleSaveAssignment = async () => {
+    if (!isAdmin) return;
+
+    if (!period?.id) {
+      showToast({
+        title: "Periodo no disponible",
+        message: "Necesitas un periodo activo o seleccionado para cambiar la empresa.",
+        variant: "warning",
+      });
+      return;
+    }
+
+    const empresa = normalizeOptionalText(assignmentForm.empresa);
+    const numeroConvenio = normalizeOptionalText(assignmentForm.numero_convenio);
+    const estatusActual = String(student?.Estatus ?? "").toLowerCase();
+
+    if (estatusActual === "activo" && !empresa) {
+      showToast({
+        title: "Empresa requerida",
+        message: "Un estudiante activo debe tener empresa asignada.",
+        variant: "warning",
+      });
+      return;
+    }
+
+    if (estatusActual === "activo" && !numeroConvenio) {
+      showToast({
+        title: "Convenio requerido",
+        message: "Un estudiante activo debe tener numero de convenio.",
+        variant: "warning",
+      });
+      return;
+    }
+
+    try {
+      setSavingAssignment(true);
+
+      const token = localStorage.getItem("token");
+      const { data } = await axios.patch(
+        `/api/students/${id}/estatus`,
+        {
+          empresa,
+          numero_convenio: numeroConvenio,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      const nextStudent = {
+        ...student,
+        Empresa: data?.Empresa ?? empresa,
+        Numero_convenio: data?.Numero_convenio ?? numeroConvenio,
+        Estatus: data?.estatus ?? student.Estatus,
+        Carrera: data?.Carrera ?? student.Carrera,
+        Semestre: data?.Semestre ?? student.Semestre,
+        Motivo_baja:
+          data?.Motivo_baja ?? (data?.estatus === "Baja" ? student.Motivo_baja : null),
+        Fecha_baja:
+          data?.Fecha_baja ?? (data?.estatus === "Baja" ? student.Fecha_baja : null),
+      };
+
+      setStudent(nextStudent);
+      setAssignmentForm(buildAssignmentForm(nextStudent));
+      setEditingAssignment(false);
+
+      showToast({
+        title: "Asignacion actualizada",
+        message: "La empresa del estudiante se actualizo correctamente.",
+        variant: "success",
+      });
+    } catch (err) {
+      console.error(err);
+      showToast({
+        title: "No se pudo guardar",
+        message:
+          err.response?.data?.message ||
+          "No se pudo actualizar la empresa del estudiante.",
+        variant: "error",
+      });
+    } finally {
+      setSavingAssignment(false);
+    }
+  };
+
   const handleSubmissionUpdate = async (sub, statusOverride) => {
     try {
       setUpdatingId(sub.id);
@@ -319,15 +446,110 @@ export default function StudentDetailsPage() {
               </div>
             </div>
             <div className="col-md-6">
-              <div className="p-3 border rounded-3 h-100 bg-light">
-                <div className="text-muted small">Empresa</div>
-                <div className="fw-semibold">{student.Empresa || "-"}</div>
+              <div
+                className="p-3 border rounded-3 h-100 bg-light"
+                style={assignmentCardStyle}
+              >
+                <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
+                  <div className="text-muted small">Empresa</div>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      className="btn btn-link btn-sm p-0 text-decoration-none"
+                      onClick={editingAssignment ? handleCancelAssignmentEdit : handleStartAssignmentEdit}
+                      disabled={savingAssignment || (!editingAssignment && !canEditAssignment)}
+                      style={{
+                        fontSize: "0.82rem",
+                        color: editingAssignment ? "#64748b" : "#2563eb",
+                      }}
+                    >
+                      {editingAssignment ? "Cancelar" : "Editar"}
+                    </button>
+                  )}
+                </div>
+
+                {editingAssignment ? (
+                  <>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm"
+                      value={assignmentForm.empresa}
+                      onChange={(e) =>
+                        setAssignmentForm((prev) => ({
+                          ...prev,
+                          empresa: e.target.value,
+                        }))
+                      }
+                      placeholder="Nombre de la empresa"
+                      disabled={savingAssignment}
+                    />
+                    <div className="text-muted small mt-2">
+                      {period?.codigo
+                        ? `Periodo ${period.codigo}`
+                        : "Periodo actual"}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="fw-semibold">{student.Empresa || "-"}</div>
+                    {isAdmin && !canEditAssignment && (
+                      <div className="text-muted small mt-2">
+                        No hay un periodo activo o seleccionado para editar.
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
             <div className="col-md-6">
-              <div className="p-3 border rounded-3 h-100 bg-light">
-                <div className="text-muted small">Numero de convenio</div>
-                <div className="fw-semibold">{student.Numero_convenio || "-"}</div>
+              <div
+                className="p-3 border rounded-3 h-100 bg-light"
+                style={assignmentCardStyle}
+              >
+                <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
+                  <div className="text-muted small">Numero de convenio</div>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      className="btn btn-link btn-sm p-0 text-decoration-none"
+                      onClick={editingAssignment ? handleSaveAssignment : handleStartAssignmentEdit}
+                      disabled={savingAssignment || (!editingAssignment && !canEditAssignment)}
+                      style={{
+                        fontSize: "0.82rem",
+                        color: editingAssignment ? "#2563eb" : "#2563eb",
+                      }}
+                    >
+                      {editingAssignment
+                        ? savingAssignment
+                          ? "Guardando..."
+                          : "Guardar"
+                        : "Editar"}
+                    </button>
+                  )}
+                </div>
+
+                {editingAssignment ? (
+                  <>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm"
+                      value={assignmentForm.numero_convenio}
+                      onChange={(e) =>
+                        setAssignmentForm((prev) => ({
+                          ...prev,
+                          numero_convenio: e.target.value,
+                        }))
+                      }
+                      placeholder="Ej. CV-2026-014"
+                      disabled={savingAssignment}
+                    />
+                    <div className="text-muted small mt-2">
+                      Actualiza empresa y convenio en el mismo guardado.
+                    </div>
+                  </>
+                ) : (
+                  <div className="fw-semibold">{student.Numero_convenio || "-"}</div>
+                )}
               </div>
             </div>
             {student.Estatus === "Baja" && (

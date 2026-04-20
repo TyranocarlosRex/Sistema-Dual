@@ -9,6 +9,7 @@ use App\Http\Requests\GenerateDocumentTemplateRequest;
 use App\Models\DocumentTemplate;
 use App\Support\DocumentTemplateGenerationService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Barryvdh\DomPDF\PDF as DomPdfWrapper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -82,16 +83,7 @@ class DocumentTemplateGenerationController extends Controller
 
             abort_if(!$generatedDocument, 404, 'No se pudo generar el PDF solicitado.');
 
-            return Pdf::setOptions([
-                'isRemoteEnabled' => true,
-                'defaultFont' => 'DejaVu Sans',
-            ])
-                ->loadView('documents.generated-document-pdf', [
-                    'document' => $document,
-                    'generatedDocument' => $generatedDocument,
-                    'period' => $period,
-                ])
-                ->setPaper('letter', 'portrait')
+            return $this->fitPdfToPage($document, $generatedDocument, $period)
                 ->download((string) ($generatedDocument['pdf_filename'] ?? 'documento.pdf'));
         } catch (Throwable $exception) {
             report($exception);
@@ -104,5 +96,38 @@ class DocumentTemplateGenerationController extends Controller
                 'message' => $message,
             ], 422);
         }
+    }
+
+    private function fitPdfToPage(DocumentTemplate $document, array $generatedDocument, mixed $period): DomPdfWrapper
+    {
+        $candidateScales = [1.0, 0.97, 0.94, 0.91, 0.88, 0.85, 0.82, 0.79, 0.76];
+        $bestPdf = null;
+
+        foreach ($candidateScales as $scale) {
+            $pdf = $this->buildPdf($document, $generatedDocument, $period, $scale);
+            $pdf->render();
+            $bestPdf = $pdf;
+
+            if ($pdf->getCanvas()->get_page_count() <= 1) {
+                break;
+            }
+        }
+
+        return $bestPdf ?? $this->buildPdf($document, $generatedDocument, $period, 1.0);
+    }
+
+    private function buildPdf(DocumentTemplate $document, array $generatedDocument, mixed $period, float $scale): DomPdfWrapper
+    {
+        return Pdf::setOptions([
+            'isRemoteEnabled' => true,
+            'defaultFont' => 'DejaVu Sans',
+        ])
+            ->loadView('documents.generated-document-pdf', [
+                'document' => $document,
+                'generatedDocument' => $generatedDocument,
+                'period' => $period,
+                'scale' => $scale,
+            ])
+            ->setPaper('letter', 'portrait');
     }
 }

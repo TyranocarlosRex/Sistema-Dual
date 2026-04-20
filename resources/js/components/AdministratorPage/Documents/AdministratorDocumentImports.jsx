@@ -524,19 +524,6 @@ const buildGeneratedDocumentHtml = (generatedDocument) => `<!doctype html>
   </body>
 </html>`;
 
-const triggerDownload = (filename, content, type = "text/html;charset=utf-8") => {
-  const blob = new Blob([content], { type });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-};
-
 const triggerBlobDownload = (filename, blob) => {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -967,10 +954,6 @@ export default function AdministratorDocumentImports() {
     }
   };
 
-  const handleDownloadGeneratedDocument = (generatedDocument) => {
-    triggerDownload(generatedDocument?.filename || "documento-generado.html", buildGeneratedDocumentHtml(generatedDocument));
-  };
-
   const handleOpenGeneratedPreview = (generatedDocument) => {
     setPreviewModalDocument(generatedDocument);
   };
@@ -986,7 +969,7 @@ export default function AdministratorDocumentImports() {
       console.error(err);
       showToast({
         title: "No se pudo abrir la impresion",
-        message: "El navegador no permitio abrir la vista de impresion. Intenta con Descargar HTML o Descargar PDF.",
+        message: "El navegador no permitio abrir la vista de impresion. Intenta con Descargar PDF.",
         variant: "error",
       });
     }
@@ -1873,13 +1856,6 @@ export default function AdministratorDocumentImports() {
                             >
                               Imprimir / Guardar PDF
                             </button>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-primary"
-                              onClick={() => handleDownloadGeneratedDocument(generatedDocument)}
-                            >
-                              Descargar HTML
-                            </button>
                           </div>
                         </div>
 
@@ -2152,13 +2128,6 @@ export default function AdministratorDocumentImports() {
                     onClick={() => handlePrintGeneratedDocument(previewModalDocument)}
                   >
                     Imprimir / Guardar PDF
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-primary"
-                    onClick={() => handleDownloadGeneratedDocument(previewModalDocument)}
-                  >
-                    Descargar HTML
                   </button>
                   <button
                     type="button"

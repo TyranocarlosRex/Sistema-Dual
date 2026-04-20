@@ -2,7 +2,7 @@
 import axios from "axios";
 import AdministratorReports from "./Reports/AdministratorReports";
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = "/api";
 
 const TIPO_OPCIONES = [
   { value: "inscripcion", label: "Inscripcion" },
@@ -14,7 +14,6 @@ export default function AdminEvidences() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [showReportsModal, setShowReportsModal] = useState(false);
 
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [titulo, setTitulo] = useState("");
@@ -29,11 +28,6 @@ export default function AdminEvidences() {
   const [deletingId, setDeletingId] = useState(null);
 
   const [activeEvidenceId, setActiveEvidenceId] = useState(null);
-  const [repTitulo, setRepTitulo] = useState("");
-  const [repDescripcion, setRepDescripcion] = useState("");
-  const [repFechaLimite, setRepFechaLimite] = useState("");
-  const [repAttachment, setRepAttachment] = useState(null);
-  const [reportError, setReportError] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -148,7 +142,6 @@ export default function AdminEvidences() {
       }
 
       if (activeEvidenceId === ev.id) {
-        setShowReportsModal(false);
         setActiveEvidenceId(null);
       }
 
@@ -168,46 +161,13 @@ export default function AdminEvidences() {
 
   const abrirFormReporte = (evidenceId) => {
     setActiveEvidenceId(evidenceId);
-    setShowReportsModal(true);
   };
 
-  const handleCrearReporte = async (e) => {
-    e.preventDefault();
-    setReportError("");
-
-    if (!activeEvidenceId) {
-      setReportError("Selecciona un espacio valido.");
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("evidence_id", activeEvidenceId);
-      formData.append("titulo", repTitulo);
-      formData.append("descripcion", repDescripcion);
-      if (repFechaLimite) formData.append("fecha_limite", repFechaLimite);
-      if (repAttachment) formData.append("attachment", repAttachment);
-
-      await axiosAuth.post("/reports", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setActiveEvidenceId(null);
-      setRepTitulo("");
-      setRepDescripcion("");
-      setRepFechaLimite("");
-      setRepAttachment(null);
-
-      await cargarEvidences();
-    } catch (err) {
-      console.error(err);
-      setReportError("No se pudo crear el reporte.");
-    }
+  const cerrarModalReportes = () => {
+    setActiveEvidenceId(null);
   };
 
-  const activeEvidence = evidences.find((ev) => ev.id === activeEvidenceId);
+  const activeEvidence = evidences.find((ev) => ev.id === activeEvidenceId) || null;
 
   const stats = useMemo(() => {
     const total = evidences.length;
@@ -457,7 +417,7 @@ export default function AdminEvidences() {
           </div>
         </div>
 
-        {showReportsModal && (
+        {activeEvidenceId !== null && (
           <div className="position-fixed top-0 start-0 w-100 h-100" style={{ background: "rgba(0,0,0,0.55)", zIndex: 1050 }}>
             <div className="position-absolute top-50 start-50 translate-middle bg-white rounded shadow-lg" style={{ width: "90%", maxWidth: "1100px", maxHeight: "90vh", overflowY: "auto", padding: "1rem" }}>
               <div className="d-flex justify-content-between align-items-center mb-2">
@@ -470,10 +430,7 @@ export default function AdminEvidences() {
                 <button
                   type="button"
                   className="btn btn-sm btn-outline-secondary"
-                  onClick={() => {
-                    setShowReportsModal(false);
-                    setActiveEvidenceId(null);
-                  }}
+                  onClick={cerrarModalReportes}
                 >
                   Cerrar
                 </button>
@@ -482,10 +439,7 @@ export default function AdminEvidences() {
               <AdministratorReports
                 embedded
                 evidenceId={activeEvidenceId}
-                onClose={() => {
-                  setShowReportsModal(false);
-                  setActiveEvidenceId(null);
-                }}
+                onChange={cargarEvidences}
               />
             </div>
           </div>
