@@ -699,6 +699,7 @@ export default function AdministratorDocumentImports() {
   const originalBodyHtml = result?.body_html || plainPreviewHtml || DEFAULT_BODY_HTML;
   const headerHtml = result?.header_html || "";
   const footerHtml = result?.footer_html || "";
+  const hasPendingFileImport = Boolean(file && result?.filename !== file.name);
   const metaDirty = title.trim() !== baseline.title || description.trim() !== baseline.description;
   const hasUnsavedChanges = Boolean(result) && (bodyDirty || metaDirty);
   const quickPlaceholders = useMemo(
@@ -1304,7 +1305,7 @@ export default function AdministratorDocumentImports() {
       });
     } catch (err) {
       console.error(err);
-      const message = err?.response?.data?.message || "No se pudo importar el archivo.";
+      const message = readApiErrorMessage(err, "No se pudo importar el archivo.");
       setError(message);
       showToast({ title: "Importacion fallida", message, variant: "error" });
     } finally {
@@ -1386,6 +1387,11 @@ export default function AdministratorDocumentImports() {
   const handleSave = async () => {
     if (!result) {
       setError("Primero crea o importa un documento.");
+      return;
+    }
+
+    if (hasPendingFileImport) {
+      setError("Seleccionaste un archivo, pero aun no lo has importado. Presiona Importar documento para cargar el membrete antes de guardar.");
       return;
     }
 
@@ -1513,7 +1519,7 @@ export default function AdministratorDocumentImports() {
   };
 
   const resetDisabled = !result || !bodyDirty;
-  const saveDisabled = saving || !result || !title.trim();
+  const saveDisabled = saving || !result || !title.trim() || hasPendingFileImport;
   const generatedDocuments = Array.isArray(generationResult?.documents) ? generationResult.documents : [];
 
   return (
@@ -1933,6 +1939,12 @@ export default function AdministratorDocumentImports() {
                       {file.name} - {Math.round(file.size / 1024)} KB
                     </div>
                   )}
+
+                  {hasPendingFileImport && (
+                    <div className="alert alert-warning py-2 small mt-3 mb-0">
+                      Archivo seleccionado sin importar. Presiona <strong>Importar documento</strong> para cargar el membrete en la vista previa.
+                    </div>
+                  )}
                 </div>
 
                 <div className="border rounded-3 p-3 bg-light">
@@ -1965,7 +1977,7 @@ export default function AdministratorDocumentImports() {
                 {error && <div className="alert alert-danger py-2 mb-0">{error}</div>}
 
                 <div className="d-flex gap-2 flex-wrap">
-                  <button type="button" className="btn btn-outline-primary" onClick={handleImport} disabled={busy || !file}>
+                  <button type="button" className={`btn ${hasPendingFileImport ? "btn-primary" : "btn-outline-primary"}`} onClick={handleImport} disabled={busy || !file}>
                     {busy ? "Importando..." : "Importar documento"}
                   </button>
                   <button type="button" className="btn btn-primary" onClick={handleSave} disabled={saveDisabled}>

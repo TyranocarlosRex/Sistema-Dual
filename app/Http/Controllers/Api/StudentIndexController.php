@@ -18,10 +18,15 @@ class StudentIndexController extends Controller
 
     public function index(Request $request)
     {
-        $period = $this->resolvePeriodFromRequest($request);
-        $q = Student::with('user');
         $user = $request->user();
         $role = mb_strtolower((string)($user->role ?? ''));
+
+        if (!in_array($role, ['admin', 'coordinator'], true)) {
+            return response()->json(['message' => 'No autorizado.'], 403);
+        }
+
+        $period = $this->resolvePeriodFromRequest($request);
+        $q = Student::with('user');
 
         if ($period) {
             $q->whereHas('periodAssignments', function ($qq) use ($period) {

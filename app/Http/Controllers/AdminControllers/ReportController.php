@@ -73,8 +73,12 @@ class ReportController extends Controller
         return response()->json($report->load(['evidence', 'period']), 201);
     }
 
-    public function downloadAttachment(Report $report)
+    public function downloadAttachment(Request $request, Report $report)
     {
+        if ($forbidden = $this->forbidStudentFromUnavailableReport($request, $report)) {
+            return $forbidden;
+        }
+
         if (!$report->has_attachment || !$report->attachment_path) {
             return response()->json(['message' => 'Este reporte no tiene archivo adjunto.'], 404);
         }
@@ -105,7 +109,7 @@ class ReportController extends Controller
             return response()->json(['message' => 'No hay un periodo activo disponible.'], 422);
         }
 
-        $assignment = $student->ensureEnrollmentForPeriod($period->id);
+        $assignment = $student->enrollmentForPeriod($period->id);
 
         if ($assignment === null) {
             return response()->json([
@@ -194,6 +198,38 @@ class ReportController extends Controller
         $report->delete();
 
         return response()->json(['message' => 'Reporte eliminado']);
+    }
+
+    private function forbidStudentFromUnavailableReport(Request $request, Report $report)
+    {
+        $user = $request->user();
+        $role = mb_strtolower((string)($user?->role ?? ''));
+
+        if ($role !== 'student') {
+            return null;
+        }
+
+        $student = $user?->student;
+        if ($student === null) {
+            return response()->json(['message' => 'No tienes perfil de estudiante.'], 403);
+        }
+
+        if (!$report->periodo_id) {
+            return response()->json(['message' => 'El reporte no esta asociado a un periodo.'], 422);
+        }
+
+        $assignment = $student->enrollmentForPeriod((int)$report->periodo_id);
+        if ($assignment === null) {
+            return response()->json(['message' => 'No perteneces al periodo de este reporte.'], 403);
+        }
+
+        if (!$report->isVisibleToStudentAssignment($assignment)) {
+            return response()->json([
+                'message' => 'No puedes acceder a este reporte con tu estatus actual.',
+            ], 403);
+        }
+
+        return null;
     }
 
     private function resolveAttachmentDownloadName(Report $report): string

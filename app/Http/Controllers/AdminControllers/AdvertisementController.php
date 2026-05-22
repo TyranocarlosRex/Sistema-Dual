@@ -4,6 +4,7 @@ namespace App\Http\Controllers\AdminControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Advertisement;
+use App\Models\Period;
 use Illuminate\Http\Request;
 
 /*Este código define el controlador AdvertisementController 
@@ -20,18 +21,29 @@ class AdvertisementController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $role = $user->role;
-        $carrera = $user->carrera ?? null;
+        $role = mb_strtolower((string)$user->role);
+        $carrera = null;
+
+        if ($role === 'student') {
+            $user->loadMissing('student');
+            $student = $user->student;
+            $period = Period::current();
+            $assignment = $period ? $student?->enrollmentForPeriod($period->id) : null;
+            $carrera = $assignment?->Carrera ?? $student?->Carrera;
+        }
 
         $anuncios = Advertisement::query()
             ->visibles()
             ->paraRol($role)
             ->when(
-                $role === 'student' && $carrera,
+                $role === 'student',
                 function ($q) use ($carrera) {
                     $q->where(function ($qq) use ($carrera) {
-                        $qq->whereNull('target_carrera')
-                           ->orWhere('target_carrera', $carrera);
+                        $qq->whereNull('target_carrera');
+
+                        if (!blank($carrera)) {
+                            $qq->orWhere('target_carrera', $carrera);
+                        }
                     });
                 }
             )

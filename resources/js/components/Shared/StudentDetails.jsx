@@ -285,8 +285,9 @@ export default function StudentDetailsPage() {
     try {
       setDownloadingId(sub.id);
       const token = localStorage.getItem("token");
+      const action = preview ? "preview" : "download";
       const { data, headers } = await axios.get(
-        `${staffSubmissionBasePath}/${sub.id}/download`,
+        `${staffSubmissionBasePath}/${sub.id}/${action}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",
@@ -317,7 +318,7 @@ export default function StudentDetailsPage() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
-      alert("No se pudo descargar el archivo.");
+      alert(preview ? "No se pudo previsualizar el archivo." : "No se pudo descargar el archivo.");
     } finally {
       setDownloadingId(null);
     }

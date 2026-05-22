@@ -141,7 +141,7 @@ class StudentDetailsController extends Controller
                     }
                 },
             ])
-            ->orderByRaw("FIELD(tipo, 'inscripcion','programa')")
+            ->orderByRaw("CASE tipo WHEN 'inscripcion' THEN 0 WHEN 'programa' THEN 1 ELSE 2 END")
             ->orderBy('titulo')
             ->get()
             ->map(function ($evidence) {

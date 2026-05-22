@@ -40,6 +40,7 @@ Route::middleware(['auth:sanctum', 'abilities:student'])->group(function () {
 // Coordinador (y admin puede ver detalles de estudiantes)
 Route::middleware(['auth:sanctum', 'ability:coordinator,admin'])->group(function () {
     Route::get('/coordinator/report-submissions',[SubmissionController::class, 'indexForStaff']);
+    Route::get('/coordinator/report-submissions/{submission}/preview',[SubmissionController::class, 'preview']);
     Route::get('/coordinator/report-submissions/{submission}/download',[SubmissionController::class, 'download']);
     Route::patch('/coordinator/report-submissions/{submission}',[SubmissionController::class, 'updateStatus']);
     Route::get('/students/{student}/details', [StudentDetailsController::class, 'show']);
@@ -53,11 +54,20 @@ Route::middleware(['auth:sanctum', 'abilities:coordinator'])->group(function () 
     Route::get('/coordinator/me', [AuthController::class, 'meCoordinator']);
 });
 
+// Rutas de staff autenticado
+Route::middleware(['auth:sanctum', 'ability:admin,coordinator'])->group(function () {
+    Route::get('/students', [StudentIndexController::class, 'index']);
+    Route::patch('/students/{student}/estatus', [StudentIndexController::class, 'updateEstatus']);
+});
+
+Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
+    Route::get('/coordinators', [CoordinatorIndexController::class, 'index']);
+    Route::post('/coordinators', [CoordinatorIndexController::class, 'store']);
+    Route::delete('/coordinators/{coordinator}', [CoordinatorIndexController::class, 'destroy']);
+});
+
 // Rutas comunes autenticadas
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/students', [StudentIndexController::class, 'index']); 
-    Route::patch('/students/{student}/estatus', [StudentIndexController::class, 'updateEstatus']); 
-    Route::get('/coordinators', [CoordinatorIndexController::class, 'index']);
     Route::get('/advertisements', [AdvertisementController::class, 'index']);
 });
 
@@ -98,6 +108,7 @@ Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
     Route::post('/periods/{period}/students/clone', [PeriodController::class, 'cloneStudents']);
 
     Route::get('/admin/report-submissions',[SubmissionController::class, 'indexForStaff']);
+    Route::get('/admin/report-submissions/{submission}/preview',[SubmissionController::class, 'preview']);
     Route::get('/admin/report-submissions/{submission}/download',[SubmissionController::class, 'download']);
     Route::patch('/admin/report-submissions/{submission}',[SubmissionController::class, 'updateStatus']);
 

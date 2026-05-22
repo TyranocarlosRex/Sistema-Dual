@@ -107,7 +107,7 @@ class EvidenceController extends Controller
             return response()->json(['message' => 'No hay un periodo activo disponible.'], 422);
         }
 
-        $assignment = $student->ensureEnrollmentForPeriod($period->id);
+        $assignment = $student->enrollmentForPeriod($period->id);
 
         if ($assignment === null) {
             return response()->json([
@@ -137,7 +137,7 @@ class EvidenceController extends Controller
             ->whereHas('reports', function ($qq) use ($period) {
                 $qq->where('periodo_id', $period->id);
             })
-            ->orderByRaw("FIELD(tipo, 'inscripcion','programa')")
+            ->orderByRaw("CASE tipo WHEN 'inscripcion' THEN 0 WHEN 'programa' THEN 1 ELSE 2 END")
             ->orderBy('titulo')
             ->get();
 

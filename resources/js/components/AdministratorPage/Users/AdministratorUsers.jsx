@@ -35,6 +35,17 @@ const INITIAL_STATUS_MODAL = {
   motivo_baja: "",
 };
 
+const INITIAL_COORDINATOR_MODAL = {
+  open: false,
+  nombre: "",
+  apellidos: "",
+  correo: "",
+  carrera: CARRERAS[0],
+  password: "",
+  saving: false,
+  error: "",
+};
+
 export default function AdministratorUsers() {
   const navigate = useNavigate();
 
@@ -49,6 +60,8 @@ export default function AdministratorUsers() {
   const [error, setError] = useState("");
   const [actualizandoId, setActualizandoId] = useState(null);
   const [statusModal, setStatusModal] = useState(INITIAL_STATUS_MODAL);
+  const [coordinatorModal, setCoordinatorModal] = useState(INITIAL_COORDINATOR_MODAL);
+  const [eliminandoCoordinadorId, setEliminandoCoordinadorId] = useState(null);
 
   useEffect(() => {
     setNombre("");
@@ -333,6 +346,116 @@ export default function AdministratorUsers() {
     navigate(`/administrator/students/${idBack}`);
   };
 
+  const abrirCoordinatorModal = () => {
+    setCoordinatorModal({ ...INITIAL_COORDINATOR_MODAL, open: true });
+  };
+
+  const cerrarCoordinatorModal = () => {
+    setCoordinatorModal(INITIAL_COORDINATOR_MODAL);
+  };
+
+  const actualizarCoordinatorModal = (field, value) => {
+    setCoordinatorModal((prev) => ({
+      ...prev,
+      [field]: value,
+      error: "",
+    }));
+  };
+
+  const crearCoordinador = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setCoordinatorModal((prev) => ({
+        ...prev,
+        error: "No hay sesion de administrador. Vuelve a iniciar sesion.",
+      }));
+      return;
+    }
+
+    try {
+      setCoordinatorModal((prev) => ({ ...prev, saving: true, error: "" }));
+
+      await axios.post(
+        "/api/coordinators",
+        {
+          nombre: coordinatorModal.nombre.trim(),
+          apellidos: coordinatorModal.apellidos.trim(),
+          correo: coordinatorModal.correo.trim(),
+          carrera: coordinatorModal.carrera,
+          password: coordinatorModal.password,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      setCorreo("");
+      setCarrera("");
+      cerrarCoordinatorModal();
+      await buscarUsuarios(1, {
+        nombre: "",
+        correo: "",
+        carrera: "",
+        estatus: "",
+      });
+    } catch (e) {
+      console.error(e);
+
+      const validationErrors = Object.values(e?.response?.data?.errors || {})
+        .flat()
+        .filter(Boolean)
+        .join(" ");
+
+      setCoordinatorModal((prev) => ({
+        ...prev,
+        error:
+          validationErrors ||
+          e?.response?.data?.message ||
+          "No se pudo registrar el coordinador.",
+      }));
+    } finally {
+      setCoordinatorModal((prev) => ({ ...prev, saving: false }));
+    }
+  };
+
+  const eliminarCoordinador = async (fila) => {
+    if (tipo !== "coordinators") return;
+
+    const nombreCompleto = `${fila.nombre} ${fila.apellidos}`.trim();
+    if (!window.confirm(`Eliminar al coordinador ${nombreCompleto}?`)) {
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("La sesion ha expirado, vuelve a iniciar sesion como administrador.");
+      return;
+    }
+
+    try {
+      setEliminandoCoordinadorId(fila.id);
+
+      const idBack = fila._raw?.id ?? fila.id;
+      await axios.delete(`/api/coordinators/${idBack}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      setRows((prev) => prev.filter((row) => row.id !== fila.id));
+    } catch (e) {
+      console.error(e);
+      alert(e?.response?.data?.message || "No se pudo eliminar el coordinador.");
+    } finally {
+      setEliminandoCoordinadorId(null);
+    }
+  };
+
 
   const badgeClassForStatus = (estatus) => {
     const val = (estatus || "").toLowerCase();
@@ -370,6 +493,15 @@ export default function AdministratorUsers() {
               </p>
             </div>
             <div className="ms-auto d-flex gap-2">
+              {!isStudents && (
+                <button
+                  className="btn btn-light btn-sm"
+                  type="button"
+                  onClick={abrirCoordinatorModal}
+                >
+                  Agregar coordinador
+                </button>
+              )}
               <button
                 className="btn btn-light btn-sm"
                 type="button"
@@ -640,6 +772,16 @@ export default function AdministratorUsers() {
                               </button>
                             </div>
                           )}
+                          {!isStudents && (
+                            <button
+                              type="button"
+                              className="btn btn-outline-danger btn-sm"
+                              disabled={eliminandoCoordinadorId === r.id}
+                              onClick={() => eliminarCoordinador(r)}
+                            >
+                              {eliminandoCoordinadorId === r.id ? "Eliminando..." : "Eliminar"}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -757,6 +899,122 @@ export default function AdministratorUsers() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {coordinatorModal.open && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100"
+          style={{ background: "rgba(15, 23, 42, 0.55)", zIndex: 1050 }}
+          onClick={cerrarCoordinatorModal}
+        >
+          <form
+            className="position-absolute top-50 start-50 translate-middle bg-white rounded-4 shadow-lg"
+            style={{ width: "92%", maxWidth: "640px" }}
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={(e) => {
+              e.preventDefault();
+              crearCoordinador();
+            }}
+          >
+            <div className="p-4">
+              <div className="d-flex justify-content-between align-items-start gap-3 mb-3">
+                <div>
+                  <p className="text-uppercase text-muted small mb-1" style={{ letterSpacing: "0.08em" }}>
+                    Coordinadores
+                  </p>
+                  <h5 className="mb-1">Agregar coordinador</h5>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={cerrarCoordinatorModal}
+                  disabled={coordinatorModal.saving}
+                >
+                  Cerrar
+                </button>
+              </div>
+
+              {coordinatorModal.error && (
+                <div className="alert alert-danger py-2" role="alert">
+                  {coordinatorModal.error}
+                </div>
+              )}
+
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label className="form-label">Nombre</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    value={coordinatorModal.nombre}
+                    onChange={(e) => actualizarCoordinatorModal("nombre", e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Apellidos</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    value={coordinatorModal.apellidos}
+                    onChange={(e) => actualizarCoordinatorModal("apellidos", e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Correo</label>
+                  <input
+                    className="form-control"
+                    type="email"
+                    value={coordinatorModal.correo}
+                    onChange={(e) => actualizarCoordinatorModal("correo", e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Contrasena inicial</label>
+                  <input
+                    className="form-control"
+                    type="password"
+                    minLength={8}
+                    value={coordinatorModal.password}
+                    onChange={(e) => actualizarCoordinatorModal("password", e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="col-12">
+                  <label className="form-label">Carrera</label>
+                  <select
+                    className="form-select"
+                    value={coordinatorModal.carrera}
+                    onChange={(e) => actualizarCoordinatorModal("carrera", e.target.value)}
+                    required
+                  >
+                    {CARRERAS.map((car) => (
+                      <option key={car} value={car}>
+                        {car}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={cerrarCoordinatorModal}
+                  disabled={coordinatorModal.saving}
+                >
+                  Cancelar
+                </button>
+                <button className="btn btn-primary" type="submit" disabled={coordinatorModal.saving}>
+                  {coordinatorModal.saving ? "Guardando..." : "Guardar coordinador"}
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
       )}
 

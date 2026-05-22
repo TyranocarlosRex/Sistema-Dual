@@ -391,9 +391,6 @@ class PeriodController extends Controller
                         'Fecha_baja' => $item['fecha_baja'] ?? null,
                         'Fecha_alta' => $item['fecha_alta'] ?? now()->toDateString(),
                         'Fecha_cierre' => null,
-                        'Primer_login_at' => null,
-                        'Ultimo_login_at' => null,
-                        'Origen_login' => null,
                     ]
                 );
             }
@@ -489,9 +486,6 @@ class PeriodController extends Controller
                 'Fecha_baja' => $assignment->Fecha_baja,
                 'Fecha_alta' => now()->toDateString(),
                 'Fecha_cierre' => null,
-                'Primer_login_at' => null,
-                'Ultimo_login_at' => null,
-                'Origen_login' => null,
             ];
 
             if ($overwriteExisting) {

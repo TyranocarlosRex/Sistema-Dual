@@ -102,7 +102,7 @@ export default function CoordinatorPending() {
       const token = localStorage.getItem("token");
 
       const { data, headers } = await axios.get(
-        `/api/coordinator/report-submissions/${submission.id}/download`,
+        `/api/coordinator/report-submissions/${submission.id}/preview`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",

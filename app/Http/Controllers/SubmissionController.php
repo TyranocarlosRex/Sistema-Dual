@@ -22,6 +22,8 @@ class SubmissionController extends Controller
             return response()->json(['message' => 'No tienes perfil de estudiante.'], 403);
         }
 
+        $report->loadMissing(['period', 'evidence']);
+
         if ($report->period?->isClosed()) {
             return response()->json([
                 'message' => 'El periodo de este reporte ya esta cerrado.',
@@ -37,6 +39,12 @@ class SubmissionController extends Controller
         $assignment = $this->resolveStudentAssignmentForPeriod($student, $report->periodo_id);
         if ($assignment instanceof JsonResponse) {
             return $assignment;
+        }
+
+        if (!$report->isVisibleToStudentAssignment($assignment)) {
+            return response()->json([
+                'message' => 'No puedes entregar este reporte con tu estatus actual.',
+            ], 403);
         }
 
         $this->validateSubmissionFile($request);
@@ -155,24 +163,16 @@ class SubmissionController extends Controller
             return $forbidden;
         }
 
-        $path = storage_path('app/public/' . $submission->file_path);
+        return $this->submissionFileResponse($submission, true);
+    }
 
-        if (!file_exists($path)) {
-            return response()->json(['message' => 'El archivo no existe.'], 404);
+    public function preview(Request $request, Submission $submission)
+    {
+        if ($forbidden = $this->forbidCoordinatorFromOtherCareer($request, $submission)) {
+            return $forbidden;
         }
 
-        $downloadName = $this->resolveSubmissionDownloadName($submission);
-        $mime = 'application/octet-stream';
-        try {
-            $mime = Storage::disk('public')->mimeType($submission->file_path) ?: $mime;
-        } catch (\Throwable) {
-            $mime = $mime;
-        }
-
-        return response()->download($path, $downloadName, [
-            'Content-Type' => $mime,
-            'X-Download-Filename' => rawurlencode($downloadName),
-        ]);
+        return $this->submissionFileResponse($submission, false);
     }
 
     private function forbidCoordinatorFromOtherCareer(Request $request, Submission $submission)
@@ -226,7 +226,7 @@ class SubmissionController extends Controller
             ], 422);
         }
 
-        $assignment = $student->ensureEnrollmentForPeriod($periodId);
+        $assignment = $student->enrollmentForPeriod($periodId);
 
         if ($assignment === null) {
             return response()->json([
@@ -258,11 +258,58 @@ class SubmissionController extends Controller
         return 'entrega-' . $submission->id;
     }
 
+    private function submissionFileResponse(Submission $submission, bool $download)
+    {
+        $disk = Storage::disk('public');
+        $filePath = trim((string)$submission->file_path);
+
+        if ($filePath === '' || !$disk->exists($filePath)) {
+            return response()->json(['message' => 'El archivo no existe.'], 404);
+        }
+
+        $path = $disk->path($filePath);
+        $downloadName = $this->resolveSubmissionDownloadName($submission);
+        $mime = 'application/octet-stream';
+
+        try {
+            $mime = $disk->mimeType($filePath) ?: $mime;
+        } catch (\Throwable) {
+            $mime = 'application/octet-stream';
+        }
+
+        $headers = [
+            'Content-Type' => $mime,
+            'X-Download-Filename' => rawurlencode($downloadName),
+        ];
+
+        if ($download) {
+            return response()->download($path, $downloadName, $headers);
+        }
+
+        $response = response()->file($path, $headers);
+        $response->setContentDisposition(
+            'inline',
+            $downloadName,
+            $this->asciiFilenameFallback($downloadName, 'entrega-' . $submission->id)
+        );
+
+        return $response;
+    }
+
     private function sanitizeDownloadName(string $name, string $fallback): string
     {
         $name = basename(str_replace('\\', '/', $name));
         $clean = trim((string)preg_replace('/[\x00-\x1F\x7F]/u', '', $name));
 
         return $clean !== '' ? $clean : $fallback;
+    }
+
+    private function asciiFilenameFallback(string $name, string $fallback): string
+    {
+        $ascii = (string)preg_replace('/[^\x20-\x7E]/', '_', $name);
+        $ascii = str_replace(['%', '/', '\\'], '_', $ascii);
+        $ascii = trim($ascii, " \t\n\r\0\x0B\"'");
+
+        return $ascii !== '' ? $ascii : $fallback;
     }
 }

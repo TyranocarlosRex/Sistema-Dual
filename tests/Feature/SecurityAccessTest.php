@@ -30,6 +30,16 @@ class SecurityAccessTest extends TestCase
         $this->getJson('/api/evidences')->assertStatus(403);
     }
 
+    public function test_student_role_cannot_access_staff_indexes_even_with_privileged_ability(): void
+    {
+        $user = User::factory()->create(['role' => 'student']);
+
+        Sanctum::actingAs($user, ['admin', 'coordinator']);
+
+        $this->getJson('/api/students')->assertStatus(403);
+        $this->getJson('/api/coordinators')->assertStatus(403);
+    }
+
     public function test_coordinator_token_cannot_call_admin_me(): void
     {
         $user = User::factory()->create(['role' => 'coordinator']);

@@ -53,4 +53,19 @@ class Report extends Model
     {
         return $this->hasMany(Submission::class);
     }
+
+    public function isVisibleToStudentAssignment(?StudentPeriod $assignment): bool
+    {
+        if ($assignment === null) {
+            return false;
+        }
+
+        $this->loadMissing('evidence');
+
+        $evidenceType = mb_strtolower(trim((string)($this->evidence?->tipo ?? '')));
+        $studentStatus = mb_strtolower(trim((string)($assignment->Estatus ?? '')));
+
+        return $evidenceType === 'inscripcion'
+            || ($evidenceType === 'programa' && $studentStatus === mb_strtolower(Student::STATUS_ACTIVO));
+    }
 }
