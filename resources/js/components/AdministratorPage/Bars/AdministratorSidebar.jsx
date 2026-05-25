@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { APP_ROUTES } from "../../../routes";
 
 const SIDEBAR_STYLE = {
   minWidth: "180px",
@@ -41,18 +42,18 @@ const menuGroups = [
   {
     title: "Administracion",
     links: [
-      { label: "Inicio", to: "/administrator-home" },
-      { label: "Periodos", to: "/administrator-periods" },
-      { label: "Usuarios", to: "/administrator-users" },
-      { label: "Seguimiento", to: "/administrator-tracking" },
+      { label: "Inicio", to: APP_ROUTES.admin.home },
+      { label: "Periodos", to: APP_ROUTES.admin.periods },
+      { label: "Usuarios", to: APP_ROUTES.admin.users },
+      { label: "Seguimiento", to: APP_ROUTES.admin.tracking },
     ],
   },
   {
     title: "Publicaciones",
     links: [
-      { label: "Evidencias", to: "/administrator-evidence" },
-      { label: "Documentos", to: "/administrator-documents" },
-      { label: "Anuncios", to: "/administrator-advertisements" },
+      { label: "Evidencias", to: APP_ROUTES.admin.evidences },
+      { label: "Documentos", to: APP_ROUTES.admin.documents },
+      { label: "Anuncios", to: APP_ROUTES.admin.advertisements },
     ],
   },
 ];

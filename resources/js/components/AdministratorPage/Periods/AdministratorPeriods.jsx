@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { getApiErrorMessage } from "../../../utils/errorMessages";
 
 const HERO_STYLE = {
   background: "linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%)",
@@ -18,12 +19,19 @@ const INITIAL_FORM = {
   clonar_estudiantes_desde_periodo_id: "",
 };
 
+const toDateInputValue = (value) => {
+  if (!value) return "";
+  const text = String(value);
+  const match = text.match(/^\d{4}-\d{2}-\d{2}/);
+  return match ? match[0] : "";
+};
+
 const createFormFromPeriod = (periodo) => ({
   anio: String(periodo?.anio ?? new Date().getFullYear()),
   numero: String(periodo?.numero ?? "1"),
   estatus: periodo?.estatus === "activo" ? "activo" : "borrador",
-  fecha_inicio: periodo?.fecha_inicio ?? "",
-  fecha_fin: periodo?.fecha_fin ?? "",
+  fecha_inicio: toDateInputValue(periodo?.fecha_inicio),
+  fecha_fin: toDateInputValue(periodo?.fecha_fin),
   clonar_estudiantes_desde_periodo_id: "",
 });
 
@@ -38,11 +46,17 @@ const formatDate = (value) => {
   if (!value) return "No definida";
 
   try {
+    const dateOnly = toDateInputValue(value);
+    const dateValue =
+      dateOnly
+        ? new Date(`${dateOnly}T00:00:00`)
+        : new Date(value);
+
     return new Intl.DateTimeFormat("es-MX", {
       year: "numeric",
       month: "short",
       day: "2-digit",
-    }).format(new Date(value));
+    }).format(dateValue);
   } catch {
     return value;
   }
@@ -112,7 +126,7 @@ export default function AdministratorPeriods() {
       setPeriodos(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
-      setError("No se pudieron cargar los periodos.");
+      setError(getApiErrorMessage(err, "No pudimos cargar los periodos. Actualiza la pagina e intenta de nuevo."));
     } finally {
       setLoading(false);
     }
@@ -210,7 +224,7 @@ export default function AdministratorPeriods() {
       setStatisticsModal({
         open: true,
         loading: false,
-        error: err?.response?.data?.message || `No se pudieron cargar las estadisticas de ${periodo.codigo}.`,
+        error: getApiErrorMessage(err, `No pudimos cargar las estadisticas de ${periodo.codigo}.`),
         data: null,
         period: periodo,
       });
@@ -224,16 +238,26 @@ export default function AdministratorPeriods() {
     setSuccess("");
 
     try {
+      const formData = new FormData(event.currentTarget);
+      const field = (name, fallback = "") => {
+        const value = formData.get(name);
+        return value === null || value === undefined ? fallback : String(value);
+      };
       const payload = {
-        anio: Number(form.anio),
-        numero: Number(form.numero),
-        estatus: form.estatus,
-        fecha_inicio: form.fecha_inicio || null,
-        fecha_fin: form.fecha_fin || null,
+        anio: Number(field("anio", form.anio)),
+        numero: Number(field("numero", form.numero)),
+        estatus: field("estatus", form.estatus),
+        fecha_inicio: field("fecha_inicio", form.fecha_inicio) || null,
+        fecha_fin: field("fecha_fin", form.fecha_fin) || null,
       };
 
-      if (form.clonar_estudiantes_desde_periodo_id) {
-        payload.clonar_estudiantes_desde_periodo_id = Number(form.clonar_estudiantes_desde_periodo_id);
+      const cloneFromPeriod = field(
+        "clonar_estudiantes_desde_periodo_id",
+        form.clonar_estudiantes_desde_periodo_id
+      );
+
+      if (cloneFromPeriod) {
+        payload.clonar_estudiantes_desde_periodo_id = Number(cloneFromPeriod);
       }
 
       if (editingPeriodId) {
@@ -249,8 +273,12 @@ export default function AdministratorPeriods() {
     } catch (err) {
       console.error(err);
       setError(
-        err?.response?.data?.message ||
-          (editingPeriodId ? "No se pudo actualizar el periodo." : "No se pudo crear el periodo.")
+        getApiErrorMessage(
+          err,
+          editingPeriodId
+            ? "No pudimos actualizar el periodo. Revisa los datos e intenta de nuevo."
+            : "No pudimos crear el periodo. Revisa los datos e intenta de nuevo."
+        )
       );
     } finally {
       setSaving(false);
@@ -268,7 +296,7 @@ export default function AdministratorPeriods() {
       await cargarPeriodos();
     } catch (err) {
       console.error(err);
-      setError(err?.response?.data?.message || `No se pudo activar ${periodo.codigo}.`);
+      setError(getApiErrorMessage(err, `No pudimos activar ${periodo.codigo}.`));
     } finally {
       setActingId(null);
     }
@@ -292,7 +320,7 @@ export default function AdministratorPeriods() {
       await openStatisticsModal(data || periodo);
     } catch (err) {
       console.error(err);
-      setError(err?.response?.data?.message || `No se pudo cerrar ${periodo.codigo}.`);
+      setError(getApiErrorMessage(err, `No pudimos cerrar ${periodo.codigo}.`));
     } finally {
       setActingId(null);
     }

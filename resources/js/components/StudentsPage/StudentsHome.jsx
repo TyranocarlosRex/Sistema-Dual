@@ -4,6 +4,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ClassroomBoard from "../Shared/ClassroomBoard";
 import { useToast } from "../Shared/ToastProvider";
+import { APP_ROUTES } from "../../routes";
+import { getApiErrorMessage } from "../../utils/errorMessages";
 
 const safeJSON = (str, fallback = null) => {
   try {
@@ -11,11 +13,6 @@ const safeJSON = (str, fallback = null) => {
   } catch {
     return fallback;
   }
-};
-
-const readApiErrorMessage = (error, fallback) => {
-  const validationMessage = Object.values(error?.response?.data?.errors || {})?.flat?.()?.[0];
-  return validationMessage || error?.response?.data?.message || fallback;
 };
 
 const normalizeValue = (value) => String(value ?? "").trim();
@@ -103,7 +100,7 @@ const StudentsHome = () => {
         syncStoredStudent(nextStudent);
       } catch (err) {
         setProfileError(
-          readApiErrorMessage(err, "No se pudo cargar tu perfil. Puedes intentar guardar tus datos mas tarde.")
+          getApiErrorMessage(err, "No pudimos cargar tu perfil. Puedes intentar actualizar la pagina.")
         );
       } finally {
         setProfileLoading(false);
@@ -134,7 +131,7 @@ const StudentsHome = () => {
       } catch (err) {
         setEvidences([]);
         setEvidencesError(
-          err.response?.data?.message || "No se pudieron cargar las evidencias del periodo activo."
+          getApiErrorMessage(err, "No pudimos cargar tus evidencias del periodo activo.")
         );
       } finally {
         setLoadingEvidences(false);
@@ -185,7 +182,7 @@ const StudentsHome = () => {
         variant: "success",
       });
     } catch (err) {
-      const message = readApiErrorMessage(err, "No se pudieron guardar tus datos de contacto.");
+      const message = getApiErrorMessage(err, "No pudimos guardar tus datos de contacto. Revisa la informacion e intenta de nuevo.");
       setProfileError(message);
       showToast({
         title: "No se pudo guardar",
@@ -204,7 +201,7 @@ const StudentsHome = () => {
         <div className="mt-3">
           <button
             className="px-3 py-2 border rounded"
-            onClick={() => navigate("/login-student")}
+            onClick={() => navigate(APP_ROUTES.auth.studentLogin)}
           >
             Ir al login
           </button>
@@ -336,7 +333,7 @@ const StudentsHome = () => {
           evidences={evidences}
           loadingEvidences={loadingEvidences}
           evidencesError={evidencesError}
-          onOpenEvidence={(id) => navigate(`/student-report?evidence=${id}`)}
+          onOpenEvidence={(id) => navigate(`${APP_ROUTES.student.evidences}?evidencia=${id}`)}
         />
       </div>
     </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { getApiErrorMessage } from "../../utils/errorMessages";
 
 const ROLE_LABELS = {
   all: "Todos",
@@ -10,14 +11,20 @@ const ROLE_LABELS = {
 
 const formatDateTime = (value) => {
   if (!value) return "";
-  const date = new Date(value);
+  const date =
+    typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
+      ? new Date(`${value}T00:00:00`)
+      : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   return date.toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" });
 };
 
 const toTimestamp = (value) => {
   if (!value) return null;
-  const date = new Date(value);
+  const date =
+    typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
+      ? new Date(`${value}T00:00:00`)
+      : new Date(value);
   const time = date.getTime();
   return Number.isNaN(time) ? null : time;
 };
@@ -26,7 +33,7 @@ const nextReportLabel = (reports = []) => {
   if ((reports || []).length === 0) return "Sin reportes";
   const conFecha = (reports || []).filter((r) => r.fecha_limite);
   if (conFecha.length === 0) return "Sin fecha limite";
-  const sorted = [...conFecha].sort((a, b) => new Date(a.fecha_limite) - new Date(b.fecha_limite));
+  const sorted = [...conFecha].sort((a, b) => toTimestamp(a.fecha_limite) - toTimestamp(b.fecha_limite));
   const primero = sorted[0];
   return `${primero.titulo} - limite ${primero.fecha_limite}`;
 };
@@ -54,8 +61,8 @@ export default function ClassroomBoard({
           headers: { Authorization: `Bearer ${token}` },
         });
         setAnnouncements(Array.isArray(data) ? data : []);
-      } catch {
-        setAnnouncementsError("No se pudieron cargar los anuncios.");
+      } catch (err) {
+        setAnnouncementsError(getApiErrorMessage(err, "No pudimos cargar los anuncios. Actualiza la pagina e intenta de nuevo."));
       } finally {
         setLoadingAnnouncements(false);
       }

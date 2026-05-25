@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import AdministratorReports from "./Reports/AdministratorReports";
+import { getApiErrorMessage } from "../../../utils/errorMessages";
 
 const API_URL = "/api";
 
@@ -48,7 +49,7 @@ export default function AdminEvidences() {
       setEvidences(res.data);
     } catch (err) {
       console.error("Error al cargar evidences:", err);
-      setError("Error al cargar los espacios (evidences).");
+      setError(getApiErrorMessage(err, "No pudimos cargar los espacios de evidencias. Actualiza la pagina e intenta de nuevo."));
     } finally {
       setLoading(false);
     }
@@ -79,7 +80,7 @@ export default function AdminEvidences() {
       await cargarEvidences();
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || "No se pudo crear el espacio.");
+      setError(getApiErrorMessage(err, "No pudimos crear el espacio. Revisa el titulo y vuelve a intentar."));
     }
   };
 
@@ -118,7 +119,7 @@ export default function AdminEvidences() {
       await cargarEvidences();
     } catch (err) {
       console.error(err);
-      setEditError(err.response?.data?.message || "No se pudo actualizar el espacio.");
+      setEditError(getApiErrorMessage(err, "No pudimos actualizar el espacio. Revisa los cambios e intenta de nuevo."));
     }
   };
 
@@ -149,7 +150,7 @@ export default function AdminEvidences() {
       await cargarEvidences();
     } catch (err) {
       console.error(err);
-      const message = err.response?.data?.message || "No se pudo eliminar el espacio.";
+      const message = getApiErrorMessage(err, "No pudimos eliminar el espacio. Revisa si tiene reportes asociados.");
       setError(message);
       if (editingId === ev.id) {
         setEditError(message);

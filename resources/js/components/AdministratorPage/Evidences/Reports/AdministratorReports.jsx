@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { getApiErrorMessage } from "../../../../utils/errorMessages";
 
 const HERO_STYLE = {
   background: "linear-gradient(135deg, #1d4ed8 0%, #1e293b 100%)",
@@ -19,6 +20,10 @@ const buildAuthConfig = (overrides = {}) => {
       ...(overrides.headers || {}),
     },
   };
+};
+
+const hasAttachment = (report) => {
+  return report?.has_attachment === true || report?.has_attachment === 1 || report?.has_attachment === "1";
 };
 
 export default function AdministratorReports({
@@ -65,7 +70,7 @@ export default function AdministratorReports({
       setReports(res.data);
     } catch (err) {
       console.error(err.response?.status, err.response?.data);
-      setError("No se pudieron cargar los reportes.");
+      setError(getApiErrorMessage(err, "No pudimos cargar los reportes. Actualiza la pagina e intenta de nuevo."));
     } finally {
       setLoadingReports(false);
     }
@@ -109,13 +114,27 @@ export default function AdministratorReports({
     setSuccess("");
 
     try {
+      const sourceFormData = new FormData(e.currentTarget);
+      const field = (name, fallback = "") => {
+        const value = sourceFormData.get(name);
+        return value === null || value === undefined ? fallback : String(value);
+      };
+      const attachmentFile = sourceFormData.get("attachment");
       const formData = new FormData();
       formData.append("evidence_id", activeEvidenceId);
-      formData.append("titulo", titulo);
-      formData.append("tipo", tipo);
-      if (descripcion) formData.append("descripcion", descripcion);
-      if (fechaLimite) formData.append("fecha_limite", fechaLimite);
-      if (attachment) formData.append("attachment", attachment);
+      formData.append("titulo", field("titulo", titulo));
+      formData.append("tipo", field("tipo", tipo));
+
+      const descripcionValue = field("descripcion", descripcion);
+      const fechaLimiteValue = field("fecha_limite", fechaLimite);
+
+      if (descripcionValue) formData.append("descripcion", descripcionValue);
+      if (fechaLimiteValue) formData.append("fecha_limite", fechaLimiteValue);
+      if (attachmentFile instanceof File && attachmentFile.size > 0) {
+        formData.append("attachment", attachmentFile);
+      } else if (attachment) {
+        formData.append("attachment", attachment);
+      }
 
       let url = "/api/reports";
       const isEditing = editingId !== null;
@@ -148,11 +167,7 @@ export default function AdministratorReports({
       );
     } catch (err) {
       console.error(err);
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Ocurrio un error al guardar el reporte.");
-      }
+      setError(getApiErrorMessage(err, "No pudimos guardar el reporte. Revisa los campos e intenta de nuevo."));
     } finally {
       setSubmitting(false);
     }
@@ -203,7 +218,7 @@ export default function AdministratorReports({
       setSuccess("Reporte eliminado.");
     } catch (err) {
       console.error(err);
-      setError("No se pudo eliminar el reporte.");
+      setError(getApiErrorMessage(err, "No pudimos eliminar el reporte. Intenta nuevamente."));
     } finally {
       setDeletingId(null);
     }
@@ -266,6 +281,7 @@ export default function AdministratorReports({
                 <div>
                   <label className="form-label">Titulo</label>
                   <input
+                    name="titulo"
                     type="text"
                     className="form-control"
                     value={titulo}
@@ -277,6 +293,7 @@ export default function AdministratorReports({
                 <div>
                   <label className="form-label">Descripcion</label>
                   <textarea
+                    name="descripcion"
                     className="form-control"
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
@@ -288,6 +305,7 @@ export default function AdministratorReports({
                   <div className="col-md-6">
                     <label className="form-label">Fecha limite</label>
                     <input
+                      name="fecha_limite"
                       type="date"
                       className="form-control"
                       value={fechaLimite}
@@ -297,6 +315,7 @@ export default function AdministratorReports({
                   <div className="col-md-6">
                     <label className="form-label">Tipo</label>
                     <select
+                      name="tipo"
                       className="form-select"
                       value={tipo}
                       onChange={(e) => setTipo(e.target.value)}
@@ -310,6 +329,7 @@ export default function AdministratorReports({
                 <div>
                   <label className="form-label">Archivo base (opcional)</label>
                   <input
+                    name="attachment"
                     type="file"
                     className="form-control"
                     onChange={(e) => setAttachment(e.target.files[0] || null)}
@@ -386,7 +406,7 @@ export default function AdministratorReports({
                             {report.tipo && `[${report.tipo}]`}{" "}
                             {report.fecha_limite &&
                               `- Limite: ${report.fecha_limite}`}{" "}
-                            {report.has_attachment && "- Tiene archivo base"}
+                            {hasAttachment(report) ? "- Tiene archivo base" : ""}
                           </div>
                           {!fixedEvidenceId && report.evidence?.titulo && (
                             <div className="small text-muted">

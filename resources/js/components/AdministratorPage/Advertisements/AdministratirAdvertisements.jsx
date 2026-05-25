@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { getApiErrorMessage } from "../../../utils/errorMessages";
 
 const HERO_STYLE = {
   background: "linear-gradient(135deg, #1d4ed8 0%, #1e293b 100%)",
@@ -44,7 +45,7 @@ export default function AdministratirAdvertisements() {
       setAnuncios(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
-      setError("No se pudieron cargar los anuncios.");
+      setError(getApiErrorMessage(err, "No pudimos cargar los anuncios. Actualiza la pagina e intenta de nuevo."));
     } finally {
       setLoading(false);
     }
@@ -85,7 +86,7 @@ export default function AdministratirAdvertisements() {
       fetchAnuncios();
     } catch (err) {
       console.error(err);
-      setError("No se pudo crear el anuncio.");
+      setError(getApiErrorMessage(err, "No pudimos crear el anuncio. Revisa el titulo, mensaje y adjunto."));
     }
   };
 

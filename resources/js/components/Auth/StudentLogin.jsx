@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './Auth.css';
+import { APP_ROUTES } from '../../routes';
+import { getLoginErrorMessage } from '../../utils/errorMessages';
 
 const StudentLogin = () => {
   const [noControl, setNoControl] = useState('');
@@ -11,6 +13,8 @@ const StudentLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+
     try {
       const { data } = await axios.post('/api/auth/login/student', {
         no_control: noControl,
@@ -29,6 +33,8 @@ const StudentLogin = () => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       } else {
         localStorage.removeItem('token');
+        setError('No recibimos la confirmacion de acceso. Intenta iniciar sesion nuevamente.');
+        return;
       }
       if (data.user) {
         localStorage.setItem('user', JSON.stringify(data.user));
@@ -41,15 +47,9 @@ const StudentLogin = () => {
         localStorage.removeItem('student');
       }
 
-      navigate('/students-home', { replace: true });
+      navigate(APP_ROUTES.student.home, { replace: true });
     } catch (err) {
-      if (err.response?.data?.errors?.no_control) {
-        setError(err.response.data.errors.no_control[0]);
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError('Error de conexión');
-      }
+      setError(getLoginErrorMessage(err));
     }
   };
 
@@ -66,23 +66,24 @@ const StudentLogin = () => {
           <button
             type="button"
             className="tab"
-            onClick={() => navigate('/login-coordinador')}
+            onClick={() => navigate(APP_ROUTES.auth.coordinatorLogin)}
           >
             Coordinadores
           </button>
           <button
             type="button"
             className="tab"
-            onClick={() => navigate('/login-admin')}
+            onClick={() => navigate(APP_ROUTES.auth.adminLogin)}
           >
             Administrativos
           </button>
         </div>
 
         {error && (
-          <p style={{ color: '#d32f2f', marginTop: 12, marginBottom: 0 }}>
-            {error}
-          </p>
+          <div className="login-error" role="alert">
+            <strong>No pudimos iniciar sesion</strong>
+            <span>{error}</span>
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="login-form">

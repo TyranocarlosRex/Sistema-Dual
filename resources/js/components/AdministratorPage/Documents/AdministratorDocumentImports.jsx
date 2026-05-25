@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { useToast } from "../../Shared/ToastProvider";
+import { getApiErrorMessage } from "../../../utils/errorMessages";
 
 const escapePreviewHtml = (value = "") =>
   String(value)
@@ -640,8 +641,7 @@ const readBlobMessage = async (blob, fallback) => {
 };
 
 const readApiErrorMessage = (error, fallback) => {
-  const validationMessage = Object.values(error?.response?.data?.errors || {})?.flat?.()?.[0];
-  return validationMessage || error?.response?.data?.message || fallback;
+  return getApiErrorMessage(error, fallback);
 };
 
 export default function AdministratorDocumentImports() {
@@ -794,7 +794,7 @@ export default function AdministratorDocumentImports() {
       setDocuments(sortDocuments(Array.isArray(response.data) ? response.data : []));
     } catch (err) {
       console.error(err);
-      setDocumentsError(err?.response?.data?.message || "No se pudieron cargar los documentos guardados.");
+      setDocumentsError(readApiErrorMessage(err, "No pudimos cargar los documentos guardados. Actualiza la pagina e intenta de nuevo."));
     } finally {
       setDocumentsLoading(false);
     }
@@ -1454,7 +1454,7 @@ export default function AdministratorDocumentImports() {
       });
     } catch (err) {
       console.error(err);
-      const message = err?.response?.data?.message || "No se pudo guardar el documento.";
+      const message = readApiErrorMessage(err, "No pudimos guardar el documento. Revisa el titulo y el contenido.");
       setError(message);
       showToast({ title: "No se pudo guardar", message, variant: "error" });
     } finally {
@@ -1510,7 +1510,7 @@ export default function AdministratorDocumentImports() {
       });
     } catch (err) {
       console.error(err);
-      const message = err?.response?.data?.message || "No se pudo eliminar el documento.";
+      const message = readApiErrorMessage(err, "No pudimos eliminar el documento. Intenta nuevamente.");
       setDocumentsError(message);
       showToast({ title: "No se pudo eliminar", message, variant: "error" });
     } finally {

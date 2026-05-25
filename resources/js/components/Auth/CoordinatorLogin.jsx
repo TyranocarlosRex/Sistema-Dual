@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './Auth.css';
+import { APP_ROUTES } from '../../routes';
+import { getLoginErrorMessage } from '../../utils/errorMessages';
 
 const CoordinatorLogin = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +13,8 @@ const CoordinatorLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+
     try {
       const { data } = await axios.post('/api/auth/login/coordinator', { email, password });
 
@@ -28,8 +32,8 @@ const CoordinatorLogin = () => {
         null;
 
       if (!token) {
-        setError('El servidor no regresó token');
-        return; // evita navegar con token vacío
+        setError('No recibimos la confirmacion de acceso. Intenta iniciar sesion nuevamente.');
+        return; // evita navegar con token vacio
       }
 
       localStorage.setItem('token', token);
@@ -40,18 +44,9 @@ const CoordinatorLogin = () => {
         data.coordinator ?? data.user?.coordinator ?? null
       ));
 
-      navigate('/coordinator-home', { replace: true });
+      navigate(APP_ROUTES.coordinator.home, { replace: true });
     } catch (err) {
-      // API puede devolver distintos formatos; cubrimos mensaje general y errores de campos
-      if (err.response?.data?.errors?.name) {
-        setError(err.response.data.errors.name[0]);
-      } else if (err.response?.data?.errors?.password) {
-        setError(err.response.data.errors.password[0]);
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError('Error de conexión');
-      }
+      setError(getLoginErrorMessage(err));
     }
   };
 
@@ -67,7 +62,7 @@ const CoordinatorLogin = () => {
           <button
             type="button"
             className="tab"
-            onClick={() => navigate('/')}
+            onClick={() => navigate(APP_ROUTES.auth.studentLogin)}
           >
             Estudiantes
           </button>
@@ -81,16 +76,17 @@ const CoordinatorLogin = () => {
           <button
             type="button"
             className="tab"
-            onClick={() => navigate('/login-admin')}
+            onClick={() => navigate(APP_ROUTES.auth.adminLogin)}
           >
             Administrativos
           </button>
         </div>
 
         {error && (
-          <p style={{ color: '#d32f2f', marginTop: 12, marginBottom: 0 }}>
-            {error}
-          </p>
+          <div className="login-error" role="alert">
+            <strong>No pudimos iniciar sesion</strong>
+            <span>{error}</span>
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="login-form">

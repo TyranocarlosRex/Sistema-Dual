@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { parseDownloadFilename } from "../../../utils/downloadFilename";
+import { APP_ROUTES } from "../../../routes";
+import { getApiErrorMessage } from "../../../utils/errorMessages";
+import { useToast } from "../../Shared/ToastProvider";
 
 const HERO_STYLE = {
   background: "linear-gradient(135deg, #2563eb 0%, #1e293b 100%)",
@@ -13,6 +16,7 @@ const HERO_STYLE = {
 
 export default function AdministratorTracking() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -49,7 +53,7 @@ export default function AdministratorTracking() {
         setStudents(data || []);
       } catch (err) {
         console.error("Error cargando estudiantes:", err);
-        setError("No se pudieron cargar los estudiantes.");
+        setError(getApiErrorMessage(err, "No pudimos cargar los estudiantes. Actualiza la pagina e intenta de nuevo."));
       } finally {
         setLoading(false);
       }
@@ -81,7 +85,7 @@ export default function AdministratorTracking() {
         setGrades(initialGrades);
       } catch (err) {
         console.error("Error cargando entregas:", err);
-        setSubsError("No se pudieron cargar las entregas.");
+        setSubsError(getApiErrorMessage(err, "No pudimos cargar las entregas. Actualiza la pagina e intenta de nuevo."));
       } finally {
         setSubsLoading(false);
       }
@@ -201,7 +205,11 @@ export default function AdministratorTracking() {
       setGrades((prev) => ({ ...prev, [submissionId]: payload.calificacion ?? "" }));
     } catch (err) {
       console.error(err);
-      alert("No se pudo actualizar el estado.");
+      showToast({
+        title: "Entrega no actualizada",
+        message: getApiErrorMessage(err, "No pudimos guardar el cambio de estado. Intenta nuevamente."),
+        variant: "error",
+      });
     } finally {
       setUpdatingId(null);
     }
@@ -237,7 +245,11 @@ export default function AdministratorTracking() {
       setPreviewFile({ url, name: filename });
     } catch (err) {
       console.error(err);
-      alert("No se pudo previsualizar el archivo.");
+      showToast({
+        title: "Vista previa no disponible",
+        message: getApiErrorMessage(err, "No pudimos abrir la vista previa del archivo."),
+        variant: "error",
+      });
     } finally {
       setDownloadingId(null);
     }
@@ -272,7 +284,11 @@ export default function AdministratorTracking() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
-      alert("No se pudo descargar el archivo.");
+      showToast({
+        title: "Descarga no disponible",
+        message: getApiErrorMessage(err, "No pudimos descargar el archivo. Intenta nuevamente."),
+        variant: "error",
+      });
     } finally {
       setDownloadingId(null);
     }
@@ -539,7 +555,7 @@ export default function AdministratorTracking() {
                             <td>
                               <button
                                 className="btn btn-sm btn-outline-primary"
-                                onClick={() => navigate(`/administrator/students/${studentId || ""}`)}
+                                onClick={() => navigate(APP_ROUTES.admin.studentDetails(studentId || ""))}
                                 disabled={!studentId}
                               >
                                 Ver detalle

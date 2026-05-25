@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import AnnouncementsPanel from "../Shared/AnnouncementsPanel";
+import { APP_ROUTES } from "../../routes";
 
 const safeJSON = (raw, fallback = null) => {
   try {
@@ -144,7 +145,7 @@ const CoordinatorHome = () => {
                     </p>
                     <button
                       className="btn btn-outline-primary btn-sm"
-                      onClick={() => navigate("/coordinator-users")}
+                      onClick={() => navigate(APP_ROUTES.coordinator.users)}
                     >
                       Abrir
                     </button>
@@ -159,7 +160,7 @@ const CoordinatorHome = () => {
                     </p>
                     <button
                       className="btn btn-outline-primary btn-sm"
-                      onClick={() => navigate("/coordinator-tracking")}
+                      onClick={() => navigate(APP_ROUTES.coordinator.tracking)}
                     >
                       Abrir
                     </button>
@@ -174,7 +175,7 @@ const CoordinatorHome = () => {
                     </p>
                     <button
                       className="btn btn-outline-primary btn-sm"
-                      onClick={() => navigate("/coordinator-pending")}
+                      onClick={() => navigate(APP_ROUTES.coordinator.pending)}
                     >
                       Abrir
                     </button>

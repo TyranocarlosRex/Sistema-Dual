@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { APP_ROUTES } from "../../../routes";
+import { getApiErrorMessage, firstValidationMessage } from "../../../utils/errorMessages";
+import { useToast } from "../../Shared/ToastProvider";
 
 const CARRERAS = [
   "Ingenieria Biomedica",
@@ -48,6 +51,7 @@ const INITIAL_COORDINATOR_MODAL = {
 
 export default function AdministratorUsers() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [tipo, setTipo] = useState("students");
   const [nombre, setNombre] = useState("");
@@ -227,8 +231,10 @@ export default function AdministratorUsers() {
       console.error(e);
       setRows([]);
       setError(
-        e?.response?.data?.message ||
-          "No se pudo obtener la lista. Verifica el tipo seleccionado o los parametros de busqueda."
+        getApiErrorMessage(
+          e,
+          "No pudimos obtener la lista. Revisa los filtros o actualiza la pagina."
+        )
       );
     } finally {
       setCargando(false);
@@ -263,7 +269,11 @@ export default function AdministratorUsers() {
 
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("La sesion ha expirado, vuelve a iniciar sesion como administrador.");
+        showToast({
+          title: "Sesion expirada",
+          message: "Vuelve a iniciar sesion como administrador para continuar.",
+          variant: "warning",
+        });
         return;
       }
 
@@ -294,9 +304,11 @@ export default function AdministratorUsers() {
       cerrarStatusModal();
     } catch (e) {
       console.error(e);
-      alert(
-        e?.response?.data?.message || "No se pudo actualizar el estatus del estudiante."
-      );
+      showToast({
+        title: "Estatus no actualizado",
+        message: getApiErrorMessage(e, "No pudimos actualizar el estatus del estudiante."),
+        variant: "error",
+      });
     } finally {
       setActualizandoId(null);
     }
@@ -311,12 +323,20 @@ export default function AdministratorUsers() {
       const numeroConvenio = statusModal.numero_convenio.trim();
 
       if (!empresa) {
-        alert("Para activar al estudiante debes capturar la empresa.");
+        showToast({
+          title: "Empresa requerida",
+          message: "Captura la empresa antes de activar al estudiante.",
+          variant: "warning",
+        });
         return;
       }
 
       if (!numeroConvenio) {
-        alert("Para activar al estudiante debes capturar el numero de convenio.");
+        showToast({
+          title: "Convenio requerido",
+          message: "Captura el numero de convenio antes de activar al estudiante.",
+          variant: "warning",
+        });
         return;
       }
 
@@ -331,7 +351,11 @@ export default function AdministratorUsers() {
       const motivo = statusModal.motivo_baja.trim();
 
       if (!motivo) {
-        alert("Debes capturar el motivo de baja.");
+        showToast({
+          title: "Motivo requerido",
+          message: "Captura el motivo de baja para dejar registro del cambio.",
+          variant: "warning",
+        });
         return;
       }
 
@@ -343,7 +367,7 @@ export default function AdministratorUsers() {
 
   const verDetalle = (fila) => {
     const idBack = fila._raw?.id ?? fila.id;
-    navigate(`/administrator/students/${idBack}`);
+    navigate(APP_ROUTES.admin.studentDetails(idBack));
   };
 
   const abrirCoordinatorModal = () => {
@@ -368,7 +392,7 @@ export default function AdministratorUsers() {
     if (!token) {
       setCoordinatorModal((prev) => ({
         ...prev,
-        error: "No hay sesion de administrador. Vuelve a iniciar sesion.",
+        error: "Tu sesion expiro. Vuelve a iniciar sesion como administrador.",
       }));
       return;
     }
@@ -405,17 +429,13 @@ export default function AdministratorUsers() {
     } catch (e) {
       console.error(e);
 
-      const validationErrors = Object.values(e?.response?.data?.errors || {})
-        .flat()
-        .filter(Boolean)
-        .join(" ");
+      const validationErrors = firstValidationMessage(e?.response?.data);
 
       setCoordinatorModal((prev) => ({
         ...prev,
         error:
           validationErrors ||
-          e?.response?.data?.message ||
-          "No se pudo registrar el coordinador.",
+          getApiErrorMessage(e, "No pudimos registrar el coordinador. Revisa los datos e intenta de nuevo."),
       }));
     } finally {
       setCoordinatorModal((prev) => ({ ...prev, saving: false }));
@@ -432,7 +452,11 @@ export default function AdministratorUsers() {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("La sesion ha expirado, vuelve a iniciar sesion como administrador.");
+      showToast({
+        title: "Sesion expirada",
+        message: "Vuelve a iniciar sesion como administrador para continuar.",
+        variant: "warning",
+      });
       return;
     }
 
@@ -450,7 +474,11 @@ export default function AdministratorUsers() {
       setRows((prev) => prev.filter((row) => row.id !== fila.id));
     } catch (e) {
       console.error(e);
-      alert(e?.response?.data?.message || "No se pudo eliminar el coordinador.");
+      showToast({
+        title: "Coordinador no eliminado",
+        message: getApiErrorMessage(e, "No pudimos eliminar el coordinador. Intenta nuevamente."),
+        variant: "error",
+      });
     } finally {
       setEliminandoCoordinadorId(null);
     }

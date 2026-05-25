@@ -1,6 +1,7 @@
 import Navbar from "../StudentsPage/Bars/StudentsNavbar";
 import StudentSidebar from "../StudentsPage/Bars/StudentSidebar";
 import { Outlet, useNavigate } from "react-router-dom";
+import { APP_ROUTES } from "../../routes";
 
 const safeJSON = (raw) => {
   try {
@@ -28,8 +29,8 @@ export default function AppLayout() {
         <StudentSidebar
           displayName={displayName}
           email={email}
-          onUploadEvidence={() => navigate("/student-report")}
-          onOpenNextReport={() => navigate("/student-report")}
+          onUploadEvidence={() => navigate(APP_ROUTES.student.evidences)}
+          onOpenNextReport={() => navigate(APP_ROUTES.student.evidences)}
           hasEvidences
         />
         <div className="flex-grow-1 p-4 p-md-5">

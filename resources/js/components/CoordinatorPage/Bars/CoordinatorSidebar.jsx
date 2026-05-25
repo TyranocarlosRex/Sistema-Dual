@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { APP_ROUTES } from "../../../routes";
 
 const SIDEBAR_STYLE = {
   minWidth: "200px",
@@ -42,10 +43,10 @@ const ACTIVE_LINK_STYLE = {
 };
 
 const MENU_LINKS = [
-  { label: "Inicio", to: "/coordinator-home" },
-  { label: "Usuarios", to: "/coordinator-users" },
-  { label: "Seguimiento", to: "/coordinator-tracking" },
-  { label: "Pendientes", to: "/coordinator-pending" },
+  { label: "Inicio", to: APP_ROUTES.coordinator.home },
+  { label: "Usuarios", to: APP_ROUTES.coordinator.users },
+  { label: "Seguimiento", to: APP_ROUTES.coordinator.tracking },
+  { label: "Pendientes", to: APP_ROUTES.coordinator.pending },
 ];
 
 export default function Sidebar() {

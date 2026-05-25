@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { APP_ROUTES } from "../../../routes";
 
 const SIDEBAR_STYLE = {
   minWidth: "200px",
@@ -59,8 +60,8 @@ const REMINDER_STYLE = {
 };
 
 const MENU_LINKS = [
-  { label: "Inicio", to: "/students-home" },
-  { label: "Mis evidencias", to: "/student-report" },
+  { label: "Inicio", to: APP_ROUTES.student.home },
+  { label: "Mis evidencias", to: APP_ROUTES.student.evidences },
 ];
 
 export default function StudentSidebar({

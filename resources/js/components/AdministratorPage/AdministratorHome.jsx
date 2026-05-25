@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { APP_ROUTES } from '../../routes';
 
 const safeJSON = (str, fallback = null) => {
   try {
@@ -57,35 +58,35 @@ const AdministratorHome = () => {
         title: 'Periodos',
         description:
           'Crea nuevos ciclos, activa el periodo vigente y conserva historicos cerrados para consulta.',
-        action: () => navigate('/administrator-periods'),
+        action: () => navigate(APP_ROUTES.admin.periods),
         badge: 'Ciclos',
       },
       {
         title: 'Usuarios',
         description:
           'Registra nuevos coordinadores, ajusta el estatus de estudiantes y revisa su información de contacto.',
-        action: () => navigate('/administrator-users'),
+        action: () => navigate(APP_ROUTES.admin.users),
         badge: 'Gestión',
       },
       {
         title: 'Procesos duales',
         description:
           'Dale seguimiento a los avances, valida entregables y asegura la trazabilidad de cada proceso.',
-        action: () => navigate('/administrator-tracking'),
+        action: () => navigate(APP_ROUTES.admin.tracking),
         badge: 'Seguimiento',
       },
       {
         title: 'Evidencias y avisos',
         description:
           'Consulta y publica comunicados, revisa documentos y confirma las evidencias de los equipos.',
-        action: () => navigate('/administrator-evidence'),
+        action: () => navigate(APP_ROUTES.admin.evidences),
         badge: 'Publicaciones',
       },
       {
         title: 'Documentos y plantillas',
         description:
           'Crea documentos en blanco, importa formatos base y guardalos para volver a editarlos o reutilizarlos.',
-        action: () => navigate('/administrator-documents'),
+        action: () => navigate(APP_ROUTES.admin.documents),
         badge: 'Documentos',
       },
     ],
@@ -131,7 +132,7 @@ const AdministratorHome = () => {
         <div className="bg-white rounded-4 shadow-sm p-4" style={{ maxWidth: '420px' }}>
           <h2 className="h5 mb-2">Sesión no encontrada</h2>
           <p className="mb-3 text-muted">Vuelve a iniciar sesión para continuar con la administración.</p>
-          <button className="btn btn-primary" onClick={() => navigate('/login-admin')}>
+          <button className="btn btn-primary" onClick={() => navigate(APP_ROUTES.auth.adminLogin)}>
             Volver a iniciar sesión
           </button>
         </div>

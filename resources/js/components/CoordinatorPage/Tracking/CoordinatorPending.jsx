@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { parseDownloadFilename } from "../../../utils/downloadFilename";
+import { getApiErrorMessage } from "../../../utils/errorMessages";
+import { useToast } from "../../Shared/ToastProvider";
 
 export default function CoordinatorPending() {
+  const { showToast } = useToast();
   const [submissions, setSubmissions] = useState([]);
   const [subsLoading, setSubsLoading] = useState(true);
   const [subsError, setSubsError] = useState("");
@@ -53,7 +56,7 @@ export default function CoordinatorPending() {
         setGrades(initialGrades);
       } catch (err) {
         console.error("Error cargando entregas:", err);
-        setSubsError("No se pudieron cargar las entregas.");
+        setSubsError(getApiErrorMessage(err, "No pudimos cargar las entregas. Actualiza la pagina e intenta de nuevo."));
       } finally {
         setSubsLoading(false);
       }
@@ -90,7 +93,11 @@ export default function CoordinatorPending() {
       setGrades((prev) => ({ ...prev, [submissionId]: payload.calificacion ?? "" }));
     } catch (err) {
       console.error(err);
-      alert("No se pudo actualizar el estado.");
+      showToast({
+        title: "Entrega no actualizada",
+        message: getApiErrorMessage(err, "No pudimos guardar el cambio de estado. Intenta nuevamente."),
+        variant: "error",
+      });
     } finally {
       setUpdatingId(null);
     }
@@ -119,7 +126,11 @@ export default function CoordinatorPending() {
       setPreviewFile({ url, name: filename });
     } catch (err) {
       console.error(err);
-      alert("No se pudo previsualizar el archivo.");
+      showToast({
+        title: "Vista previa no disponible",
+        message: getApiErrorMessage(err, "No pudimos abrir la vista previa del archivo."),
+        variant: "error",
+      });
     } finally {
       setDownloadingId(null);
     }
@@ -154,7 +165,11 @@ export default function CoordinatorPending() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
-      alert("No se pudo descargar el archivo.");
+      showToast({
+        title: "Descarga no disponible",
+        message: getApiErrorMessage(err, "No pudimos descargar el archivo. Intenta nuevamente."),
+        variant: "error",
+      });
     } finally {
       setDownloadingId(null);
     }

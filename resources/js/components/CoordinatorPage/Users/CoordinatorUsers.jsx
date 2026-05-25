@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { getApiErrorMessage } from "../../../utils/errorMessages";
 
 function LegacyCoordinatorUsers() {
   const [users, setUsers] = useState([]);
@@ -8,13 +9,15 @@ function LegacyCoordinatorUsers() {
   const [correo, setCorreo] = useState("");
   const [rol, setRol] = useState("student");
   const [editandoId, setEditandoId] = useState(null);
+  const [legacyError, setLegacyError] = useState("");
 
   const agregarUsuario = () => {
     if (nombre.trim() === "" || correo.trim() === "" || rol.trim() === "") {
-      alert("Completa todos los campos");
+      setLegacyError("Completa nombre, correo y rol para agregar el usuario.");
       return;
     }
 
+    setLegacyError("");
     const nuevo = {
       id: Date.now(),
       nombre,
@@ -57,6 +60,7 @@ function LegacyCoordinatorUsers() {
 
   return (
     <div style={{ padding: "20px" }}>
+      {legacyError && <div style={{ color: "#b91c1c", marginBottom: "12px" }}>{legacyError}</div>}
       <h2>Gestión de Usuarios</h2>
 
       {}
@@ -176,7 +180,7 @@ function CoordinatorUsers() {
         setStudents(data);
       } catch (err) {
         console.error(err);
-        setError("No se pudieron cargar los estudiantes de tu carrera.");
+        setError(getApiErrorMessage(err, "No pudimos cargar los estudiantes de tu carrera. Actualiza la pagina e intenta de nuevo."));
       } finally {
         setLoading(false);
       }

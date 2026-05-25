@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { getApiErrorMessage } from "../../utils/errorMessages";
 
 const ROLE_LABELS = {
   all: "Todos",
@@ -50,7 +51,7 @@ export default function AnnouncementsPanel({
 
         setItems(Array.isArray(data) ? data : []);
       } catch (err) {
-        setError("No se pudieron cargar los anuncios.");
+        setError(getApiErrorMessage(err, "No pudimos cargar los anuncios. Actualiza la pagina e intenta de nuevo."));
       } finally {
         setLoading(false);
       }

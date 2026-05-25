@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { parseDownloadFilename } from "../../utils/downloadFilename";
 import { useToast } from "./ToastProvider";
+import { getApiErrorMessage } from "../../utils/errorMessages";
 
 const HERO_STYLE = {
   background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 45%, #0f172a 100%)",
@@ -84,7 +85,7 @@ export default function StudentDetailsPage() {
         }
       } catch (err) {
         console.error(err);
-        setError("No se pudo cargar la informacion del estudiante.");
+        setError(getApiErrorMessage(err, "No pudimos cargar la informacion del estudiante. Regresa e intenta abrirlo de nuevo."));
       } finally {
         setLoading(false);
       }
@@ -128,11 +129,26 @@ export default function StudentDetailsPage() {
     return map[status] ?? "secondary";
   };
 
-  const formatDateTime = (value) =>
-    value ? new Date(value).toLocaleString() : "-";
+  const parseDateValue = (value) => {
+    if (!value) return null;
 
-  const formatDate = (value) =>
-    value ? new Date(value).toLocaleDateString() : "-";
+    const date =
+      typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
+        ? new Date(`${value}T00:00:00`)
+        : new Date(value);
+
+    return Number.isNaN(date.getTime()) ? null : date;
+  };
+
+  const formatDateTime = (value) => {
+    const date = parseDateValue(value);
+    return date ? date.toLocaleString() : "-";
+  };
+
+  const formatDate = (value) => {
+    const date = parseDateValue(value);
+    return date ? date.toLocaleDateString() : "-";
+  };
 
   const studentStatus =
     student.Estatus && student.Estatus.toLowerCase() === "activo"
@@ -237,9 +253,7 @@ export default function StudentDetailsPage() {
       console.error(err);
       showToast({
         title: "No se pudo guardar",
-        message:
-          err.response?.data?.message ||
-          "No se pudo actualizar la empresa del estudiante.",
+        message: getApiErrorMessage(err, "No pudimos actualizar la empresa del estudiante."),
         variant: "error",
       });
     } finally {
@@ -275,7 +289,11 @@ export default function StudentDetailsPage() {
       }));
     } catch (err) {
       console.error(err);
-      alert("No se pudo actualizar la entrega.");
+      showToast({
+        title: "Entrega no actualizada",
+        message: getApiErrorMessage(err, "No pudimos guardar el cambio de la entrega."),
+        variant: "error",
+      });
     } finally {
       setUpdatingId(null);
     }
@@ -318,7 +336,16 @@ export default function StudentDetailsPage() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
-      alert(preview ? "No se pudo previsualizar el archivo." : "No se pudo descargar el archivo.");
+      showToast({
+        title: preview ? "Vista previa no disponible" : "Descarga no disponible",
+        message: getApiErrorMessage(
+          err,
+          preview
+            ? "No pudimos abrir la vista previa del archivo."
+            : "No pudimos descargar el archivo. Intenta nuevamente."
+        ),
+        variant: "error",
+      });
     } finally {
       setDownloadingId(null);
     }

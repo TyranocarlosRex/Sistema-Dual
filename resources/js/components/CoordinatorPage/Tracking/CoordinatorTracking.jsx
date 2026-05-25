@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { APP_ROUTES } from "../../../routes";
+import { getApiErrorMessage } from "../../../utils/errorMessages";
 
 const HERO_STYLE = {
   background: "linear-gradient(135deg, #0ea5e9 0%, #0f172a 100%)",
@@ -38,7 +40,7 @@ export default function CoordinatorTracking() {
         setStudents(data || []);
       } catch (err) {
         console.error("Error cargando estudiantes:", err);
-        setError("No se pudieron cargar los estudiantes.");
+        setError(getApiErrorMessage(err, "No pudimos cargar los estudiantes. Actualiza la pagina e intenta de nuevo."));
       } finally {
         setLoading(false);
       }
@@ -277,7 +279,7 @@ export default function CoordinatorTracking() {
                         <td>
                           <button
                             className="btn btn-sm btn-outline-primary"
-                            onClick={() => navigate(`/student-details/${studentId || ""}`)}
+                            onClick={() => navigate(APP_ROUTES.coordinator.studentDetails(studentId || ""))}
                             disabled={!studentId}
                           >
                             Ver detalle

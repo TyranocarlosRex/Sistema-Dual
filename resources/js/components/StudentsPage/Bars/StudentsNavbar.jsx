@@ -1,6 +1,7 @@
 ﻿import { NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useState, useEffect, useRef } from "react";
+import { APP_ROUTES } from "../../../routes";
 
 const NAVBAR_STYLE = {
   background: "linear-gradient(135deg, #22c55e 0%, #15803d 100%)",
@@ -65,14 +66,14 @@ export default function Navbar() {
       localStorage.removeItem("user");
       localStorage.removeItem("role");
       localStorage.removeItem("student");
-      navigate("/");
+      navigate(APP_ROUTES.auth.studentLogin);
     }
   };
 
   return (
     <nav className="navbar navbar-expand" style={NAVBAR_STYLE}>
       <div className="container-fluid px-4">
-        <NavLink className="navbar-brand text-white fw-semibold" to="/students-home">
+        <NavLink className="navbar-brand text-white fw-semibold" to={APP_ROUTES.student.home}>
           Sistema Dual
           <span className="d-block fs-6 fw-normal text-white-50">Panel estudiante</span>
         </NavLink>

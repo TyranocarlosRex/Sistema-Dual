@@ -62,6 +62,32 @@ class StudentEnrollmentTest extends TestCase
         $this->assertSame(7, $filled->fresh()?->Semestre);
     }
 
+    public function test_student_allowed_statuses_match_period_assignment_statuses(): void
+    {
+        $this->assertSame([
+            Student::STATUS_ACTIVO,
+            Student::STATUS_INACTIVO,
+            Student::STATUS_BAJA,
+        ], Student::allowedStatuses());
+    }
+
+    public function test_ensure_enrollment_does_not_duplicate_existing_assignment(): void
+    {
+        $student = $this->makeStudent([
+            'No_control' => 22334003,
+        ]);
+        $period = $this->makePeriod(2026, 3);
+
+        $first = $student->ensureEnrollmentForPeriod($period->id);
+        $second = $student->ensureEnrollmentForPeriod($period->id);
+
+        $this->assertSame($first?->id, $second?->id);
+        $this->assertSame(1, StudentPeriod::query()
+            ->where('student_id', $student->id)
+            ->where('periodo_id', $period->id)
+            ->count());
+    }
+
     private function makeStudent(array $overrides = []): Student
     {
         $user = User::factory()->create([

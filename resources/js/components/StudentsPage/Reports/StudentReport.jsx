@@ -3,12 +3,18 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { parseDownloadFilename } from "../../../utils/downloadFilename";
 import { useToast } from "../../Shared/ToastProvider";
+import { APP_ROUTES } from "../../../routes";
+import { getApiErrorMessage } from "../../../utils/errorMessages";
 
 const API_URL = "/api";
 
 const LABEL_TIPO = {
   inscripcion: "Inscripcion",
   programa: "Programa (reportes del programa)",
+};
+
+const hasAttachment = (report) => {
+  return report?.has_attachment === true || report?.has_attachment === 1 || report?.has_attachment === "1";
 };
 
 export default function StudentReports() {
@@ -28,9 +34,9 @@ export default function StudentReports() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Leer ?evidence=ID de la URL
+  // Leer ?evidencia=ID de la URL, con soporte para enlaces anteriores.
   const searchParams = new URLSearchParams(location.search);
-  const evidenceIdParam = searchParams.get("evidence"); // string | null
+  const evidenceIdParam = searchParams.get("evidencia") ?? searchParams.get("evidence"); // string | null
   const evidenceId = evidenceIdParam ? Number(evidenceIdParam) : null;
 
   useEffect(() => {
@@ -49,11 +55,7 @@ export default function StudentReports() {
         setEvidences(res.data);
       } catch (err) {
         console.error(err);
-        if (err.response?.data?.message) {
-          setError(err.response.data.message);
-        } else {
-          setError("No se pudieron cargar las evidencias.");
-        }
+        setError(getApiErrorMessage(err, "No pudimos cargar tus evidencias. Actualiza la pagina e intenta de nuevo."));
       } finally {
         setLoading(false);
       }
@@ -165,17 +167,23 @@ export default function StudentReports() {
       );
     } catch (err) {
       console.error(err);
+      const message = getApiErrorMessage(err, "No pudimos enviar el archivo. Revisa el formato o intenta con un archivo mas ligero.");
       setUploadError((prev) => ({
         ...prev,
-        [reportId]: "No se pudo enviar el archivo.",
+        [reportId]: message,
       }));
+      showToast({
+        title: "Entrega no enviada",
+        message,
+        variant: "error",
+      });
     } finally {
       setUploading((prev) => ({ ...prev, [reportId]: false }));
     }
   };
 
   const handleDownloadAttachment = async (report) => {
-    if (!report.has_attachment) return;
+    if (!hasAttachment(report)) return;
 
     try {
       setDownloadingAttachment((prev) => ({ ...prev, [report.id]: true }));
@@ -210,9 +218,10 @@ export default function StudentReports() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
+      const message = getApiErrorMessage(err, "No pudimos descargar el archivo base. Intenta nuevamente.");
       setDownloadError((prev) => ({
         ...prev,
-        [report.id]: "No se pudo descargar el archivo.",
+        [report.id]: message,
       }));
     } finally {
       setDownloadingAttachment((prev) => ({ ...prev, [report.id]: false }));
@@ -297,7 +306,7 @@ export default function StudentReports() {
                     <button
                       type="button"
                       className="btn btn-outline-success btn-sm"
-                      onClick={() => navigate(`/student-report?evidence=${ev.id}`)}
+                      onClick={() => navigate(`${APP_ROUTES.student.evidences}?evidencia=${ev.id}`)}
                     >
                       Abrir evidencia
                     </button>
@@ -368,7 +377,7 @@ export default function StudentReports() {
                     </p>
                   )}
 
-                  {report.has_attachment && (
+                  {hasAttachment(report) && (
                     <div className="mb-2">
                       <p className="mb-1">
                         <strong>Archivo base: </strong>
@@ -465,7 +474,7 @@ export default function StudentReports() {
 
       <button
         className="btn btn-link p-0"
-        onClick={() => navigate("/student-report")}
+        onClick={() => navigate(APP_ROUTES.student.evidences)}
       >
         &larr; Volver a mis evidencias
       </button>
