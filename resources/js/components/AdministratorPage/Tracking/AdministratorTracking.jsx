@@ -317,9 +317,9 @@ export default function AdministratorTracking() {
                 Filtra por carrera o estatus, revisa progreso y gestiona los reportes enviados desde un solo panel.
               </p>
             </div>
-            <div className="ms-auto d-flex gap-2">
+            <div className="admin-hero-actions">
               <button
-                className="btn btn-light btn-sm"
+                className="btn btn-sm admin-hero-btn admin-hero-btn-secondary"
                 type="button"
                 onClick={() => window.location.reload()}
               >

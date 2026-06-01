@@ -2,6 +2,7 @@ import Navbar from "../StudentsPage/Bars/StudentsNavbar";
 import StudentSidebar from "../StudentsPage/Bars/StudentSidebar";
 import { Outlet, useNavigate } from "react-router-dom";
 import { APP_ROUTES } from "../../routes";
+import "./layout.css";
 
 const safeJSON = (raw) => {
   try {
@@ -25,7 +26,7 @@ export default function AppLayout() {
   return (
     <>
       <Navbar />
-      <div className="d-flex" style={{ minHeight: "100vh", background: "#f5f7fb" }}>
+      <div className="app-shell">
         <StudentSidebar
           displayName={displayName}
           email={email}
@@ -33,7 +34,7 @@ export default function AppLayout() {
           onOpenNextReport={() => navigate(APP_ROUTES.student.evidences)}
           hasEvidences
         />
-        <div className="flex-grow-1 p-4 p-md-5">
+        <div className="app-content flex-grow-1 p-4 p-md-5">
           <Outlet />
         </div>
       </div>

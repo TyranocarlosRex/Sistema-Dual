@@ -53,11 +53,11 @@ export default function Sidebar() {
   const { pathname } = useLocation();
 
   return (
-    <aside style={SIDEBAR_STYLE}>
+    <aside className="app-sidebar app-sidebar-coordinator" style={SIDEBAR_STYLE}>
       <div className="d-grid gap-3">
         <div>
           <p style={SECTION_TITLE_STYLE}>Panel</p>
-          <div className="d-grid gap-2">
+          <div className="app-sidebar-links d-grid gap-2">
             {MENU_LINKS.map((link) => {
               const isActive = pathname.startsWith(link.to);
               const linkStyle = { ...BASE_LINK_STYLE, ...(isActive ? ACTIVE_LINK_STYLE : {}) };
@@ -76,7 +76,7 @@ export default function Sidebar() {
       </div>
 
       <div
-        className="mt-auto p-3 rounded-3"
+        className="app-sidebar-reminder mt-auto p-3 rounded-3"
         style={{ backgroundColor: "rgba(226, 232, 240, 0.08)", border: "1px solid rgba(226, 232, 240, 0.12)" }}
       >
         <p className="small mb-1" style={{ color: "rgba(226, 232, 240, 0.9)" }}>

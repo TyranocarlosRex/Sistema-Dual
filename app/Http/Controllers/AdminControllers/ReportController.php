@@ -117,7 +117,14 @@ class ReportController extends Controller
             ], 403);
         }
 
-        $query = Report::with(['evidence', 'period'])
+        $query = Report::with([
+            'evidence',
+            'period',
+            'submissions' => function ($q) use ($student) {
+                $q->where('student_id', $student->id)
+                    ->latest();
+            },
+        ])
             ->where('periodo_id', $period->id)
             ->whereHas('evidence', function ($q) use ($assignment) {
                 $q->where('tipo', 'inscripcion');

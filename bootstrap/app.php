@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
+use App\Http\Middleware\AddContentLengthForHtml;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 
@@ -39,6 +40,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'sanctum',
             'throttle:api',
             'bindings',
+        ]);
+
+        $middleware->web(append: [
+            AddContentLengthForHtml::class,
         ]);
 
         $middleware->trustProxies(at: '*');

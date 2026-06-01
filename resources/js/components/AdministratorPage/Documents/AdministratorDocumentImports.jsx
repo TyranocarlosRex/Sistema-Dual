@@ -1540,10 +1540,10 @@ export default function AdministratorDocumentImports() {
                 Revisa los documentos ya creados, abre uno para editarlo o genera uno nuevo con membrete y variables.
               </p>
             </div>
-            <div className="ms-auto">
+            <div className="admin-hero-actions">
               <button
                 type="button"
-                className="btn btn-light btn-sm"
+                className="btn btn-sm admin-hero-btn admin-hero-btn-primary"
                 onClick={() => (showComposer ? handleCloseComposer() : handleCreateBlank())}
               >
                 {showComposer ? "Cerrar formulario" : "Nuevo documento"}

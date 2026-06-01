@@ -17,6 +17,41 @@ const hasAttachment = (report) => {
   return report?.has_attachment === true || report?.has_attachment === 1 || report?.has_attachment === "1";
 };
 
+const getSubmissionTime = (submission) => {
+  const value = submission?.created_at || submission?.updated_at;
+  if (!value) return 0;
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
+
+const getLatestSubmission = (report) => {
+  const submissions = Array.isArray(report?.submissions) ? report.submissions : [];
+  if (submissions.length === 0) return null;
+
+  return [...submissions].sort((a, b) => getSubmissionTime(b) - getSubmissionTime(a))[0];
+};
+
+const getEvidenceProgress = (evidence) => {
+  const reports = Array.isArray(evidence?.reports) ? evidence.reports : [];
+  const submittedReports = reports.filter((report) => getLatestSubmission(report));
+  const latestSubmission = submittedReports
+    .map((report) => getLatestSubmission(report))
+    .sort((a, b) => getSubmissionTime(b) - getSubmissionTime(a))[0] || null;
+
+  return {
+    total: reports.length,
+    submitted: submittedReports.length,
+    latestSubmission,
+  };
+};
+
+const formatFileSize = (bytes = 0) => {
+  if (!bytes) return "0 KB";
+  const kilobytes = bytes / 1024;
+  if (kilobytes < 1024) return `${kilobytes.toFixed(1)} KB`;
+  return `${(kilobytes / 1024).toFixed(1)} MB`;
+};
+
 export default function StudentReports() {
   const { showToast } = useToast();
   const [evidences, setEvidences] = useState([]);
@@ -285,35 +320,45 @@ export default function StudentReports() {
           <p className="text-muted mb-0">No tienes evidencias asignadas por ahora.</p>
         ) : (
           <div className="row g-3">
-            {filteredEvidences.map((ev) => (
-              <div key={ev.id} className="col-12 col-md-6">
-                <div className="card h-100 shadow-sm border-0">
-                  <div className="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h3 className="h6 mb-0">{ev.titulo}</h3>
-                    <span className="badge bg-success-subtle text-success">
-                      {LABEL_TIPO[ev.tipo] || ev.tipo}
-                    </span>
-                  </div>
-                  <div className="card-body">
-                    {ev.descripcion && (
-                      <p className="mb-2 text-muted small">{ev.descripcion}</p>
-                    )}
-                    <p className="mb-1 small text-muted">
-                      Total de reportes: {ev.reports ? ev.reports.length : 0}
-                    </p>
-                  </div>
-                  <div className="card-footer bg-transparent border-0">
-                    <button
-                      type="button"
-                      className="btn btn-outline-success btn-sm"
-                      onClick={() => navigate(`${APP_ROUTES.student.evidences}?evidencia=${ev.id}`)}
-                    >
-                      Abrir evidencia
-                    </button>
+            {filteredEvidences.map((ev) => {
+              const progress = getEvidenceProgress(ev);
+
+              return (
+                <div key={ev.id} className="col-12 col-md-6">
+                  <div className="card h-100 shadow-sm border-0">
+                    <div className="card-header bg-light d-flex justify-content-between align-items-center">
+                      <h3 className="h6 mb-0">{ev.titulo}</h3>
+                      <span className="badge bg-success-subtle text-success">
+                        {LABEL_TIPO[ev.tipo] || ev.tipo}
+                      </span>
+                    </div>
+                    <div className="card-body">
+                      {ev.descripcion && (
+                        <p className="mb-2 text-muted small">{ev.descripcion}</p>
+                      )}
+                      <p className="mb-1 small text-muted">
+                        Entregados: {progress.submitted} de {progress.total}
+                      </p>
+                      {progress.latestSubmission && (
+                        <p className="mb-0 small">
+                          <strong>Ultimo archivo: </strong>
+                          {progress.latestSubmission.original_name || "Archivo enviado"}
+                        </p>
+                      )}
+                    </div>
+                    <div className="card-footer bg-transparent border-0">
+                      <button
+                        type="button"
+                        className="btn btn-outline-success btn-sm"
+                        onClick={() => navigate(`${APP_ROUTES.student.evidences}?evidencia=${ev.id}`)}
+                      >
+                        Abrir evidencia
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -351,12 +396,9 @@ export default function StudentReports() {
       {/* Grid de tarjetas tipo "Evaluación Bimestral 1,2,3" */}
       <div className="row">
         {reports.map((report) => {
-          const mySubmission =
-            report.submissions && report.submissions.length > 0
-              ? report.submissions[0]
-              : null;
-
-          const hasSelectedFile = !!selectedFiles[report.id];
+          const mySubmission = getLatestSubmission(report);
+          const selectedFile = selectedFiles[report.id] || null;
+          const hasSelectedFile = !!selectedFile;
 
           return (
             <div key={report.id} className="col-md-4 mb-3">
@@ -436,6 +478,7 @@ export default function StudentReports() {
                       <input
                         type="file"
                         className="form-control form-control-sm"
+                        accept=".pdf,application/pdf"
                         onChange={(e) =>
                           handleFileChange(
                             report.id,
@@ -443,6 +486,15 @@ export default function StudentReports() {
                           )
                         }
                       />
+                      <div className="small mt-1">
+                        {selectedFile ? (
+                          <span className="text-success">
+                            Archivo seleccionado: {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                          </span>
+                        ) : (
+                          <span className="text-muted">Ningun archivo seleccionado.</span>
+                        )}
+                      </div>
                       {uploadError[report.id] && (
                         <div className="text-danger small mt-1">
                           {uploadError[report.id]}

@@ -9,7 +9,13 @@ import 'bootstrap';
 import axios from 'axios';
 window.axios = axios;
 
+const appBasePath = document.querySelector('meta[name="app-base-path"]')?.content || '';
+if (appBasePath) {
+    window.axios.defaults.baseURL = appBasePath;
+}
+
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.headers.common['Accept'] = 'application/json';
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

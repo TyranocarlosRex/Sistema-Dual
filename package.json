@@ -4,9 +4,12 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "test:e2e": "playwright test",
+        "test:e2e:headed": "playwright test --headed"
     },
     "devDependencies": {
+        "@playwright/test": "^1.60.0",
         "@popperjs/core": "^2.11.6",
         "@tailwindcss/vite": "^4.0.0",
         "@vitejs/plugin-react": "^4.2.0",

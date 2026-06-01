@@ -71,9 +71,9 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="navbar navbar-expand" style={NAVBAR_STYLE}>
-      <div className="container-fluid px-4">
-        <NavLink className="navbar-brand text-white fw-semibold" to={APP_ROUTES.coordinator.home}>
+    <nav className="navbar navbar-expand dual-navbar" style={NAVBAR_STYLE}>
+      <div className="container-fluid px-4 dual-navbar-inner">
+        <NavLink className="navbar-brand text-white fw-semibold dual-navbar-brand" to={APP_ROUTES.coordinator.home}>
           Educacion Dual
           <span className="d-block fs-6 fw-normal text-white-50">Panel coordinador</span>
         </NavLink>
@@ -83,11 +83,11 @@ export default function Navbar() {
             <div className="text-white-50 small d-none d-sm-inline">Sesion activa</div>
             <button
               type="button"
-              className="btn btn-light btn-sm d-flex align-items-center gap-2"
+              className="btn btn-light btn-sm d-flex align-items-center gap-2 dual-user-button"
               onClick={() => setOpenMenu((prev) => !prev)}
             >
               <span className="badge bg-info text-white">CO</span>
-              <span className="text-dark">{coordinatorName}</span>
+              <span className="text-dark dual-user-name">{coordinatorName}</span>
               <span style={{ fontSize: "0.8rem" }}>{openMenu ? "^" : "v"}</span>
             </button>
             {openMenu && (

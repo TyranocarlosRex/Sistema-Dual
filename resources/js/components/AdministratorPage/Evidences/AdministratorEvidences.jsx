@@ -200,10 +200,10 @@ export default function AdminEvidences() {
                 Crea espacios, agrega reportes y gestiona los entregables de estudiantes.
               </p>
             </div>
-            <div className="ms-auto">
+            <div className="admin-hero-actions">
               <button
                 type="button"
-                className="btn btn-light btn-sm"
+                className="btn btn-sm admin-hero-btn admin-hero-btn-primary"
                 onClick={() => setShowCreateForm((prev) => !prev)}
               >
                 {showCreateForm ? "Cerrar formulario" : "Nuevo espacio"}

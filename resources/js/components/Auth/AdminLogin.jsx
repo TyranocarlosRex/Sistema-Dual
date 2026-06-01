@@ -6,10 +6,10 @@ import { APP_ROUTES } from '../../routes';
 import { getLoginErrorMessage } from '../../utils/errorMessages';
 
 const AdminLogin = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,68 +53,71 @@ const AdminLogin = () => {
 
   return (
     <div className="login-container">
-      <div className="simple-banner">
-        <h1>Programa de Educación Dual</h1>
-        <p>Acceso a plataforma — Administradores</p>
-      </div>
+      <main className="login-shell">
+        <section className="simple-banner" aria-label="Programa de Educación Dual">
+          <h1>Programa de Educación Dual</h1>
+          <p>Acceso a plataforma - Administradores</p>
+        </section>
 
-      <div className="login-panel">
-        <div className="tabs">
-          <button
-            type="button"
-            className="tab"
-            onClick={() => navigate(APP_ROUTES.auth.studentLogin)}
-          >
-            Estudiantes
-          </button>
-          <button
-            type="button"
-            className="tab"
-            onClick={() => navigate(APP_ROUTES.auth.coordinatorLogin)}
-          >
-            Coordinadores
-          </button>
-          <button
-            type="button"
-            className="tab active"
-            onClick={() => {}} // ya estás en Administradores
-          >
-            Administrativos
-          </button>
-        </div>
-
-        {error && (
-          <div className="login-error" role="alert">
-            <strong>No pudimos iniciar sesion</strong>
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="form-group">
-            <label>Usuario (correo)</label>
-            <input
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+        <section className="login-panel" aria-label="Inicio de sesión para administradores">
+          <div className="tabs">
+            <button
+              type="button"
+              className="tab"
+              onClick={() => navigate(APP_ROUTES.auth.studentLogin)}
+            >
+              Estudiantes
+            </button>
+            <button
+              type="button"
+              className="tab"
+              onClick={() => navigate(APP_ROUTES.auth.coordinatorLogin)}
+            >
+              Coordinadores
+            </button>
+            <button type="button" className="tab active" aria-current="page">
+              Administrativos
+            </button>
           </div>
 
-          <div className="form-group">
-            <label>Contraseña</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          {error && (
+            <div className="login-error" role="alert">
+              <strong>No pudimos iniciar sesion</strong>
+              <span>{error}</span>
+            </div>
+          )}
 
-          <button type="submit" className="login-button">Entrar</button>
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="form-group">
+              <label htmlFor="admin-email">Usuario (correo)</label>
+              <input
+                id="admin-email"
+                name="email"
+                type="text"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-        </form>
-      </div>
+            <div className="form-group">
+              <label htmlFor="admin-password">Contraseña</label>
+              <input
+                id="admin-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button type="submit" className="login-button">Entrar</button>
+          </form>
+        </section>
+      </main>
     </div>
   );
 };

@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $appUrl = config('app.url');
 
-        if ($appUrl && str_starts_with($appUrl, 'https://')) {
+        if (!$this->app->environment('local') && $appUrl && str_starts_with($appUrl, 'https://')) {
             URL::forceScheme('https');
         }
 

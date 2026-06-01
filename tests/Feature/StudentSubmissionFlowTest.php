@@ -105,8 +105,30 @@ class StudentSubmissionFlowTest extends TestCase
         Storage::disk('public')->assertExists((string) $secondSubmit->json('file_path'));
 
         $this->assertDatabaseCount('submissions', 1);
-        $submissionId = (int) $this->getJson("/api/student/reports?periodo_id={$period->id}")
-            ->json('1.submissions.0.id', 0);
+
+        Sanctum::actingAs($studentUser->fresh(), ['student']);
+
+        $evidencesAfterLogin = $this->getJson("/api/student/evidences?periodo_id={$period->id}")
+            ->assertOk();
+        $programEvidencePayload = collect($evidencesAfterLogin->json())
+            ->firstWhere('id', $programa->id);
+
+        $this->assertSame(
+            'plan-final.pdf',
+            data_get($programEvidencePayload, 'reports.0.submissions.0.original_name')
+        );
+
+        $reportsAfterLogin = $this->getJson("/api/student/reports?periodo_id={$period->id}")
+            ->assertOk();
+        $programReportPayload = collect($reportsAfterLogin->json())
+            ->firstWhere('id', $programaReport->id);
+
+        $this->assertSame(
+            'plan-final.pdf',
+            data_get($programReportPayload, 'submissions.0.original_name')
+        );
+
+        $submissionId = (int) data_get($programReportPayload, 'submissions.0.id', 0);
 
         Sanctum::actingAs($admin, ['admin']);
 

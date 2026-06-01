@@ -38,6 +38,33 @@ const nextReportLabel = (reports = []) => {
   return `${primero.titulo} - limite ${primero.fecha_limite}`;
 };
 
+const submissionTime = (submission) => {
+  const value = submission?.created_at || submission?.updated_at;
+  if (!value) return 0;
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
+
+const latestSubmissionForReport = (report) => {
+  const submissions = Array.isArray(report?.submissions) ? report.submissions : [];
+  if (submissions.length === 0) return null;
+
+  return [...submissions].sort((a, b) => submissionTime(b) - submissionTime(a))[0];
+};
+
+const evidenceProgress = (reports = []) => {
+  const submitted = (reports || []).filter((report) => latestSubmissionForReport(report));
+  const latestSubmission = submitted
+    .map((report) => latestSubmissionForReport(report))
+    .sort((a, b) => submissionTime(b) - submissionTime(a))[0] || null;
+
+  return {
+    submitted: submitted.length,
+    total: (reports || []).length,
+    latestSubmission,
+  };
+};
+
 export default function ClassroomBoard({
   evidences = [],
   loadingEvidences = false,
@@ -234,9 +261,22 @@ export default function ClassroomBoard({
 
               {item.kind === "evidence" && (
                 <div className="d-flex flex-wrap gap-2 align-items-center">
-                  <span className="text-muted small">
-                    {(item.meta.reports?.length || 0)} reportes - {nextReportLabel(item.meta.reports || [])}
-                  </span>
+                  {(() => {
+                    const progress = evidenceProgress(item.meta.reports || []);
+
+                    return (
+                      <>
+                        <span className="text-muted small">
+                          {progress.submitted} de {progress.total} entregados - {nextReportLabel(item.meta.reports || [])}
+                        </span>
+                        {progress.latestSubmission && (
+                          <span className="badge bg-success-subtle text-success">
+                            {progress.latestSubmission.original_name || "Archivo enviado"}
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
                   {onOpenEvidence && (
                     <button
                       type="button"
@@ -264,28 +304,38 @@ export default function ClassroomBoard({
       )}
       {!evidencesError && !loadingEvidences && hasEvidences && (
         <div className="d-grid gap-3">
-          {evidences.map((ev) => (
-            <div key={ev.id} className="border rounded p-3 bg-white">
-              <div className="d-flex justify-content-between align-items-start">
-                <div>
-                  <h6 className="mb-1">{ev.titulo}</h6>
-                  {ev.descripcion && <p className="text-muted small mb-2">{ev.descripcion}</p>}
-                  <div className="text-muted small">
-                    {ev.reports ? ev.reports.length : 0} reportes - {nextReportLabel(ev.reports || [])}
+          {evidences.map((ev) => {
+            const progress = evidenceProgress(ev.reports || []);
+
+            return (
+              <div key={ev.id} className="border rounded p-3 bg-white">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 className="mb-1">{ev.titulo}</h6>
+                    {ev.descripcion && <p className="text-muted small mb-2">{ev.descripcion}</p>}
+                    <div className="text-muted small">
+                      {progress.submitted} de {progress.total} entregados - {nextReportLabel(ev.reports || [])}
+                    </div>
+                    {progress.latestSubmission && (
+                      <div className="small mt-1">
+                        <strong>Ultimo archivo: </strong>
+                        {progress.latestSubmission.original_name || "Archivo enviado"}
+                      </div>
+                    )}
                   </div>
+                  {onOpenEvidence && (
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-success"
+                      onClick={() => onOpenEvidence(ev.id)}
+                    >
+                      Abrir
+                    </button>
+                  )}
                 </div>
-                {onOpenEvidence && (
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-success"
-                    onClick={() => onOpenEvidence(ev.id)}
-                  >
-                    Abrir
-                  </button>
-                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </>

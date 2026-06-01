@@ -1,5 +1,7 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.css'
+import './bootstrap';
+import 'bootstrap/dist/css/bootstrap.css';
+import './components/AdministratorPage/admin.css';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 
@@ -105,12 +107,13 @@ const RequireStudent = ({ children }) => {
 };
 
 const root = document.getElementById('root');
+const appBasePath = document.querySelector('meta[name="app-base-path"]')?.content || '';
 
 if (root) {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
       <ToastProvider>
-        <Router>
+        <Router basename={appBasePath || undefined}>
           <Routes>
             {/* Login */}
             <Route path="/" element={<RedirectWithSearch to={APP_ROUTES.auth.studentLogin} />} />

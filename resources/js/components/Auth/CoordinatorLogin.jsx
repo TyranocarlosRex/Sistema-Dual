@@ -52,68 +52,71 @@ const CoordinatorLogin = () => {
 
   return (
     <div className="login-container">
-      <div className="simple-banner">
-        <h1>Programa de Educación Dual</h1>
-        <p>Acceso a plataforma — Coordinadores</p>
-      </div>
+      <main className="login-shell">
+        <section className="simple-banner" aria-label="Programa de Educación Dual">
+          <h1>Programa de Educación Dual</h1>
+          <p>Acceso a plataforma - Coordinadores</p>
+        </section>
 
-      <div className="login-panel">
-        <div className="tabs">
-          <button
-            type="button"
-            className="tab"
-            onClick={() => navigate(APP_ROUTES.auth.studentLogin)}
-          >
-            Estudiantes
-          </button>
-          <button
-            type="button"
-            className="tab active"
-            onClick={() => {}} // ya estás en Coordinadores
-          >
-            Coordinadores
-          </button>
-          <button
-            type="button"
-            className="tab"
-            onClick={() => navigate(APP_ROUTES.auth.adminLogin)}
-          >
-            Administrativos
-          </button>
-        </div>
-
-        {error && (
-          <div className="login-error" role="alert">
-            <strong>No pudimos iniciar sesion</strong>
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="form-group">
-            <label>Usuario (correo)</label>
-            <input
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+        <section className="login-panel" aria-label="Inicio de sesión para coordinadores">
+          <div className="tabs">
+            <button
+              type="button"
+              className="tab"
+              onClick={() => navigate(APP_ROUTES.auth.studentLogin)}
+            >
+              Estudiantes
+            </button>
+            <button type="button" className="tab active" aria-current="page">
+              Coordinadores
+            </button>
+            <button
+              type="button"
+              className="tab"
+              onClick={() => navigate(APP_ROUTES.auth.adminLogin)}
+            >
+              Administrativos
+            </button>
           </div>
 
-          <div className="form-group">
-            <label>Contraseña</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          {error && (
+            <div className="login-error" role="alert">
+              <strong>No pudimos iniciar sesion</strong>
+              <span>{error}</span>
+            </div>
+          )}
 
-          <button type="submit" className="login-button">Entrar</button>
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="form-group">
+              <label htmlFor="coordinator-email">Usuario (correo)</label>
+              <input
+                id="coordinator-email"
+                name="email"
+                type="text"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-        </form>
-      </div>
+            <div className="form-group">
+              <label htmlFor="coordinator-password">Contraseña</label>
+              <input
+                id="coordinator-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button type="submit" className="login-button">Entrar</button>
+          </form>
+        </section>
+      </main>
     </div>
   );
 };

@@ -54,66 +54,74 @@ const StudentLogin = () => {
   };
 
   return (
-     <div className="login-container">
-      <div className="simple-banner">
-        <h1>Programa de Educación Dual</h1>
-        <p>Acceso a plataforma — Estudiantes</p>
-      </div>
+    <div className="login-container">
+      <main className="login-shell">
+        <section className="simple-banner" aria-label="Programa de Educación Dual">
+          <h1>Programa de Educación Dual</h1>
+          <p>Acceso a plataforma - Estudiantes</p>
+        </section>
 
-      <div className="login-panel">
-        <div className="tabs">
-          <button type="button" className="tab active">Estudiantes</button>
-          <button
-            type="button"
-            className="tab"
-            onClick={() => navigate(APP_ROUTES.auth.coordinatorLogin)}
-          >
-            Coordinadores
-          </button>
-          <button
-            type="button"
-            className="tab"
-            onClick={() => navigate(APP_ROUTES.auth.adminLogin)}
-          >
-            Administrativos
-          </button>
-        </div>
-
-        {error && (
-          <div className="login-error" role="alert">
-            <strong>No pudimos iniciar sesion</strong>
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="form-group">
-            <label>No. de Control</label>
-            {/* Usa type="text" para que aplique tu CSS (y no pierdas ceros a la izquierda). */}
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="\d*"
-              value={noControl}
-              onChange={(e) => setNoControl(e.target.value)}
-              required
-            />
+        <section className="login-panel" aria-label="Inicio de sesión para estudiantes">
+          <div className="tabs">
+            <button type="button" className="tab active" aria-current="page">
+              Estudiantes
+            </button>
+            <button
+              type="button"
+              className="tab"
+              onClick={() => navigate(APP_ROUTES.auth.coordinatorLogin)}
+            >
+              Coordinadores
+            </button>
+            <button
+              type="button"
+              className="tab"
+              onClick={() => navigate(APP_ROUTES.auth.adminLogin)}
+            >
+              Administrativos
+            </button>
           </div>
 
-          <div className="form-group">
-            <label>Contraseña</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          {error && (
+            <div className="login-error" role="alert">
+              <strong>No pudimos iniciar sesion</strong>
+              <span>{error}</span>
+            </div>
+          )}
 
-          <button type="submit" className="login-button">Entrar</button>
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="form-group">
+              <label htmlFor="student-no-control">No. de Control</label>
+              <input
+                id="student-no-control"
+                name="no_control"
+                type="text"
+                inputMode="numeric"
+                pattern="\d*"
+                autoComplete="username"
+                value={noControl}
+                onChange={(e) => setNoControl(e.target.value)}
+                required
+              />
+            </div>
 
-        </form>
-      </div>
+            <div className="form-group">
+              <label htmlFor="student-password">Contraseña</label>
+              <input
+                id="student-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button type="submit" className="login-button">Entrar</button>
+          </form>
+        </section>
+      </main>
     </div>
   );
 };

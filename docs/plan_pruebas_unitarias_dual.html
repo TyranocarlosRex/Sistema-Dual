@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Plan de pruebas unitarias - Sistema de Gestion Dual</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 11pt; color: #111; }
+    h1 { font-size: 18pt; text-align: center; }
+    h2 { font-size: 15pt; margin-top: 22px; }
+    h3 { font-size: 13pt; margin-top: 18px; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; }
+    th, td { border: 1px solid #000; padding: 6px; vertical-align: top; }
+    th { background: #e8e8e8; font-weight: bold; }
+    .cover { text-align: center; line-height: 1.4; }
+    .label { width: 30%; font-weight: bold; background: #f4f4f4; }
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <p><strong>Tecnologico Nacional de Mexico</strong></p>
+    <p><strong>Instituto Tecnologico de Hermosillo</strong></p>
+    <p>Alumnos:<br>
+      Munoz Castillo Carlos Eduardo<br>
+      Cordova Bojorquez Carlos Hiram<br>
+      Medina Llanez Brian Adib
+    </p>
+    <p><strong>Plan de pruebas unitarias</strong></p>
+    <p>Sistema de Gestion de Formacion Dual</p>
+    <p>Materia: Desarrollo de Software 2</p>
+    <p>Grupo: S8B</p>
+    <p>26/05/2026 - Hermosillo, Sonora</p>
+  </div>
+
+  <h2>Tabla de contenido</h2>
+  <p>1. Introduccion<br>
+     2. Objetivo general<br>
+     3. Objetivos especificos<br>
+     4. Resumen de ejecucion<br>
+     5. Matriz de trazabilidad<br>
+     6. Casos de prueba unitaria<br>
+     7. Conclusion</p>
+
+  <h2>Introduccion</h2>
+  <p>Este documento describe el plan de pruebas unitarias del Sistema de Gestion Dual. Las pruebas unitarias validan clases, servicios, modelos, recursos y reglas de validacion de manera aislada, antes de comprobar flujos completos mediante pruebas de integracion o de sistema.</p>
+
+  <h2>Objetivo general</h2>
+  <p>Validar que las unidades internas del sistema funcionen correctamente y esten relacionadas con los requerimientos funcionales y no funcionales definidos para la plataforma de Educacion Dual.</p>
+
+  <h2>Objetivos especificos</h2>
+  <p>Verificar la logica de autenticacion por rol, validar modelos y relaciones principales, comprobar servicios de documentos, validar recursos JSON y asegurar que las reglas de entrada rechacen datos incorrectos.</p>
+
+  <h2>Resumen de ejecucion</h2>
+  <table>
+    <tr><th>Campo</th><th>Descripcion</th></tr>
+    <tr><td class="label">Tipo de prueba</td><td>Pruebas unitarias</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest mediante Laravel Artisan</td></tr>
+    <tr><td class="label">Comando ejecutado</td><td>php artisan test --testsuite=Unit</td></tr>
+    <tr><td class="label">Total de pruebas</td><td>60</td></tr>
+    <tr><td class="label">Total de aserciones</td><td>306</td></tr>
+    <tr><td class="label">Fallos</td><td>0</td></tr>
+    <tr><td class="label">Estado general</td><td>Paso</td></tr>
+  </table>
+
+  <h2>Matriz de trazabilidad</h2>
+  <table>
+    <tr><th>ID</th><th>Clase de prueba</th><th>Unidad probada</th><th>Requerimientos relacionados</th><th>Estado</th></tr>
+    <tr><td>PU-01</td><td>AuthLoginServiceTest</td><td>Login invalido por rol</td><td>RF-01, RF-02, RF-03, RF-16, RF-26</td><td>Paso</td></tr>
+    <tr><td>PU-02</td><td>AuthSuccessfulLoginServiceTest</td><td>Login exitoso por rol</td><td>RF-01, RF-02, RF-03, RF-16, RF-26</td><td>Paso</td></tr>
+    <tr><td>PU-03</td><td>AuthSupportServicesTest</td><td>Password, token, sesion y rastreo</td><td>RF-02, RF-11, RNF-FI-05</td><td>Paso</td></tr>
+    <tr><td>PU-04</td><td>StudentEnrollmentTest</td><td>Inscripcion estudiante-periodo</td><td>RF-12, RF-15, RF-27</td><td>Paso</td></tr>
+    <tr><td>PU-05</td><td>PeriodModelTest</td><td>Periodos activos, cerrados y estados</td><td>RF-12, RF-15</td><td>Paso</td></tr>
+    <tr><td>PU-06</td><td>StudentResourceTest / CoordinatorResourceTest</td><td>Serializacion de recursos</td><td>RF-18, RF-20, RF-27, RF-28</td><td>Paso</td></tr>
+    <tr><td>PU-07</td><td>ReportVisibilityTest</td><td>Visibilidad de reportes</td><td>RF-04, RF-05, RF-14</td><td>Paso</td></tr>
+    <tr><td>PU-08</td><td>AdvertisementScopeTest</td><td>Anuncios visibles y por rol</td><td>RF-10, RF-17, RF-33</td><td>Paso</td></tr>
+    <tr><td>PU-09</td><td>DomainModelConfigurationTest</td><td>Relaciones y configuracion de modelos</td><td>RF-18, RF-21, RF-23, RF-24, RF-29, RF-30, RF-33, RF-36</td><td>Paso</td></tr>
+    <tr><td>PU-10</td><td>DocumentImportServiceTest</td><td>Importacion de documentos</td><td>RF-36, RNF-PORT-03, RNF-FI-08</td><td>Paso</td></tr>
+    <tr><td>PU-11</td><td>DocumentTemplateContentServiceTest</td><td>Sanitizacion y placeholders</td><td>RF-36, RNF-FI-08</td><td>Paso</td></tr>
+    <tr><td>PU-12</td><td>DocumentTemplateGenerationServiceTest</td><td>Generacion documental</td><td>RF-36</td><td>Paso</td></tr>
+    <tr><td>PU-13</td><td>FormRequestRulesTest</td><td>Reglas de validacion</td><td>RF-02, RF-30, RF-31, RF-32, RF-36</td><td>Paso</td></tr>
+    <tr><td>PU-14</td><td>FormRequestValidationBehaviorTest</td><td>Validacion real de datos</td><td>RF-30, RF-31, RF-32, RF-36</td><td>Paso</td></tr>
+  </table>
+
+  <h2>Casos de prueba unitaria</h2>
+
+  <h3>Caso de Prueba Unitaria 1: Login invalido por rol</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-01</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Validacion de login invalido</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/AuthLoginServiceTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>AdminLogin, CoordinatorLogin, StudentLogin</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-01: Configuracion de roles WEB; RF-02: Inicio de sesion WEB; RF-03: Acceso estudiante; RF-16: Acceso coordinador; RF-26: Acceso administrativo.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que los servicios de autenticacion rechacen credenciales faltantes, usuarios inexistentes, contrasenas incorrectas y usuarios sin perfil asociado.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Deben existir los servicios de login y sus dependencias simuladas.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Ejecutar la suite unitaria.<br>2. Enviar credenciales vacias.<br>3. Probar usuarios inexistentes.<br>4. Probar contrasena incorrecta.<br>5. Probar usuarios sin perfil de rol.<br>6. Validar mensajes y codigos de error.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Correos inexistentes, numero de control inexistente, contrasena incorrecta y usuarios sin perfil.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>El sistema rechaza el acceso y no genera token.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 2: Login exitoso por rol</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-02</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Validacion de login exitoso</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/AuthSuccessfulLoginServiceTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>AdminLogin, CoordinatorLogin, StudentLogin</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-01: Configuracion de roles WEB; RF-02: Inicio de sesion WEB; RF-03: Acceso estudiante; RF-16: Acceso coordinador; RF-26: Acceso administrativo.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que cada usuario pueda iniciar sesion correctamente segun su rol y reciba token, abilities y datos de perfil.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Deben existir usuarios de prueba con perfiles de administrador, coordinador y estudiante.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Crear usuario con rol valido.<br>2. Crear perfil asociado al rol.<br>3. Simular contrasena correcta.<br>4. Ejecutar login.<br>5. Validar token, abilities y datos del usuario.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Usuario administrador, coordinador y estudiante con credenciales validas.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>El servicio devuelve token, tipo Bearer, abilities correctas y datos del perfil correspondiente.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 3: Servicios de soporte de autenticacion</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-03</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Validacion de contrasena, token y rastreo de login</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/AuthSupportServicesTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>LaravelPasswordVerifier, LoginResponseFactory, SanctumTokenIssuer, CandidateTracker</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-02: Inicio de sesion WEB; RF-11: Control de acceso por sesion; RNF-FI-05: Control de acceso confiable.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que se validen contrasenas, se genere respuesta estandar de login, se emita token Sanctum y se registre el acceso del estudiante.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Debe existir usuario estudiante, periodo activo y servicios de autenticacion.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Validar contrasena correcta e incorrecta.<br>2. Generar respuesta de login.<br>3. Emitir token Sanctum.<br>4. Registrar primer y ultimo login.<br>5. Probar casos donde no debe registrarse login.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Contrasena secret123, usuario estudiante, usuario administrador y periodo activo.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>El sistema valida credenciales, genera token y registra login solo cuando corresponde.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 4: Inscripcion estudiante-periodo</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-04</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Validacion de inscripcion por periodo</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/StudentEnrollmentTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>Modelo Student y StudentPeriod</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-12: Procedimiento para estudiantes de segundo periodo; RF-15: Proceso de creacion de pestanas; RF-27: Gestion de estudiantes.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que el estudiante pueda asociarse a un periodo, consultar su inscripcion, mantener su estatus y evitar duplicados.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Debe existir estudiante y periodo activo.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Crear estudiante.<br>2. Crear periodo.<br>3. Ejecutar inscripcion al periodo.<br>4. Consultar inscripcion.<br>5. Validar estatus, carrera y semestre.<br>6. Ejecutar nuevamente para validar que no se duplique.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Estudiante con No. control, carrera Ingenieria Industrial y periodo 2026.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>El sistema crea una sola inscripcion y conserva los datos correctos.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 5: Modelo periodo</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-05</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Validacion de estados y periodo activo</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/PeriodModelTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>Modelo Period</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-12: Segundo periodo; RF-15: Creacion de pestanas.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que el modelo identifique estados permitidos, periodo cerrado, periodo activo actual y scope de periodos activos.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Deben existir periodos en distintos estados.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Crear periodos en borrador, activo y cerrado.<br>2. Consultar estados permitidos.<br>3. Validar periodo cerrado.<br>4. Consultar periodo activo actual.<br>5. Filtrar periodos activos.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Periodos borrador, activo y cerrado.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>El modelo retorna correctamente el periodo activo y los estados validos.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 6: Recursos de estudiante y coordinador</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-06</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Serializacion de datos de usuario</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivos de prueba</td><td>tests/Unit/StudentResourceTest.php; tests/Unit/CoordinatorResourceTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>StudentResource, CoordinatorResource</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-18: Listado de estudiantes por carrera; RF-20: Consulta de detalle de estudiante; RF-27: Gestion de estudiantes; RF-28: Gestion de coordinadores.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que los recursos transformen correctamente los datos del estudiante y coordinador para respuestas JSON.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Deben existir usuarios con perfil de estudiante y coordinador.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Crear usuario.<br>2. Crear perfil asociado.<br>3. Cargar relaciones necesarias.<br>4. Ejecutar toArray.<br>5. Validar datos generados.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Estudiante con periodo, carrera, empresa y progreso; coordinador con correo y carrera.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>Los recursos devuelven estructura correcta con datos de usuario, carrera, periodo y progreso.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 7: Visibilidad de reportes</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-07</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Visibilidad de reportes por tipo de evidencia</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/ReportVisibilityTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>Modelo Report</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-04: Consulta de evidencias; RF-05: Consulta de reportes por evidencia; RF-14: Desbloqueo de informacion tras aceptacion.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que los reportes de inscripcion sean visibles para estudiantes inscritos y que los reportes de programa solo sean visibles para estudiantes activos.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Debe existir estudiante, periodo, evidencia y reporte.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Crear evidencia de inscripcion.<br>2. Crear reporte asociado.<br>3. Validar visibilidad para estudiante inscrito.<br>4. Crear evidencia de programa.<br>5. Validar visibilidad para estudiante activo e inactivo.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Evidencias tipo inscripcion y programa; estudiante activo e inactivo.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>El sistema muestra reportes segun tipo de evidencia y estatus del estudiante.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 8: Anuncios</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-08</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Filtrado de anuncios visibles y por rol</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/AdvertisementScopeTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>Modelo Advertisement</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-10: Consulta de anuncios; RF-17: Consulta de anuncios para coordinador; RF-33: Publicacion de anuncios.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que el sistema filtre anuncios visibles segun fecha y rol objetivo.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Deben existir anuncios con diferentes fechas y roles.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Crear anuncio visible actualmente.<br>2. Crear anuncio visible en fecha pasada.<br>3. Crear anuncio futuro.<br>4. Filtrar visibles.<br>5. Crear anuncios por rol.<br>6. Filtrar por rol.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Anuncios all, student, coordinator y fecha futura.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>El sistema muestra anuncios visibles y los correspondientes al rol solicitado.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 9: Configuracion y relaciones de modelos</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-09</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Relaciones principales del dominio</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/DomainModelConfigurationTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>Coordinator, Evidence, Report, Submission, DocumentTemplate, Advertisement</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-18, RF-21, RF-23, RF-24, RF-29, RF-30, RF-33, RF-36.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar carreras permitidas, relaciones entre evidencias, reportes y entregas, casteo de placeholders y anuncios segmentados por carrera.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Deben existir usuarios, estudiante, periodo, evidencia, reporte, entrega y plantilla.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Validar catalogo de carreras.<br>2. Crear evidencia y reporte.<br>3. Crear entrega con estado, feedback y calificacion.<br>4. Validar relaciones entre modelos.<br>5. Crear plantilla documental.<br>6. Validar placeholders y creador.<br>7. Crear anuncio por carrera.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Carrera Ingenieria Industrial, entrega aceptada, calificacion 95.50, plantilla con placeholders.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>Las relaciones y configuraciones del dominio funcionan correctamente.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 10: Importacion de documentos</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-10</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Procesamiento de documentos importados</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/DocumentImportServiceTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>DocumentImportService</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-36: Gestion documental; RNF-PORT-03: Compatibilidad con formatos estandar; RNF-FI-08: Mensajes de error controlados.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que el servicio importe archivos TXT, HTML, DOCX y PDF, y rechace contenido vacio o formatos no soportados.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Deben existir archivos temporales de prueba.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Crear archivo TXT.<br>2. Crear archivo HTML.<br>3. Crear archivo DOCX basico.<br>4. Crear archivo PDF basico.<br>5. Ejecutar importacion.<br>6. Validar texto, extension y metadatos.<br>7. Probar archivo vacio o no soportado.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Archivos .txt, .html, .docx, .pdf y .exe.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>El servicio procesa documentos validos y rechaza archivos invalidos con error controlado.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 11: Contenido de plantillas</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-11</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Sanitizacion y extraccion de placeholders</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/DocumentTemplateContentServiceTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>DocumentTemplateContentService</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-36: Gestion documental; RNF-FI-08: Mensajes de error controlados.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que el servicio limpie HTML inseguro, genere texto plano, cuente lineas y detecte placeholders unicos.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Debe existir contenido HTML de prueba.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Enviar HTML con etiquetas permitidas.<br>2. Enviar HTML con scripts, iframes y atributos peligrosos.<br>3. Ejecutar preparacion de payload.<br>4. Validar HTML limpio.<br>5. Validar texto plano.<br>6. Validar placeholders ordenados y sin duplicados.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>HTML con {alumno_nombre}, {periodo_codigo}, script, iframe y estilos inseguros.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>El servicio elimina contenido peligroso y conserva datos validos.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 12: Generacion de documentos</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-12</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Sustitucion de variables en documentos</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/DocumentTemplateGenerationServiceTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>DocumentTemplateGenerationService</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-36: Gestion documental.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que el servicio genere documentos sustituyendo placeholders con datos de estudiante y periodo, y controle errores cuando faltan datos.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Debe existir plantilla, estudiante y periodo.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Crear estudiante y periodo.<br>2. Crear plantilla con placeholders.<br>3. Generar documento por estudiante.<br>4. Validar reemplazo de variables.<br>5. Validar placeholders sin resolver.<br>6. Probar estudiante inexistente.<br>7. Probar carrera sin estudiantes.<br>8. Validar escape de HTML.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>{alumno_nombre_completo}, {alumno_carrera}, {periodo_codigo}, estudiante Carlos Cordova.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>El documento se genera con datos correctos y errores controlados en casos invalidos.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 13: Reglas de validacion</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-13</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Validacion de reglas de formularios</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/FormRequestRulesTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>Requests de login, reportes y documentos</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-02: Inicio de sesion WEB; RF-30: Gestion de reportes; RF-31: Fechas limite; RF-32: Adjuntos base; RF-36: Gestion documental.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que las clases Request contengan las reglas correctas para login, reportes, documentos y generacion documental.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Deben existir las clases Request.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Instanciar los Requests.<br>2. Obtener reglas.<br>3. Validar campos obligatorios.<br>4. Validar tipos de datos.<br>5. Validar reglas de archivos y fechas.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Reglas de correo, contrasena, titulo, fecha limite, archivo y alcance de generacion.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>Las reglas coinciden con las validaciones requeridas por el sistema.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h3>Caso de Prueba Unitaria 14: Validacion real de datos</h3>
+  <table>
+    <tr><td class="label">ID Caso de Prueba</td><td>PU-14</td></tr>
+    <tr><td class="label">Nombre del Caso de Prueba</td><td>Ejecucion de validaciones con datos validos e invalidos</td></tr>
+    <tr><td class="label">Herramienta utilizada</td><td>PHPUnit / Pest</td></tr>
+    <tr><td class="label">Archivo de prueba</td><td>tests/Unit/FormRequestValidationBehaviorTest.php</td></tr>
+    <tr><td class="label">Unidad probada</td><td>StoreReportRequest, StoreDocumentTemplateRequest, GenerateDocumentTemplateRequest</td></tr>
+    <tr><td class="label">Requerimientos asociados</td><td>RF-30: Gestion de reportes; RF-31: Configuracion de fechas limite; RF-32: Gestion de adjuntos base; RF-36: Gestion documental.</td></tr>
+    <tr><td class="label">Descripcion del Caso de Prueba</td><td>Verificar que las reglas de validacion acepten datos correctos y rechacen datos incorrectos usando el validador real de Laravel.</td></tr>
+    <tr><td class="label">Pre-condiciones</td><td>Deben existir registros de estudiante, periodo y evidencia.</td></tr>
+    <tr><td class="label">Pasos de la prueba</td><td>1. Crear datos base.<br>2. Ejecutar validacion con datos validos.<br>3. Ejecutar validacion con datos invalidos.<br>4. Validar errores por campo.<br>5. Validar reglas condicionales por alcance.</td></tr>
+    <tr><td class="label">Datos de prueba</td><td>Reporte valido, evidence inexistente, fecha invalida, extension invalida y scope incorrecto.</td></tr>
+    <tr><td class="label">Resultados esperados</td><td>El validador acepta datos validos y rechaza datos invalidos con errores especificos.</td></tr>
+    <tr><td class="label">Resultados de la ejecucion</td><td>Las pruebas pasaron correctamente.</td></tr>
+    <tr><td class="label">Estado de la prueba</td><td>Paso</td></tr>
+  </table>
+
+  <h2>Conclusion</h2>
+  <p>Las pruebas unitarias validan las unidades internas asociadas a los requerimientos funcionales y no funcionales que pueden comprobarse a nivel de clase, modelo, servicio, recurso y request. Los requerimientos que dependen de rutas, interfaz grafica, navegacion o flujos completos se validan mediante pruebas de integracion o pruebas de sistema.</p>
+</body>
+</html>

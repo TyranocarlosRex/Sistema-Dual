@@ -401,15 +401,20 @@ export default function AdministratorPeriods() {
                 Crea nuevos periodos, define cual esta activo y conserva los cerrados solo para consulta y estadisticas.
               </p>
             </div>
-            <div className="ms-auto d-flex gap-2">
+            <div className="admin-hero-actions">
               <button
-                className="btn btn-light btn-sm"
+                className="btn btn-sm admin-hero-btn admin-hero-btn-primary"
                 type="button"
                 onClick={() => (showForm ? closeForm() : openCreateForm())}
               >
                 {showForm ? "Ocultar formulario" : "Nuevo periodo"}
               </button>
-              <button className="btn btn-outline-light btn-sm" type="button" onClick={cargarPeriodos} disabled={loading}>
+              <button
+                className="btn btn-sm admin-hero-btn admin-hero-btn-secondary"
+                type="button"
+                onClick={cargarPeriodos}
+                disabled={loading}
+              >
                 {loading ? "Actualizando..." : "Actualizar"}
               </button>
             </div>

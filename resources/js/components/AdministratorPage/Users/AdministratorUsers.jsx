@@ -511,7 +511,7 @@ export default function AdministratorUsers() {
       <div className="container-fluid" style={{ maxWidth: "1200px" }}>
         <section style={HERO_STYLE} className="mb-4">
           <p className="text-uppercase small mb-1" style={{ letterSpacing: "0.08em", opacity: 0.85 }}>
-            Usuarios {isStudents ? "Ã¢â‚¬â€ Estudiantes" : "Ã¢â‚¬â€ Coordinadores"}
+            Usuarios {isStudents ? "- Estudiantes" : "- Coordinadores"}
           </p>
           <div className="d-flex flex-wrap align-items-center gap-3">
             <div>
@@ -520,10 +520,10 @@ export default function AdministratorUsers() {
                 Filtra, consulta y actualiza el estatus desde un panel limpio con acciones rapidas.
               </p>
             </div>
-            <div className="ms-auto d-flex gap-2">
+            <div className="admin-hero-actions">
               {!isStudents && (
                 <button
-                  className="btn btn-light btn-sm"
+                  className="btn btn-sm admin-hero-btn admin-hero-btn-primary"
                   type="button"
                   onClick={abrirCoordinatorModal}
                 >
@@ -531,7 +531,7 @@ export default function AdministratorUsers() {
                 </button>
               )}
               <button
-                className="btn btn-light btn-sm"
+                className="btn btn-sm admin-hero-btn admin-hero-btn-secondary"
                 type="button"
                 onClick={buscarUsuarios}
                 disabled={cargando}

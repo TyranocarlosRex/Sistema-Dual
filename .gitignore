@@ -16,8 +16,11 @@
 /public/build
 /public/hot
 /public/storage
+/playwright-report
 /storage/*.key
 /storage/pail
+/test-results
+/tests/e2e-report
 /vendor
 Homestead.json
 Homestead.yaml
