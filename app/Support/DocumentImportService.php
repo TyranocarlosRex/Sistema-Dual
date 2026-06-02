@@ -654,7 +654,7 @@ class DocumentImportService
                 continue;
             }
 
-            $key = md5($text);
+            $key = hash('sha256', $text);
             if (isset($seen[$key])) {
                 continue;
             }
@@ -670,7 +670,7 @@ class DocumentImportService
                 continue;
             }
 
-            $key = md5($text);
+            $key = hash('sha256', $text);
             if (isset($seen[$key])) {
                 continue;
             }
@@ -709,7 +709,7 @@ class DocumentImportService
                 continue;
             }
 
-            $key = md5($html);
+            $key = hash('sha256', $html);
             if (isset($seen[$key])) {
                 continue;
             }
@@ -726,7 +726,7 @@ class DocumentImportService
             }
 
             $html = '<div class="docx-paragraph is-left"><div class="docx-paragraph__text">' . $this->escapePreviewText($text) . '</div></div>';
-            $key = md5($html);
+            $key = hash('sha256', $html);
 
             if (isset($seen[$key])) {
                 continue;
@@ -957,7 +957,7 @@ class DocumentImportService
         $xpath->registerNamespace('wp', 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing');
         $xpath->registerNamespace('a', 'http://schemas.openxmlformats.org/drawingml/2006/main');
         $xpath->registerNamespace('pic', 'http://schemas.openxmlformats.org/drawingml/2006/picture');
-        $xpath->registerNamespace('wps', 'http://schemas.microsoft.com/office/word/2010/wordprocessingShape');
+        $xpath->registerNamespace('wps', 'http://schemas.microsoft.com/office/word/2010/wordprocessingShape'); // NOSONAR: XML namespace URI, not a remote request.
 
         return $xpath;
     }
@@ -1166,7 +1166,7 @@ class DocumentImportService
         foreach ($blocks as $blockMatch) {
             $block = $blockMatch[1] ?? '';
 
-            preg_match_all('/\[(.*?)\]\s*TJ|(\((?:\\\\|\\\(|\\\)|\\.|[^\\\)])*\)|<[0-9A-Fa-f\s]+>)\s*(Tj|\'|")/s', $block, $matches, PREG_SET_ORDER);
+            preg_match_all('/\[(.*?)\]\s*TJ|(\((?:\\\\.|[^\\\\)])*\)|<[0-9A-Fa-f\s]+>)\s*(Tj|\'|")/s', $block, $matches, PREG_SET_ORDER);
 
             foreach ($matches as $match) {
                 if (($match[1] ?? '') !== '') {
@@ -1196,7 +1196,7 @@ class DocumentImportService
 
     private function decodePdfArray(string $value): string
     {
-        preg_match_all('/\((?:\\\\|\\\(|\\\)|\\.|[^\\\)])*\)|<[0-9A-Fa-f\s]+>/', $value, $matches);
+        preg_match_all('/\((?:\\\\.|[^\\\\)])*\)|<[0-9A-Fa-f\s]+>/', $value, $matches);
 
         $parts = array_map(fn (string $token) => $this->decodePdfToken($token), $matches[0] ?? []);
 

@@ -7,13 +7,7 @@ use App\Contracts\Auth\TokenIssuer;
 use App\Models\User;
 use App\Services\Auth\Concerns\JsonFails;
 use App\Services\Auth\LoginResponseFactory;
-/*Clase: AdminLogin
-Descripción: Esta clase implementa el servicio de inicio de sesión para administradores.
-Utiliza el trait JsonFails para manejar errores de autenticación y devuelve una respuesta 
-personalizada con los detalles del administrador y el token de autenticación. 
-Se encarga de verificar las credenciales del usuario, emitir un token con las habilidades 
-adecuadas y formatear la respuesta de inicio de sesión. 
-*/
+
 class AdminLogin implements LoginService
 {
     use JsonFails;

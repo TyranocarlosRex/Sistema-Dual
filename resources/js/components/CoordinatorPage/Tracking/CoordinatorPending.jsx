@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { parseDownloadFilename } from "../../../utils/downloadFilename";
+import {
+  downloadResponseBlob,
+  previewFileFromResponse,
+  revokePreviewFile,
+} from "../../../utils/downloadFilename";
 import { getApiErrorMessage } from "../../../utils/errorMessages";
 import { useToast } from "../../Shared/ToastProvider";
 
@@ -56,7 +60,7 @@ export default function CoordinatorPending() {
         setGrades(initialGrades);
       } catch (err) {
         console.error("Error cargando entregas:", err);
-        setSubsError(getApiErrorMessage(err, "No pudimos cargar las entregas. Actualiza la pagina e intenta de nuevo."));
+        setSubsError(getApiErrorMessage(err, "No pudimos cargar las entregas. Actualiza la pagina."));
       } finally {
         setSubsLoading(false);
       }
@@ -95,7 +99,7 @@ export default function CoordinatorPending() {
       console.error(err);
       showToast({
         title: "Entrega no actualizada",
-        message: getApiErrorMessage(err, "No pudimos guardar el cambio de estado. Intenta nuevamente."),
+        message: getApiErrorMessage(err, "No pudimos guardar el cambio de estado."),
         variant: "error",
       });
     } finally {
@@ -103,32 +107,38 @@ export default function CoordinatorPending() {
     }
   };
 
-  const previewSubmission = async (submission) => {
+  const handleSubmissionFile = async (submission, preview = false) => {
     try {
       setDownloadingId(submission.id);
       const token = localStorage.getItem("token");
 
+      const action = preview ? "preview" : "download";
       const { data, headers } = await axios.get(
-        `/api/coordinator/report-submissions/${submission.id}/preview`,
+        `/api/coordinator/report-submissions/${submission.id}/${action}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",
         }
       );
 
-      const filename = parseDownloadFilename(
-        headers,
-        submission.original_name || `entrega-${submission.id}`
-      );
+      const fallback = submission.original_name || `entrega-${submission.id}`;
 
-      const blob = new Blob([data], { type: headers["content-type"] || "application/octet-stream" });
-      const url = window.URL.createObjectURL(blob);
-      setPreviewFile({ url, name: filename });
+      if (preview) {
+        setPreviewFile(previewFileFromResponse(data, headers, fallback));
+        return;
+      }
+
+      downloadResponseBlob(data, headers, fallback);
     } catch (err) {
       console.error(err);
       showToast({
-        title: "Vista previa no disponible",
-        message: getApiErrorMessage(err, "No pudimos abrir la vista previa del archivo."),
+        title: preview ? "Vista previa no disponible" : "Descarga no disponible",
+        message: getApiErrorMessage(
+          err,
+          preview
+            ? "No pudimos abrir la vista previa del archivo."
+            : "No pudimos descargar el archivo."
+        ),
         variant: "error",
       });
     } finally {
@@ -136,49 +146,11 @@ export default function CoordinatorPending() {
     }
   };
 
-  const downloadSubmission = async (submission) => {
-    try {
-      setDownloadingId(submission.id);
-      const token = localStorage.getItem("token");
-
-      const { data, headers } = await axios.get(
-        `/api/coordinator/report-submissions/${submission.id}/download`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: "blob",
-        }
-      );
-
-      const filename = parseDownloadFilename(
-        headers,
-        submission.original_name || `entrega-${submission.id}`
-      );
-
-      const blob = new Blob([data], { type: headers["content-type"] || "application/octet-stream" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error(err);
-      showToast({
-        title: "Descarga no disponible",
-        message: getApiErrorMessage(err, "No pudimos descargar el archivo. Intenta nuevamente."),
-        variant: "error",
-      });
-    } finally {
-      setDownloadingId(null);
-    }
-  };
+  const previewSubmission = (submission) => handleSubmissionFile(submission, true);
+  const downloadSubmission = (submission) => handleSubmissionFile(submission);
 
   const closePreview = () => {
-    if (previewFile?.url) {
-      window.URL.revokeObjectURL(previewFile.url);
-    }
+    revokePreviewFile(previewFile);
     setPreviewFile(null);
   };
 

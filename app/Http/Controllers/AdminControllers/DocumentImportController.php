@@ -9,6 +9,9 @@ use RuntimeException;
 
 class DocumentImportController extends Controller
 {
+    private const MAX_IMPORT_FILE_KILOBYTES = 7680;
+    private const MAX_IMPORT_FILE_LABEL = '7.5 MB';
+
     public function __construct(private readonly DocumentImportService $importer)
     {
     }
@@ -19,12 +22,12 @@ class DocumentImportController extends Controller
         $postLimit = ini_get('post_max_size') ?: 'desconocido';
 
         $validated = $request->validate([
-            'file' => ['bail', 'required', 'file', 'max:15360', 'mimes:txt,html,htm,docx,pdf'],
+            'file' => ['bail', 'required', 'file', 'max:' . self::MAX_IMPORT_FILE_KILOBYTES, 'mimes:txt,html,htm,docx,pdf'],
         ], [
             'file.required' => 'Selecciona un archivo antes de importarlo.',
-            'file.uploaded' => "El archivo no pudo subirse. Revisa que no exceda 15 MB y que PHP tenga upload_max_filesize={$uploadLimit} y post_max_size={$postLimit} o mayores.",
+            'file.uploaded' => "El archivo no pudo subirse. Revisa que no exceda " . self::MAX_IMPORT_FILE_LABEL . " y que PHP tenga upload_max_filesize={$uploadLimit} y post_max_size={$postLimit} o mayores.",
             'file.file' => 'El archivo seleccionado no es valido.',
-            'file.max' => 'El archivo no debe pesar mas de 15 MB.',
+            'file.max' => 'El archivo no debe pesar mas de ' . self::MAX_IMPORT_FILE_LABEL . '.',
             'file.mimes' => 'El archivo debe ser TXT, HTML, DOCX o PDF.',
         ]);
 

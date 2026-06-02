@@ -10,30 +10,33 @@ use App\Models\Submission;
 use App\Services\Auth\StudentLogin;
 use App\Services\Auth\CoordinatorLogin;
 use App\Services\Auth\AdminLogin;
+use App\Support\AuthSessionCookie;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/*La clase AuthController maneja la autenticación para estudiantes, coordinadores y administradores, 
-    así como la obtención de información del administrador autenticado.
-
-    - loginStudent: Maneja el inicio de sesión para estudiantes.
-    - loginCoordinator: Maneja el inicio de sesión para coordinadores.
-    - loginAdmin: Maneja el inicio de sesión para administradores.
-    - meAdmin: Devuelve la información del administrador autenticado, incluyendo detalles del usuario y del administrador.*/
-    
 class AuthController extends Controller {
     use ResolvesPeriodContext;
 
     public function loginStudent(LoginStudentRequest $request, StudentLogin $service) {
         $data = $service->login($request->validated());
-        return response()->json($data, 200);
+        return $this->loginResponse($data);
     }
     public function loginCoordinator(LoginCoordinatorRequest $request, CoordinatorLogin $service) {
         $data = $service->login($request->validated());
-        return response()->json($data, 200);
+        return $this->loginResponse($data);
     }
     public function loginAdmin(LoginAdminRequest $request, AdminLogin $service) {
         $data = $service->login($request->validated());
-        return response()->json($data, 200);
+        return $this->loginResponse($data);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()?->currentAccessToken()?->delete();
+
+        return response()
+            ->json(['message' => 'Sesion cerrada'], 200)
+            ->cookie(AuthSessionCookie::forget());
     }
 
     public function meAdmin(Request $request) {
@@ -134,5 +137,15 @@ class AuthController extends Controller {
                 'pendingDocuments' => $pendingDocuments,
             ],
         ], 200);
+    }
+
+    private function loginResponse(array $data): JsonResponse
+    {
+        $token = (string) ($data['access_token'] ?? $data['token'] ?? '');
+        $response = response()->json($data, 200);
+
+        return $token === ''
+            ? $response
+            : $response->cookie(AuthSessionCookie::make($token));
     }
 }

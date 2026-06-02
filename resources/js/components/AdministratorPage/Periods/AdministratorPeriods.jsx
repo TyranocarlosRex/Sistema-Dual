@@ -126,7 +126,7 @@ export default function AdministratorPeriods() {
       setPeriodos(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
-      setError(getApiErrorMessage(err, "No pudimos cargar los periodos. Actualiza la pagina e intenta de nuevo."));
+      setError(getApiErrorMessage(err, "No pudimos cargar los periodos. Actualiza la pagina."));
     } finally {
       setLoading(false);
     }
@@ -262,10 +262,10 @@ export default function AdministratorPeriods() {
 
       if (editingPeriodId) {
         await axiosAuth.put(`/api/periods/${editingPeriodId}`, payload);
-        setSuccess("Periodo actualizado correctamente.");
+        setSuccess("Periodo actualizado.");
       } else {
         await axiosAuth.post("/api/periods", payload);
-        setSuccess("Periodo creado correctamente.");
+        setSuccess("Periodo creado.");
       }
 
       closeForm();
@@ -276,8 +276,8 @@ export default function AdministratorPeriods() {
         getApiErrorMessage(
           err,
           editingPeriodId
-            ? "No pudimos actualizar el periodo. Revisa los datos e intenta de nuevo."
-            : "No pudimos crear el periodo. Revisa los datos e intenta de nuevo."
+            ? "No pudimos actualizar el periodo. Revisa los datos."
+            : "No pudimos crear el periodo. Revisa los datos."
         )
       );
     } finally {
@@ -590,7 +590,7 @@ export default function AdministratorPeriods() {
               <div className="card border-0 shadow-sm">
                 <div className="card-body text-center py-5">
                   <h2 className="h5 mb-2">Todavia no hay periodos</h2>
-                  <p className="text-muted mb-3">Empieza creando el primer periodo para cargar alumnos y activar el ciclo.</p>
+                  <p className="text-muted mb-3">Crea el primer periodo para cargar alumnos y activar el ciclo.</p>
                   <button className="btn btn-primary" type="button" onClick={openCreateForm}>
                     Crear primer periodo
                   </button>
@@ -715,11 +715,18 @@ export default function AdministratorPeriods() {
           className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3"
           style={{ background: "rgba(15, 23, 42, 0.72)", zIndex: 1700 }}
           onClick={closeStatisticsModal}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              closeStatisticsModal();
+            }
+          }}
+          tabIndex={-1}
         >
           <div
             className="bg-white rounded-4 shadow-lg w-100 d-flex flex-column"
             style={{ maxWidth: "1160px", maxHeight: "90vh" }}
             onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
           >
             <div className="border-bottom p-3 p-md-4 d-flex justify-content-between align-items-start gap-3 flex-wrap">
               <div>

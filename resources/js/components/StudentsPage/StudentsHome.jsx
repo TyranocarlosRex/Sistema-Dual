@@ -7,14 +7,6 @@ import { useToast } from "../Shared/ToastProvider";
 import { APP_ROUTES } from "../../routes";
 import { getApiErrorMessage } from "../../utils/errorMessages";
 
-const safeJSON = (str, fallback = null) => {
-  try {
-    return str ? JSON.parse(str) : fallback;
-  } catch {
-    return fallback;
-  }
-};
-
 const normalizeValue = (value) => String(value ?? "").trim();
 
 const StudentsHome = () => {
@@ -22,8 +14,8 @@ const StudentsHome = () => {
   const navigate = useNavigate();
 
   const [token] = useState(() => localStorage.getItem("token"));
-  const [user] = useState(() => safeJSON(localStorage.getItem("user")));
-  const [student] = useState(() => safeJSON(localStorage.getItem("student")));
+  const [user, setUser] = useState(null);
+  const [student, setStudent] = useState(null);
 
   const [evidences, setEvidences] = useState([]);
   const [loadingEvidences, setLoadingEvidences] = useState(true);
@@ -57,23 +49,8 @@ const StudentsHome = () => {
     normalizeValue(contactForm.Telefono) !== normalizeValue(activeStudent?.Telefono) ||
     normalizeValue(contactForm.Direccion) !== normalizeValue(activeStudent?.Direccion);
 
-  const syncStoredStudent = (nextStudent) => {
-    if (!nextStudent) {
-      return;
-    }
-
-    const currentStoredStudent = safeJSON(localStorage.getItem("student"), {});
-    localStorage.setItem(
-      "student",
-      JSON.stringify({
-        ...(currentStoredStudent || {}),
-        ...nextStudent,
-      })
-    );
-  };
-
   useEffect(() => {
-    if (!token || !user || !student) {
+    if (!token) {
       setProfileLoading(false);
       return;
     }
@@ -92,15 +69,16 @@ const StudentsHome = () => {
         });
 
         const nextStudent = data.student || null;
+        setUser(data.user || null);
+        setStudent(nextStudent);
         setProfile(nextStudent);
         setContactForm({
           Telefono: nextStudent?.Telefono ?? "",
           Direccion: nextStudent?.Direccion ?? "",
         });
-        syncStoredStudent(nextStudent);
       } catch (err) {
         setProfileError(
-          getApiErrorMessage(err, "No pudimos cargar tu perfil. Puedes intentar actualizar la pagina.")
+          getApiErrorMessage(err, "No pudimos cargar tu perfil. Actualiza la pagina.")
         );
       } finally {
         setProfileLoading(false);
@@ -108,10 +86,10 @@ const StudentsHome = () => {
     };
 
     fetchProfile();
-  }, [student, token, user]);
+  }, [token]);
 
   useEffect(() => {
-    if (!token || !user || !student) {
+    if (!token) {
       setLoadingEvidences(false);
       return;
     }
@@ -139,7 +117,7 @@ const StudentsHome = () => {
     };
 
     fetchEvidences();
-  }, [student, token, user]);
+  }, [token]);
 
   const handleContactFieldChange = (field) => (event) => {
     const { value } = event.target;
@@ -170,19 +148,19 @@ const StudentsHome = () => {
       );
 
       const nextStudent = data.student || null;
+      setStudent(nextStudent);
       setProfile(nextStudent);
       setContactForm({
         Telefono: nextStudent?.Telefono ?? "",
         Direccion: nextStudent?.Direccion ?? "",
       });
-      syncStoredStudent(nextStudent);
       showToast({
         title: "Perfil actualizado",
         message: "Tu telefono y direccion ya quedaron guardados.",
         variant: "success",
       });
     } catch (err) {
-      const message = getApiErrorMessage(err, "No pudimos guardar tus datos de contacto. Revisa la informacion e intenta de nuevo.");
+      const message = getApiErrorMessage(err, "No pudimos guardar tus datos de contacto. Revisa la informacion.");
       setProfileError(message);
       showToast({
         title: "No se pudo guardar",
@@ -290,7 +268,7 @@ const StudentsHome = () => {
                 maxLength={20}
                 disabled={profileLoading || profileSaving}
               />
-              <div className="form-text">Puedes capturar solo los numeros o un formato corto.</div>
+              <div className="form-text">Solo numeros o formato corto.</div>
             </div>
 
             <div className="col-12 col-md-8">

@@ -49,7 +49,7 @@ export default function AdminEvidences() {
       setEvidences(res.data);
     } catch (err) {
       console.error("Error al cargar evidences:", err);
-      setError(getApiErrorMessage(err, "No pudimos cargar los espacios de evidencias. Actualiza la pagina e intenta de nuevo."));
+      setError(getApiErrorMessage(err, "No pudimos cargar los espacios de evidencias. Actualiza la pagina."));
     } finally {
       setLoading(false);
     }
@@ -75,12 +75,12 @@ export default function AdminEvidences() {
       setDescripcion("");
       setTipo("inscripcion");
       setShowCreateForm(false);
-      setSuccess("Espacio creado correctamente.");
+      setSuccess("Espacio creado.");
 
       await cargarEvidences();
     } catch (err) {
       console.error(err);
-      setError(getApiErrorMessage(err, "No pudimos crear el espacio. Revisa el titulo y vuelve a intentar."));
+      setError(getApiErrorMessage(err, "No pudimos crear el espacio. Revisa el titulo."));
     }
   };
 
@@ -115,11 +115,11 @@ export default function AdminEvidences() {
       });
 
       cancelarEdicion();
-      setSuccess("Espacio actualizado correctamente.");
+      setSuccess("Espacio actualizado.");
       await cargarEvidences();
     } catch (err) {
       console.error(err);
-      setEditError(getApiErrorMessage(err, "No pudimos actualizar el espacio. Revisa los cambios e intenta de nuevo."));
+      setEditError(getApiErrorMessage(err, "No pudimos actualizar el espacio. Revisa los cambios."));
     }
   };
 
@@ -150,7 +150,7 @@ export default function AdminEvidences() {
       await cargarEvidences();
     } catch (err) {
       console.error(err);
-      const message = getApiErrorMessage(err, "No pudimos eliminar el espacio. Revisa si tiene reportes asociados.");
+      const message = getApiErrorMessage(err, "No pudimos eliminar el espacio. Revisa reportes asociados.");
       setError(message);
       if (editingId === ev.id) {
         setEditError(message);
@@ -299,7 +299,7 @@ export default function AdminEvidences() {
             {loading ? (
               <div className="text-muted">Cargando...</div>
             ) : evidences.length === 0 ? (
-              <div className="text-muted">Aun no hay espacios creados.</div>
+              <div className="text-muted">No hay espacios creados.</div>
             ) : (
               <div className="row g-3">
                 {evidences.map((ev) => (
@@ -360,7 +360,7 @@ export default function AdminEvidences() {
                           </ul>
                         </div>
                       ) : (
-                        <div className="text-muted small">Aun no hay reportes en este espacio.</div>
+                        <div className="text-muted small">No hay reportes en este espacio.</div>
                       )}
 
                       {editingId === ev.id && (

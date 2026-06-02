@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { parseDownloadFilename } from "../../utils/downloadFilename";
+import {
+  downloadResponseBlob,
+  previewFileFromResponse,
+  revokePreviewFile,
+} from "../../utils/downloadFilename";
 import { useToast } from "./ToastProvider";
 import { getApiErrorMessage } from "../../utils/errorMessages";
 
@@ -85,7 +89,7 @@ export default function StudentDetailsPage() {
         }
       } catch (err) {
         console.error(err);
-        setError(getApiErrorMessage(err, "No pudimos cargar la informacion del estudiante. Regresa e intenta abrirlo de nuevo."));
+        setError(getApiErrorMessage(err, "No pudimos cargar la informacion del estudiante."));
       } finally {
         setLoading(false);
       }
@@ -246,7 +250,7 @@ export default function StudentDetailsPage() {
 
       showToast({
         title: "Asignacion actualizada",
-        message: "La empresa del estudiante se actualizo correctamente.",
+        message: "Empresa del estudiante actualizada.",
         variant: "success",
       });
     } catch (err) {
@@ -312,28 +316,14 @@ export default function StudentDetailsPage() {
         }
       );
 
-      const filename = parseDownloadFilename(
-        headers,
-        sub.original_name || `entrega-${sub.id}`
-      );
-
-      const blob = new Blob([data], {
-        type: headers["content-type"] || "application/octet-stream",
-      });
-      const url = window.URL.createObjectURL(blob);
+      const fallback = sub.original_name || `entrega-${sub.id}`;
 
       if (preview) {
-        setPreviewFile({ url, name: filename });
+        setPreviewFile(previewFileFromResponse(data, headers, fallback));
         return;
       }
 
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      downloadResponseBlob(data, headers, fallback);
     } catch (err) {
       console.error(err);
       showToast({
@@ -342,7 +332,7 @@ export default function StudentDetailsPage() {
           err,
           preview
             ? "No pudimos abrir la vista previa del archivo."
-            : "No pudimos descargar el archivo. Intenta nuevamente."
+            : "No pudimos descargar el archivo."
         ),
         variant: "error",
       });
@@ -352,9 +342,7 @@ export default function StudentDetailsPage() {
   };
 
   const closePreview = () => {
-    if (previewFile?.url) {
-      window.URL.revokeObjectURL(previewFile.url);
-    }
+    revokePreviewFile(previewFile);
     setPreviewFile(null);
   };
 
@@ -773,7 +761,6 @@ export default function StudentDetailsPage() {
         </div>
       </div>
 
-      {/* cierre contenedor principal */}
       </div>
 
       {previewFile && (
@@ -781,11 +768,18 @@ export default function StudentDetailsPage() {
           className="position-fixed top-0 start-0 w-100 h-100"
           style={{ background: "rgba(0,0,0,0.65)", zIndex: 1050 }}
           onClick={closePreview}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              closePreview();
+            }
+          }}
+          tabIndex={-1}
         >
           <div
             className="position-absolute top-50 start-50 translate-middle bg-white rounded shadow-lg"
             style={{ width: "90%", maxWidth: "960px", height: "80vh", padding: "1rem" }}
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             <div className="d-flex justify-content-between align-items-center mb-2">
               <div>
@@ -810,7 +804,3 @@ export default function StudentDetailsPage() {
     </>
   );
 }
-
-
-
-

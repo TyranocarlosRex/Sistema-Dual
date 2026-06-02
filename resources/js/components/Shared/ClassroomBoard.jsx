@@ -89,7 +89,7 @@ export default function ClassroomBoard({
         });
         setAnnouncements(Array.isArray(data) ? data : []);
       } catch (err) {
-        setAnnouncementsError(getApiErrorMessage(err, "No pudimos cargar los anuncios. Actualiza la pagina e intenta de nuevo."));
+        setAnnouncementsError(getApiErrorMessage(err, "No pudimos cargar los anuncios. Actualiza la pagina."));
       } finally {
         setLoadingAnnouncements(false);
       }

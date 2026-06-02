@@ -276,52 +276,22 @@ class PeriodController extends Controller
 
         $summary['entregas'] = (int) array_sum(array_column($submissionBreakdown, 'total'));
 
-        $dropReasons = StudentPeriod::query()
-            ->where('periodo_id', $period->id)
-            ->where('Estatus', Student::STATUS_BAJA)
-            ->selectRaw("COALESCE(NULLIF(TRIM(Motivo_baja), ''), 'Sin motivo especificado') as label, COUNT(*) as total")
-            ->groupBy('label')
-            ->orderByDesc('total')
-            ->orderBy('label')
-            ->get()
-            ->map(function ($row) {
-                return [
-                    'label' => $row->label,
-                    'total' => (int) $row->total,
-                ];
-            })
-            ->values();
+        $dropReasons = $this->periodBreakdown(
+            $period,
+            "COALESCE(NULLIF(TRIM(Motivo_baja), ''), 'Sin motivo especificado') as label, COUNT(*) as total",
+            fn ($query) => $query->where('Estatus', Student::STATUS_BAJA)
+        );
 
-        $careerBreakdown = StudentPeriod::query()
-            ->where('periodo_id', $period->id)
-            ->selectRaw("COALESCE(NULLIF(TRIM(Carrera), ''), 'Sin carrera asignada') as label, COUNT(*) as total")
-            ->groupBy('label')
-            ->orderByDesc('total')
-            ->orderBy('label')
-            ->get()
-            ->map(function ($row) {
-                return [
-                    'label' => $row->label,
-                    'total' => (int) $row->total,
-                ];
-            })
-            ->values();
+        $careerBreakdown = $this->periodBreakdown(
+            $period,
+            "COALESCE(NULLIF(TRIM(Carrera), ''), 'Sin carrera asignada') as label, COUNT(*) as total"
+        );
 
-        $companyBreakdown = StudentPeriod::query()
-            ->where('periodo_id', $period->id)
-            ->whereRaw("NULLIF(TRIM(Empresa), '') IS NOT NULL")
-            ->selectRaw('TRIM(Empresa) as label, COUNT(*) as total')
-            ->groupBy('label')
-            ->orderByDesc('total')
-            ->orderBy('label')
-            ->get()
-            ->map(function ($row) {
-                return [
-                    'label' => $row->label,
-                    'total' => (int) $row->total,
-                ];
-            })
-            ->values();
+        $companyBreakdown = $this->periodBreakdown(
+            $period,
+            'TRIM(Empresa) as label, COUNT(*) as total',
+            fn ($query) => $query->whereRaw("NULLIF(TRIM(Empresa), '') IS NOT NULL")
+        );
 
         return response()->json([
             'period' => [
@@ -338,6 +308,28 @@ class PeriodController extends Controller
             'company_breakdown' => $companyBreakdown,
             'submission_breakdown' => $submissionBreakdown,
         ]);
+    }
+
+    private function periodBreakdown(Period $period, string $selectRaw, ?callable $scope = null)
+    {
+        $query = StudentPeriod::query()
+            ->where('periodo_id', $period->id)
+            ->selectRaw($selectRaw);
+
+        if ($scope) {
+            $scope($query);
+        }
+
+        return $query
+            ->groupBy('label')
+            ->orderByDesc('total')
+            ->orderBy('label')
+            ->get()
+            ->map(fn ($row) => [
+                'label' => $row->label,
+                'total' => (int) $row->total,
+            ])
+            ->values();
     }
 
     public function syncStudents(Request $request, Period $period)

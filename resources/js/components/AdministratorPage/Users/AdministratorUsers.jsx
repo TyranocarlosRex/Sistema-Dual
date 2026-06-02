@@ -233,7 +233,7 @@ export default function AdministratorUsers() {
       setError(
         getApiErrorMessage(
           e,
-          "No pudimos obtener la lista. Revisa los filtros o actualiza la pagina."
+          "No pudimos obtener la lista. Revisa los filtros."
         )
       );
     } finally {
@@ -435,7 +435,7 @@ export default function AdministratorUsers() {
         ...prev,
         error:
           validationErrors ||
-          getApiErrorMessage(e, "No pudimos registrar el coordinador. Revisa los datos e intenta de nuevo."),
+          getApiErrorMessage(e, "No pudimos registrar el coordinador. Revisa los datos."),
       }));
     } finally {
       setCoordinatorModal((prev) => ({ ...prev, saving: false }));
@@ -476,7 +476,7 @@ export default function AdministratorUsers() {
       console.error(e);
       showToast({
         title: "Coordinador no eliminado",
-        message: getApiErrorMessage(e, "No pudimos eliminar el coordinador. Intenta nuevamente."),
+        message: getApiErrorMessage(e, "No pudimos eliminar el coordinador."),
         variant: "error",
       });
     } finally {
@@ -844,11 +844,18 @@ export default function AdministratorUsers() {
           className="position-fixed top-0 start-0 w-100 h-100"
           style={{ background: "rgba(15, 23, 42, 0.55)", zIndex: 1050 }}
           onClick={cerrarStatusModal}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              cerrarStatusModal();
+            }
+          }}
+          tabIndex={-1}
         >
           <div
             className="position-absolute top-50 start-50 translate-middle bg-white rounded-4 shadow-lg"
             style={{ width: "92%", maxWidth: "540px" }}
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             <div className="p-4">
               <div className="d-flex justify-content-between align-items-start gap-3 mb-3">
@@ -935,11 +942,18 @@ export default function AdministratorUsers() {
           className="position-fixed top-0 start-0 w-100 h-100"
           style={{ background: "rgba(15, 23, 42, 0.55)", zIndex: 1050 }}
           onClick={cerrarCoordinatorModal}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              cerrarCoordinatorModal();
+            }
+          }}
+          tabIndex={-1}
         >
           <form
             className="position-absolute top-50 start-50 translate-middle bg-white rounded-4 shadow-lg"
             style={{ width: "92%", maxWidth: "640px" }}
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
             onSubmit={(e) => {
               e.preventDefault();
               crearCoordinador();
@@ -1049,4 +1063,3 @@ export default function AdministratorUsers() {
     </div>
   );
 }
-

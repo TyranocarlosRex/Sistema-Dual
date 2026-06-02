@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { parseDownloadFilename } from "../../../utils/downloadFilename";
+import {
+  downloadResponseBlob,
+  previewFileFromResponse,
+  revokePreviewFile,
+} from "../../../utils/downloadFilename";
 import { APP_ROUTES } from "../../../routes";
 import { getApiErrorMessage } from "../../../utils/errorMessages";
 import { useToast } from "../../Shared/ToastProvider";
@@ -53,7 +57,7 @@ export default function AdministratorTracking() {
         setStudents(data || []);
       } catch (err) {
         console.error("Error cargando estudiantes:", err);
-        setError(getApiErrorMessage(err, "No pudimos cargar los estudiantes. Actualiza la pagina e intenta de nuevo."));
+        setError(getApiErrorMessage(err, "No pudimos cargar los estudiantes. Actualiza la pagina."));
       } finally {
         setLoading(false);
       }
@@ -85,7 +89,7 @@ export default function AdministratorTracking() {
         setGrades(initialGrades);
       } catch (err) {
         console.error("Error cargando entregas:", err);
-        setSubsError(getApiErrorMessage(err, "No pudimos cargar las entregas. Actualiza la pagina e intenta de nuevo."));
+        setSubsError(getApiErrorMessage(err, "No pudimos cargar las entregas. Actualiza la pagina."));
       } finally {
         setSubsLoading(false);
       }
@@ -207,7 +211,7 @@ export default function AdministratorTracking() {
       console.error(err);
       showToast({
         title: "Entrega no actualizada",
-        message: getApiErrorMessage(err, "No pudimos guardar el cambio de estado. Intenta nuevamente."),
+        message: getApiErrorMessage(err, "No pudimos guardar el cambio de estado."),
         variant: "error",
       });
     } finally {
@@ -216,13 +220,11 @@ export default function AdministratorTracking() {
   };
 
   const closePreview = () => {
-    if (previewFile?.url) {
-      window.URL.revokeObjectURL(previewFile.url);
-    }
+    revokePreviewFile(previewFile);
     setPreviewFile(null);
   };
 
-  const previewSubmission = async (submission) => {
+  const handleSubmissionFile = async (submission, preview = false) => {
     try {
       setDownloadingId(submission.id);
       const token = localStorage.getItem("token");
@@ -235,19 +237,24 @@ export default function AdministratorTracking() {
         }
       );
 
-      const filename = parseDownloadFilename(
-        headers,
-        submission.original_name || `entrega-${submission.id}`
-      );
+      const fallback = submission.original_name || `entrega-${submission.id}`;
 
-      const blob = new Blob([data], { type: headers["content-type"] || "application/octet-stream" });
-      const url = window.URL.createObjectURL(blob);
-      setPreviewFile({ url, name: filename });
+      if (preview) {
+        setPreviewFile(previewFileFromResponse(data, headers, fallback));
+        return;
+      }
+
+      downloadResponseBlob(data, headers, fallback);
     } catch (err) {
       console.error(err);
       showToast({
-        title: "Vista previa no disponible",
-        message: getApiErrorMessage(err, "No pudimos abrir la vista previa del archivo."),
+        title: preview ? "Vista previa no disponible" : "Descarga no disponible",
+        message: getApiErrorMessage(
+          err,
+          preview
+            ? "No pudimos abrir la vista previa del archivo."
+            : "No pudimos descargar el archivo."
+        ),
         variant: "error",
       });
     } finally {
@@ -255,44 +262,8 @@ export default function AdministratorTracking() {
     }
   };
 
-  const downloadSubmission = async (submission) => {
-    try {
-      setDownloadingId(submission.id);
-      const token = localStorage.getItem("token");
-
-      const { data, headers } = await axios.get(
-        `/api/admin/report-submissions/${submission.id}/download`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: "blob",
-        }
-      );
-
-      const filename = parseDownloadFilename(
-        headers,
-        submission.original_name || `entrega-${submission.id}`
-      );
-
-      const blob = new Blob([data], { type: headers["content-type"] || "application/octet-stream" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error(err);
-      showToast({
-        title: "Descarga no disponible",
-        message: getApiErrorMessage(err, "No pudimos descargar el archivo. Intenta nuevamente."),
-        variant: "error",
-      });
-    } finally {
-      setDownloadingId(null);
-    }
-  };
+  const previewSubmission = (submission) => handleSubmissionFile(submission, true);
+  const downloadSubmission = (submission) => handleSubmissionFile(submission);
 
   const resumen = useMemo(() => {
     const total = filteredStudents.length;
@@ -723,11 +694,18 @@ export default function AdministratorTracking() {
           className="position-fixed top-0 start-0 w-100 h-100"
           style={{ background: "rgba(0,0,0,0.65)", zIndex: 1050 }}
           onClick={closePreview}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              closePreview();
+            }
+          }}
+          tabIndex={-1}
         >
           <div
             className="position-absolute top-50 start-50 translate-middle bg-white rounded shadow-lg"
             style={{ width: "90%", maxWidth: "960px", height: "80vh", padding: "1rem" }}
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             <div className="d-flex justify-content-between align-items-center mb-2">
               <div>

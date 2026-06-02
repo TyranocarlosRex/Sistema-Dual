@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './Auth.css';
 import { APP_ROUTES } from '../../routes';
 import { getLoginErrorMessage } from '../../utils/errorMessages';
+import { startAuthSession } from '../../utils/authSession';
 
 const StudentLogin = () => {
   const [noControl, setNoControl] = useState('');
@@ -16,36 +17,12 @@ const StudentLogin = () => {
     setError(null);
 
     try {
-      const { data } = await axios.post('/api/auth/login/student', {
+      await axios.post('/api/auth/login/student', {
         no_control: noControl,
         password,
       });
 
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('student');
-      localStorage.removeItem('admin');
-      localStorage.removeItem('coordinator');
-
-      const token = data.token ?? data.access_token; // soporta ambos
-      if (token) {
-        localStorage.setItem('token', token);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      } else {
-        localStorage.removeItem('token');
-        setError('No recibimos la confirmacion de acceso. Intenta iniciar sesion nuevamente.');
-        return;
-      }
-      if (data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-      } else {
-        localStorage.removeItem('user');
-      }
-      if (data.student) {
-        localStorage.setItem('student', JSON.stringify(data.student));
-      } else {
-        localStorage.removeItem('student');
-      }
+      startAuthSession('student');
 
       navigate(APP_ROUTES.student.home, { replace: true });
     } catch (err) {

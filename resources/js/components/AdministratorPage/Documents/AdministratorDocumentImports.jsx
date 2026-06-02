@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { useToast } from "../../Shared/ToastProvider";
 import { getApiErrorMessage } from "../../../utils/errorMessages";
+import { downloadResponseBlob } from "../../../utils/downloadFilename";
 
 const escapePreviewHtml = (value = "") =>
   String(value)
@@ -525,18 +526,6 @@ const buildGeneratedDocumentHtml = (generatedDocument) => `<!doctype html>
   </body>
 </html>`;
 
-const triggerBlobDownload = (filename, blob) => {
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-};
-
 const printHtmlDocument = (html) => new Promise((resolve, reject) => {
   const iframe = document.createElement("iframe");
   const blob = new Blob([html], { type: "text/html;charset=utf-8" });
@@ -601,19 +590,6 @@ const printHtmlDocument = (html) => new Promise((resolve, reject) => {
   document.body.appendChild(iframe);
   iframe.src = url;
 });
-
-const extractDownloadFilename = (headers, fallback) => {
-  const disposition = headers?.["content-disposition"] || "";
-  const utfMatch = disposition.match(/filename\*=UTF-8''([^;]+)/i);
-
-  if (utfMatch?.[1]) {
-    return decodeURIComponent(utfMatch[1]);
-  }
-
-  const simpleMatch = disposition.match(/filename="?([^\";]+)"?/i);
-
-  return simpleMatch?.[1] || fallback;
-};
 
 const readBlobMessage = async (blob, fallback) => {
   if (!(blob instanceof Blob)) {
@@ -794,7 +770,7 @@ export default function AdministratorDocumentImports() {
       setDocuments(sortDocuments(Array.isArray(response.data) ? response.data : []));
     } catch (err) {
       console.error(err);
-      setDocumentsError(readApiErrorMessage(err, "No pudimos cargar los documentos guardados. Actualiza la pagina e intenta de nuevo."));
+      setDocumentsError(readApiErrorMessage(err, "No pudimos cargar los documentos guardados. Actualiza la pagina."));
     } finally {
       setDocumentsLoading(false);
     }
@@ -995,8 +971,7 @@ export default function AdministratorDocumentImports() {
       );
 
       const fallbackName = generatedDocument?.pdf_filename || generatedDocument?.filename?.replace(/\.[^.]+$/, ".pdf") || "documento-generado.pdf";
-      const filename = extractDownloadFilename(response.headers, fallbackName);
-      triggerBlobDownload(filename, response.data);
+      const filename = downloadResponseBlob(response.data, response.headers, fallbackName);
       showToast({
         title: "PDF descargado",
         message: `Se descargo ${filename}.`,
@@ -1391,7 +1366,7 @@ export default function AdministratorDocumentImports() {
     }
 
     if (hasPendingFileImport) {
-      setError("Seleccionaste un archivo, pero aun no lo has importado. Presiona Importar documento para cargar el membrete antes de guardar.");
+      setError("Importa el archivo antes de guardar.");
       return;
     }
 
@@ -1441,20 +1416,20 @@ export default function AdministratorDocumentImports() {
         characters: savedDocument.characters || 0,
         lines: savedDocument.lines || 0,
       });
-      setSuccess(selectedDocumentId ? "Documento actualizado correctamente." : "Documento guardado correctamente.");
+      setSuccess(selectedDocumentId ? "Documento actualizado." : "Documento guardado.");
       setShowComposer(false);
       resetComposer();
 
       showToast({
         title: selectedDocumentId ? "Cambios guardados" : "Documento guardado",
         message: selectedDocumentId
-          ? "El documento se actualizo correctamente."
+          ? "El documento se actualizo."
           : "El documento ya forma parte de tu biblioteca.",
         variant: "success",
       });
     } catch (err) {
       console.error(err);
-      const message = readApiErrorMessage(err, "No pudimos guardar el documento. Revisa el titulo y el contenido.");
+      const message = readApiErrorMessage(err, "No pudimos guardar el documento. Revisa titulo y contenido.");
       setError(message);
       showToast({ title: "No se pudo guardar", message, variant: "error" });
     } finally {
@@ -1510,7 +1485,7 @@ export default function AdministratorDocumentImports() {
       });
     } catch (err) {
       console.error(err);
-      const message = readApiErrorMessage(err, "No pudimos eliminar el documento. Intenta nuevamente.");
+      const message = readApiErrorMessage(err, "No pudimos eliminar el documento.");
       setDocumentsError(message);
       showToast({ title: "No se pudo eliminar", message, variant: "error" });
     } finally {
@@ -1537,7 +1512,7 @@ export default function AdministratorDocumentImports() {
             <div>
               <h1 className="h4 mb-1">Biblioteca de documentos</h1>
               <p className="mb-0" style={{ maxWidth: "560px", opacity: 0.9 }}>
-                Revisa los documentos ya creados, abre uno para editarlo o genera uno nuevo con membrete y variables.
+                Abre un documento o genera uno nuevo con membrete y variables.
               </p>
             </div>
             <div className="admin-hero-actions">
@@ -1574,7 +1549,7 @@ export default function AdministratorDocumentImports() {
             {documentsLoading ? (
               <div className="text-muted">Cargando...</div>
             ) : documents.length === 0 ? (
-              <div className="text-muted">Aun no hay documentos creados.</div>
+              <div className="text-muted">No hay documentos creados.</div>
             ) : (
               <div className="row g-3">
                 {documents.map((documentItem) => {
@@ -1655,7 +1630,7 @@ export default function AdministratorDocumentImports() {
                 <div>
                   <h5 className="mb-1">Generar documento membretado</h5>
                   <div className="small text-muted">
-                    Plantilla activa: <strong>{generatorDocument.titulo}</strong>. Puedes crear una version para un alumno, para todos o solo por carrera.
+                    Plantilla activa: <strong>{generatorDocument.titulo}</strong>. Genera por alumno, grupo o carrera.
                   </div>
                 </div>
                 <button type="button" className="btn btn-sm btn-outline-secondary" onClick={handleCloseGenerator}>
@@ -1888,7 +1863,7 @@ export default function AdministratorDocumentImports() {
                   <div>
                     <h5 className="mb-1">Editor de documento</h5>
                     <div className="small text-muted">
-                      {selectedDocumentId ? "Estas editando un documento guardado." : result ? "Tienes un borrador listo para guardar." : "Empieza con un documento en blanco o importa un archivo."}
+                      {selectedDocumentId ? "Editando documento guardado." : result ? "Borrador listo para guardar." : "Crea un documento o importa un archivo."}
                     </div>
                   </div>
                   {selectedDocumentId ? <span className="badge text-bg-primary">Guardado</span> : result ? <span className="badge text-bg-warning">Borrador</span> : null}
@@ -1942,7 +1917,7 @@ export default function AdministratorDocumentImports() {
 
                   {hasPendingFileImport && (
                     <div className="alert alert-warning py-2 small mt-3 mb-0">
-                      Archivo seleccionado sin importar. Presiona <strong>Importar documento</strong> para cargar el membrete en la vista previa.
+                      Archivo sin importar. Usa <strong>Importar documento</strong> para cargarlo.
                     </div>
                   )}
                 </div>
@@ -2104,7 +2079,7 @@ export default function AdministratorDocumentImports() {
                   </>
                 ) : (
                   <div className="border rounded-3 p-4 text-muted bg-white" style={{ minHeight: "420px" }}>
-                    Aun no hay contenido cargado. Puedes crear un documento en blanco, importar un archivo o abrir uno de la biblioteca.
+                    No hay contenido cargado. Crea, importa o abre un documento.
                   </div>
                 )}
               </div>
@@ -2118,11 +2093,18 @@ export default function AdministratorDocumentImports() {
             className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3"
             style={{ background: "rgba(15, 23, 42, 0.68)", zIndex: 1700 }}
             onClick={handleCloseGeneratedPreview}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                handleCloseGeneratedPreview();
+              }
+            }}
+            tabIndex={-1}
           >
             <div
               className="bg-white rounded-4 shadow-lg w-100 d-flex flex-column"
               style={{ maxWidth: "1120px", height: "min(90vh, 900px)" }}
               onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
             >
               <div className="d-flex justify-content-between align-items-start gap-3 p-3 p-md-4 border-bottom">
                 <div>

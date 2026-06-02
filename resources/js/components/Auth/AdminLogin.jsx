@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './Auth.css';
 import { APP_ROUTES } from '../../routes';
 import { getLoginErrorMessage } from '../../utils/errorMessages';
+import { startAuthSession } from '../../utils/authSession';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -16,34 +17,8 @@ const AdminLogin = () => {
     setError(null);
 
     try {
-      const { data } = await axios.post('/api/auth/login/admin', { email, password });
-
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('student');
-      localStorage.removeItem('coordinator');
-      localStorage.removeItem('admin');
-
-      // Soporta varias llaves de token (back viejo/nuevo)
-      const token =
-        data.access_token ??
-        data.token ??
-        data.plainTextToken ??
-        null;
-
-      if (!token) {
-        setError('No recibimos la confirmacion de acceso. Intenta iniciar sesion nuevamente.');
-        return;
-      }
-
-      localStorage.setItem('token', token);
-
-      // Guarda user y admin de forma robusta
-      localStorage.setItem('user', JSON.stringify(data.user ?? null));
-
-      localStorage.setItem('admin', JSON.stringify(
-        data.admin ?? data.user?.admin ?? null
-      ));
+      await axios.post('/api/auth/login/admin', { email, password });
+      startAuthSession('admin');
 
       navigate(APP_ROUTES.admin.home, { replace: true });
     } catch (err) {

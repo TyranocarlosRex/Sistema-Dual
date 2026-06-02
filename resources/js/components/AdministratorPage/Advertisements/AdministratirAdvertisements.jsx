@@ -45,7 +45,7 @@ export default function AdministratirAdvertisements() {
       setAnuncios(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
-      setError(getApiErrorMessage(err, "No pudimos cargar los anuncios. Actualiza la pagina e intenta de nuevo."));
+      setError(getApiErrorMessage(err, "No pudimos cargar los anuncios. Actualiza la pagina."));
     } finally {
       setLoading(false);
     }
@@ -82,11 +82,11 @@ export default function AdministratirAdvertisements() {
       setTargetCarrera("");
       setVisibleFrom("");
       setAttachment(null);
-      setSuccess("Anuncio creado correctamente.");
+      setSuccess("Anuncio creado.");
       fetchAnuncios();
     } catch (err) {
       console.error(err);
-      setError(getApiErrorMessage(err, "No pudimos crear el anuncio. Revisa el titulo, mensaje y adjunto."));
+      setError(getApiErrorMessage(err, "No pudimos crear el anuncio. Revisa los datos."));
     }
   };
 

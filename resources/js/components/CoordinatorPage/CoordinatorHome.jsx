@@ -4,23 +4,10 @@ import { useNavigate } from "react-router-dom";
 import AnnouncementsPanel from "../Shared/AnnouncementsPanel";
 import { APP_ROUTES } from "../../routes";
 
-const safeJSON = (raw, fallback = null) => {
-  try {
-    if (!raw || raw === "null") return fallback;
-    return JSON.parse(raw);
-  } catch {
-    return fallback;
-  }
-};
-
 const CoordinatorHome = () => {
   const navigate = useNavigate();
-  const [coordinator, setCoordinator] = useState(() =>
-    safeJSON(localStorage.getItem("coordinator"), null)
-  );
-  const [userEmail, setUserEmail] = useState(
-    () => safeJSON(localStorage.getItem("user"), null)?.email ?? ""
-  );
+  const [coordinator, setCoordinator] = useState(null);
+  const [userEmail, setUserEmail] = useState("");
   const [stats, setStats] = useState({
     students: 0,
     activeProcesses: 0,
@@ -43,12 +30,10 @@ const CoordinatorHome = () => {
       .then(({ data }) => {
         if (data?.coordinator) {
           setCoordinator(data.coordinator);
-          localStorage.setItem("coordinator", JSON.stringify(data.coordinator));
         }
 
         if (data?.user) {
           setUserEmail(data.user.email ?? "");
-          localStorage.setItem("user", JSON.stringify(data.user));
         }
 
         if (data?.stats) {
@@ -189,7 +174,7 @@ const CoordinatorHome = () => {
         <div className="col-12 col-lg-4 d-flex flex-column gap-3">
           <AnnouncementsPanel
             title="Anuncios para coordinadores"
-            emptyMessage="No hay anuncios nuevos por ahora."
+            emptyMessage="No hay anuncios nuevos."
             maxItems={4}
             compact
           />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-import { parseDownloadFilename } from "../../../utils/downloadFilename";
+import { downloadResponseBlob } from "../../../utils/downloadFilename";
 import { useToast } from "../../Shared/ToastProvider";
 import { APP_ROUTES } from "../../../routes";
 import { getApiErrorMessage } from "../../../utils/errorMessages";
@@ -59,7 +59,6 @@ export default function StudentReports() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("asignado");
 
-  // estado para subida de archivos
   const [selectedFiles, setSelectedFiles] = useState({});
   const [uploading, setUploading] = useState({});
   const [uploadError, setUploadError] = useState({});
@@ -69,9 +68,8 @@ export default function StudentReports() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Leer ?evidencia=ID de la URL, con soporte para enlaces anteriores.
   const searchParams = new URLSearchParams(location.search);
-  const evidenceIdParam = searchParams.get("evidencia") ?? searchParams.get("evidence"); // string | null
+  const evidenceIdParam = searchParams.get("evidencia") ?? searchParams.get("evidence");
   const evidenceId = evidenceIdParam ? Number(evidenceIdParam) : null;
 
   useEffect(() => {
@@ -90,7 +88,7 @@ export default function StudentReports() {
         setEvidences(res.data);
       } catch (err) {
         console.error(err);
-        setError(getApiErrorMessage(err, "No pudimos cargar tus evidencias. Actualiza la pagina e intenta de nuevo."));
+        setError(getApiErrorMessage(err, "No pudimos cargar tus evidencias. Actualiza la pagina."));
       } finally {
         setLoading(false);
       }
@@ -99,7 +97,6 @@ export default function StudentReports() {
     fetchEvidences();
   }, []);
 
-  // Encontrar SOLO la evidencia seleccionada
   const selectedEvidence = evidenceId
     ? evidences.find((ev) => ev.id === evidenceId)
     : null;
@@ -125,20 +122,17 @@ export default function StudentReports() {
     { key: "completada", label: "Completada" },
   ];
 
-  // cuando el alumno elige un archivo
   const handleFileChange = (reportId, file) => {
     setSelectedFiles((prev) => ({
       ...prev,
       [reportId]: file || null,
     }));
-    // al elegir un nuevo archivo, limpiamos error anterior
     setUploadError((prev) => ({
       ...prev,
       [reportId]: "",
     }));
   };
 
-  // enviar archivo al backend
   const handleSubmitFile = async (reportId) => {
     const file = selectedFiles[reportId];
 
@@ -175,14 +169,12 @@ export default function StudentReports() {
       console.log("SUBMISSION OK:", res.data);
       showToast({
         title: "Entrega enviada",
-        message: "Archivo enviado correctamente.",
+        message: "Archivo enviado.",
         variant: "success",
       });
 
-      // limpiar input para ese reporte
       setSelectedFiles((prev) => ({ ...prev, [reportId]: null }));
 
-      // actualizar el estado local para reflejar la nueva entrega
       setEvidences((prev) =>
         prev.map((ev) =>
           ev.id === evidenceId
@@ -192,7 +184,7 @@ export default function StudentReports() {
                   r.id === reportId
                     ? {
                         ...r,
-                        submissions: [res.data], // última entrega del alumno
+                        submissions: [res.data],
                       }
                     : r
                 ),
@@ -202,7 +194,7 @@ export default function StudentReports() {
       );
     } catch (err) {
       console.error(err);
-      const message = getApiErrorMessage(err, "No pudimos enviar el archivo. Revisa el formato o intenta con un archivo mas ligero.");
+      const message = getApiErrorMessage(err, "No pudimos enviar el archivo. Revisa el formato o tamano.");
       setUploadError((prev) => ({
         ...prev,
         [reportId]: message,
@@ -237,23 +229,14 @@ export default function StudentReports() {
         }
       );
 
-      const cleanName = parseDownloadFilename(
+      downloadResponseBlob(
+        response.data,
         response.headers,
         `${report.titulo || "reporte"}-adjunto`
       );
-
-      const blob = new Blob([response.data]);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", cleanName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
-      const message = getApiErrorMessage(err, "No pudimos descargar el archivo base. Intenta nuevamente.");
+      const message = getApiErrorMessage(err, "No pudimos descargar el archivo base.");
       setDownloadError((prev) => ({
         ...prev,
         [report.id]: message,
@@ -271,13 +254,12 @@ export default function StudentReports() {
     );
   }
 
-  // Si no viene evidence en la URL o no se encontró, mensaje claro
   if (!selectedEvidence) {
     return (
       <div className="container py-4">
         <h2 className="mb-3">Mis evidencias</h2>
 
-        {evidenceId && (
+        {Boolean(evidenceId) && (
           <div className="alert alert-warning py-2">
             No se encontro la evidencia seleccionada, elige una de la lista.
           </div>
@@ -317,7 +299,7 @@ export default function StudentReports() {
         </div>
 
         {filteredEvidences.length === 0 ? (
-          <p className="text-muted mb-0">No tienes evidencias asignadas por ahora.</p>
+          <p className="text-muted mb-0">No tienes evidencias asignadas.</p>
         ) : (
           <div className="row g-3">
             {filteredEvidences.map((ev) => {
@@ -367,7 +349,6 @@ export default function StudentReports() {
 
   return (
     <div className="container py-4">
-      {/* Encabezado tipo "Mis Reportes Bimestrales" */}
       <h1 className="mb-3">Mis reportes - {selectedEvidence.titulo}</h1>
 
       <div className="mb-3">
@@ -389,11 +370,10 @@ export default function StudentReports() {
 
       {reports.length === 0 && !error && (
         <p className="text-muted">
-          No hay reportes configurados para este espacio por el momento.
+          No hay reportes configurados para este espacio.
         </p>
       )}
 
-      {/* Grid de tarjetas tipo "Evaluación Bimestral 1,2,3" */}
       <div className="row">
         {reports.map((report) => {
           const mySubmission = getLatestSubmission(report);
@@ -442,7 +422,6 @@ export default function StudentReports() {
                     </div>
                   )}
 
-                  {/* Info de la entrega del alumno */}
                   {mySubmission && (
                     <div className="mb-2">
                       <p className="mb-1">
@@ -468,11 +447,10 @@ export default function StudentReports() {
                   )}
 
                   <div className="mt-auto">
-                    {/* SUBIR / REEMPLAZAR ARCHIVO DEL ALUMNO */}
                     <div className="mb-2">
                       <small className="d-block text-muted mb-1">
                         {mySubmission
-                          ? "Si necesitas corregir, selecciona un nuevo archivo y vuelve a enviarlo."
+                          ? "Selecciona otro archivo para reemplazarlo."
                           : "Subir tu archivo en PDF (máx. 4 MB)."}
                       </small>
                       <input

@@ -28,6 +28,11 @@ class StudentDetailsController extends Controller
             : null;
 
         return response()->json([
+            'user' => [
+                'id' => (int) $user->id,
+                'name' => (string) $user->name,
+                'email' => (string) $user->email,
+            ],
             'period' => $this->serializePeriod($period),
             'student' => $this->serializeStudent($student, $assignment),
         ]);
@@ -70,6 +75,11 @@ class StudentDetailsController extends Controller
 
         return response()->json([
             'message' => 'Perfil actualizado correctamente.',
+            'user' => [
+                'id' => (int) $user->id,
+                'name' => (string) $user->name,
+                'email' => (string) $user->email,
+            ],
             'period' => $this->serializePeriod($period),
             'student' => $this->serializeStudent($student->loadMissing('user'), $assignment),
         ]);

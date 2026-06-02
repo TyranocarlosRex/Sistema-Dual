@@ -40,7 +40,7 @@ export default function CoordinatorTracking() {
         setStudents(data || []);
       } catch (err) {
         console.error("Error cargando estudiantes:", err);
-        setError(getApiErrorMessage(err, "No pudimos cargar los estudiantes. Actualiza la pagina e intenta de nuevo."));
+        setError(getApiErrorMessage(err, "No pudimos cargar los estudiantes. Actualiza la pagina."));
       } finally {
         setLoading(false);
       }

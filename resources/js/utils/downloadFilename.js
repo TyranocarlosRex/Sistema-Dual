@@ -98,3 +98,39 @@ export const parseDownloadFilename = (headers, fallback = "archivo") => {
 
   return safeFallback;
 };
+
+export const responseBlob = (data, headers) =>
+  new Blob([data], {
+    type: getHeaderValue(headers, "content-type") || "application/octet-stream",
+  });
+
+export const previewFileFromResponse = (data, headers, fallback) => ({
+  url: window.URL.createObjectURL(responseBlob(data, headers)),
+  name: parseDownloadFilename(headers, fallback),
+});
+
+export const revokePreviewFile = (file) => {
+  if (file?.url) {
+    window.URL.revokeObjectURL(file.url);
+  }
+};
+
+export const downloadBlob = (blob, filename) => {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+export const downloadResponseBlob = (data, headers, fallback) => {
+  const filename = parseDownloadFilename(headers, fallback);
+
+  downloadBlob(responseBlob(data, headers), filename);
+
+  return filename;
+};

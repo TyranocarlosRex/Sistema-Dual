@@ -16,6 +16,7 @@
 /public/build
 /public/hot
 /public/storage
+/coverage
 /playwright-report
 /storage/*.key
 /storage/pail

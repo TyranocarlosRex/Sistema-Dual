@@ -70,7 +70,7 @@ export default function AdministratorReports({
       setReports(res.data);
     } catch (err) {
       console.error(err.response?.status, err.response?.data);
-      setError(getApiErrorMessage(err, "No pudimos cargar los reportes. Actualiza la pagina e intenta de nuevo."));
+      setError(getApiErrorMessage(err, "No pudimos cargar los reportes. Actualiza la pagina."));
     } finally {
       setLoadingReports(false);
     }
@@ -162,12 +162,12 @@ export default function AdministratorReports({
 
       setSuccess(
         isEditing
-          ? "Reporte actualizado correctamente."
-          : "Reporte creado correctamente."
+          ? "Reporte actualizado."
+          : "Reporte creado."
       );
     } catch (err) {
       console.error(err);
-      setError(getApiErrorMessage(err, "No pudimos guardar el reporte. Revisa los campos e intenta de nuevo."));
+      setError(getApiErrorMessage(err, "No pudimos guardar el reporte. Revisa los campos."));
     } finally {
       setSubmitting(false);
     }
@@ -218,7 +218,7 @@ export default function AdministratorReports({
       setSuccess("Reporte eliminado.");
     } catch (err) {
       console.error(err);
-      setError(getApiErrorMessage(err, "No pudimos eliminar el reporte. Intenta nuevamente."));
+      setError(getApiErrorMessage(err, "No pudimos eliminar el reporte."));
     } finally {
       setDeletingId(null);
     }

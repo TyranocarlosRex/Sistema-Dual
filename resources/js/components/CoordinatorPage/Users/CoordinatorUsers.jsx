@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { getApiErrorMessage } from "../../../utils/errorMessages";
 
@@ -144,14 +144,30 @@ function CoordinatorUsers() {
   const [filtroEstatus, setFiltroEstatus] = useState("");
   const getEmpresa = (student) =>
     student?.Empresa ?? student?.empresa ?? "Sin empresa";
+  const [coordinator, setCoordinator] = useState(null);
 
-  const coordinator = useMemo(() => {
-    const raw = localStorage.getItem("coordinator");
-    try {
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setLoading(false);
+      return;
     }
+
+    const fetchCoordinator = async () => {
+      try {
+        const { data } = await axios.get("/api/coordinator/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCoordinator(data.coordinator ?? null);
+      } catch (err) {
+        console.error(err);
+        setError(getApiErrorMessage(err, "No pudimos cargar tu perfil de coordinador."));
+        setLoading(false);
+      }
+    };
+
+    fetchCoordinator();
   }, []);
 
   useEffect(() => {
@@ -180,7 +196,7 @@ function CoordinatorUsers() {
         setStudents(data);
       } catch (err) {
         console.error(err);
-        setError(getApiErrorMessage(err, "No pudimos cargar los estudiantes de tu carrera. Actualiza la pagina e intenta de nuevo."));
+        setError(getApiErrorMessage(err, "No pudimos cargar los estudiantes de tu carrera. Actualiza la pagina."));
       } finally {
         setLoading(false);
       }

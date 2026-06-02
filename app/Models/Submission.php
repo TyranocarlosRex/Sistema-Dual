@@ -4,21 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-/*Clase: Submission
-Descripción: Modelo que representa una entrega o submission de un candidato 
-para un reporte específico en la aplicación.
-Atributos:
-- report_id: ID del reporte al que corresponde la entrega.
-- student_id: ID del estudiante (candidato) que realizó la entrega.
-- file_path: Ruta del archivo entregado.
-- original_name: Nombre original del archivo entregado.
-- status: Estado de la entrega (e.g., 'Pendiente', 'Revisado').
-- feedback: Retroalimentación proporcionada por el coordinador o admin (opcional).
-- calificacion: Calificación asignada a la entrega (opcional).
-Relaciones:
-- report(): Relación de pertenencia con el modelo Report, indicando a qué reporte corresponde la entrega.
-- student(): Relación de pertenencia con el modelo Student, indicando quién realizó la entrega.
-*/
+
 class Submission extends Model
 {
     use HasFactory;

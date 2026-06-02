@@ -26,6 +26,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/login/admin', [AuthController::class, 'loginAdmin']);
 });
 
+Route::middleware(['auth:sanctum'])->post('/logout', [AuthController::class, 'logout']);
+
 // Estudiante
 Route::middleware(['auth:sanctum', 'abilities:student'])->group(function () {
 
@@ -118,7 +120,6 @@ Route::middleware(['auth:sanctum', 'ability:admin,coordinator'])->post(
     '/advertisements',
     [AdvertisementController::class, 'store']
 );
-
 
 
 

@@ -183,6 +183,21 @@ class IntegrationDocumentCoverageTest extends TestCase
             ->assertJsonValidationErrors(['file']);
     }
 
+    public function test_admin_document_import_rejects_oversized_file(): void
+    {
+        $admin = $this->makeAdmin([
+            'email' => 'oversized-import-admin@example.test',
+        ]);
+
+        Sanctum::actingAs($admin, ['admin']);
+
+        $this->postJson('/api/document-imports', [
+            'file' => UploadedFile::fake()->create('plantilla.txt', 8000),
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['file']);
+    }
+
     public function test_api_validation_errors_return_clear_json_response(): void
     {
         $admin = $this->makeAdmin([

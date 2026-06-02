@@ -25,11 +25,11 @@ const friendlyFromServerMessage = (message) => {
     normalized.includes("faltan credenciales") ||
     normalized.includes("parametros faltantes")
   ) {
-    return "Revisa tus datos de acceso e intenta nuevamente.";
+    return "Revisa tus datos de acceso.";
   }
 
   if (normalized.includes("token")) {
-    return "No pudimos confirmar tu sesion. Vuelve a iniciar sesion.";
+    return "Vuelve a iniciar sesion.";
   }
 
   if (normalized.includes("no autorizado")) {
@@ -37,7 +37,7 @@ const friendlyFromServerMessage = (message) => {
   }
 
   if (normalized.includes("no tienes perfil")) {
-    return "Tu cuenta no tiene un perfil completo para esta seccion. Contacta a administracion.";
+    return "Tu cuenta no tiene perfil para esta seccion.";
   }
 
   if (normalized.includes("periodo cerrado")) {
@@ -53,7 +53,7 @@ const friendlyFromServerMessage = (message) => {
 
 export const getApiErrorMessage = (
   error,
-  fallback = "No pudimos completar la accion. Intenta nuevamente."
+  fallback = "No pudimos completar la accion."
 ) => {
   const response = error?.response;
   const status = response?.status;
@@ -61,11 +61,11 @@ export const getApiErrorMessage = (
     firstValidationMessage(response?.data) || response?.data?.message || "";
 
   if (!response) {
-    return "No pudimos conectarnos con el servidor. Revisa tu conexion e intenta de nuevo.";
+    return "No pudimos conectarnos con el servidor.";
   }
 
   if (status === 401) {
-    return "Tu sesion expiro. Inicia sesion otra vez para continuar.";
+    return "Tu sesion expiro. Inicia sesion otra vez.";
   }
 
   if (status === 403) {
@@ -73,11 +73,11 @@ export const getApiErrorMessage = (
   }
 
   if (status === 404) {
-    return friendlyFromServerMessage(serverMessage) || "No encontramos la informacion solicitada. Actualiza la pagina e intenta de nuevo.";
+    return friendlyFromServerMessage(serverMessage) || "No encontramos la informacion solicitada.";
   }
 
   if (status === 413) {
-    return "El archivo es demasiado grande. Sube un archivo mas ligero e intenta de nuevo.";
+    return "El archivo es demasiado grande.";
   }
 
   if (status === 422) {
@@ -89,7 +89,7 @@ export const getApiErrorMessage = (
   }
 
   if (status >= 500) {
-    return "El servidor tuvo un problema. Intenta de nuevo en unos minutos.";
+    return "El servidor tuvo un problema.";
   }
 
   return friendlyFromServerMessage(serverMessage) || fallback;
@@ -103,7 +103,7 @@ export const getLoginErrorMessage = (error) => {
   const normalized = normalizeText(serverMessage);
 
   if (!response) {
-    return "No pudimos conectarnos con el servidor. Revisa tu conexion e intenta de nuevo.";
+    return "No pudimos conectarnos con el servidor.";
   }
 
   if (status === 422 || normalized.includes("faltan credenciales") || normalized.includes("parametros faltantes")) {
@@ -116,8 +116,8 @@ export const getLoginErrorMessage = (error) => {
     normalized.includes("credenciales invalidas") ||
     normalized.includes("no encontrado")
   ) {
-    return "No pudimos iniciar sesion. Verifica tus datos y vuelve a intentarlo.";
+    return "No pudimos iniciar sesion. Verifica tus datos.";
   }
 
-  return getApiErrorMessage(error, "No pudimos iniciar sesion. Intenta nuevamente.");
+  return getApiErrorMessage(error, "No pudimos iniciar sesion.");
 };

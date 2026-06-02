@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
 use App\Http\Middleware\AddContentLengthForHtml;
+use App\Http\Middleware\UseAuthTokenCookie;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 
@@ -30,6 +31,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
             // Sanctum SPA/stateful
             'sanctum'   => EnsureFrontendRequestsAreStateful::class,
+            'auth.cookie' => UseAuthTokenCookie::class,
 
             // Sanctum abilities (AQUÍ lo importante)
             'abilities' => CheckAbilities::class,
@@ -38,6 +40,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
         $middleware->group('api', [
             'sanctum',
+            'auth.cookie',
             'throttle:api',
             'bindings',
         ]);

@@ -51,7 +51,7 @@ export default function AnnouncementsPanel({
 
         setItems(Array.isArray(data) ? data : []);
       } catch (err) {
-        setError(getApiErrorMessage(err, "No pudimos cargar los anuncios. Actualiza la pagina e intenta de nuevo."));
+        setError(getApiErrorMessage(err, "No pudimos cargar los anuncios. Actualiza la pagina."));
       } finally {
         setLoading(false);
       }

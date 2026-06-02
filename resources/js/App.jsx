@@ -29,14 +29,7 @@ import AdministratirAdvertisements from "./components/AdministratorPage/Advertis
 import StudentDetails from './components/Shared/StudentDetails';
 import { ToastProvider } from "./components/Shared/ToastProvider";
 import { APP_ROUTES } from './routes';
-
-const safeParse = (raw) => {
-  try {
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
+import { isAuthenticatedAs } from './utils/authSession';
 
 const RedirectWithSearch = ({ to, searchParamMap = {} }) => {
   const location = useLocation();
@@ -80,27 +73,21 @@ const RedirectStudentDetails = ({ to }) => {
 };
 
 const RequireAdmin = ({ children }) => {
-  const token = localStorage.getItem('token');
-  const admin = safeParse(localStorage.getItem('admin'));
-  if (!token || !admin) {
+  if (!isAuthenticatedAs('admin')) {
     return <Navigate to={APP_ROUTES.auth.adminLogin} replace />;
   }
   return children;
 };
 
 const RequireCoordinator = ({ children }) => {
-  const token = localStorage.getItem('token');
-  const coordinator = safeParse(localStorage.getItem('coordinator'));
-  if (!token || !coordinator) {
+  if (!isAuthenticatedAs('coordinator')) {
     return <Navigate to={APP_ROUTES.auth.coordinatorLogin} replace />;
   }
   return children;
 };
 
 const RequireStudent = ({ children }) => {
-  const token = localStorage.getItem('token');
-  const student = safeParse(localStorage.getItem('student'));
-  if (!token || !student) {
+  if (!isAuthenticatedAs('student')) {
     return <Navigate to={APP_ROUTES.auth.studentLogin} replace />;
   }
   return children;
@@ -115,13 +102,11 @@ if (root) {
       <ToastProvider>
         <Router basename={appBasePath || undefined}>
           <Routes>
-            {/* Login */}
             <Route path="/" element={<RedirectWithSearch to={APP_ROUTES.auth.studentLogin} />} />
             <Route path={APP_ROUTES.auth.studentLogin} element={<StudentLogin />} />
             <Route path={APP_ROUTES.auth.coordinatorLogin} element={<CoordinatorLogin />} />
             <Route path={APP_ROUTES.auth.adminLogin} element={<AdminLogin />} />
 
-            {/* Redirecciones de URLs anteriores */}
             <Route path="/login-coordinador" element={<RedirectWithSearch to={APP_ROUTES.auth.coordinatorLogin} />} />
             <Route path="/iniciar-sesion" element={<RedirectWithSearch to={APP_ROUTES.auth.studentLogin} />} />
             <Route path="/coordinador/iniciar-sesion" element={<RedirectWithSearch to={APP_ROUTES.auth.coordinatorLogin} />} />
@@ -151,13 +136,11 @@ if (root) {
             <Route path="/administrator-documents" element={<RedirectWithSearch to={APP_ROUTES.admin.documents} />} />
             <Route path="/administrator-advertisements" element={<RedirectWithSearch to={APP_ROUTES.admin.advertisements} />} />
 
-            {/* Estudiantes */}
             <Route element={<RequireStudent><StudentLayout /></RequireStudent>}>
               <Route path={APP_ROUTES.student.home} element={<StudentsHome />} />
               <Route path={APP_ROUTES.student.evidences} element={<StudentReport />} />
             </Route>
 
-            {/* Coordinadores */}
             <Route element={<RequireCoordinator><CoordinatorLayout/></RequireCoordinator>}>
               <Route path={APP_ROUTES.coordinator.home} element={<CoordinatorHome />} />
               <Route path={APP_ROUTES.coordinator.users} element={<CoordinatorUsers />} />
@@ -165,7 +148,6 @@ if (root) {
               <Route path={APP_ROUTES.coordinator.pending} element={<CoordinatorPending />} />
               <Route path={APP_ROUTES.coordinator.studentDetails()} element={<StudentDetails />} />
             </Route>
-            {/* Administrador */}
             <Route element={<RequireAdmin><AdminLayout/></RequireAdmin>}>
               <Route path={APP_ROUTES.admin.home} element={<AdministratorHome />} />
               <Route path={APP_ROUTES.admin.periods} element={<AdministratorPeriods />} />
@@ -183,4 +165,3 @@ if (root) {
     </React.StrictMode>,
   );
 }
-

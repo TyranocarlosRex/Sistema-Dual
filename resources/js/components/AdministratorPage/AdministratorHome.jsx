@@ -3,27 +3,10 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { APP_ROUTES } from '../../routes';
 
-const safeJSON = (str, fallback = null) => {
-  try {
-    if (!str || str === 'null') return fallback;
-    return JSON.parse(str);
-  } catch {
-    return fallback;
-  }
-};
-
 const AdministratorHome = () => {
   const navigate = useNavigate();
-  const [admin, setAdmin] = useState(() => {
-    const raw = localStorage.getItem('admin');
-    return safeJSON(raw, null);
-  });
-
-  const [userEmail, setUserEmail] = useState(() => {
-    const rawUser = localStorage.getItem('user');
-    const userObj = safeJSON(rawUser, null);
-    return userObj?.email ?? '';
-  });
+  const [admin, setAdmin] = useState(null);
+  const [userEmail, setUserEmail] = useState('');
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -41,11 +24,9 @@ const AdministratorHome = () => {
       .then(({ data }) => {
         if (data?.admin) {
           setAdmin(data.admin);
-          localStorage.setItem('admin', JSON.stringify(data.admin));
         }
         if (data?.user?.email) {
           setUserEmail(data.user.email);
-          localStorage.setItem('user', JSON.stringify(data.user));
         }
       })
       .catch(() => {})
@@ -302,4 +283,3 @@ const AdministratorHome = () => {
 };
 
 export default AdministratorHome;
-

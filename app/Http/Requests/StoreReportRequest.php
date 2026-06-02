@@ -4,14 +4,10 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/*Clase: StoreReportRequest
-Descripción: Esta clase se encarga de validar los datos para crear un nuevo reporte.
-*/
 class StoreReportRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // El acceso ya lo limita el middleware abilities:admin
         return true;
     }
 

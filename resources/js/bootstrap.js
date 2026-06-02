@@ -1,21 +1,26 @@
 import 'bootstrap';
 
-/**
- * We'll load the axios HTTP library which allows us to easily issue requests
- * to our Laravel back-end. This library automatically handles sending the
- * CSRF token as a header based on the value of the "XSRF" token cookie.
- */
-
 import axios from 'axios';
-window.axios = axios;
+globalThis.axios = axios;
 
 const appBasePath = document.querySelector('meta[name="app-base-path"]')?.content || '';
 if (appBasePath) {
-    window.axios.defaults.baseURL = appBasePath;
+    globalThis.axios.defaults.baseURL = appBasePath;
 }
 
-window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-window.axios.defaults.headers.common['Accept'] = 'application/json';
+globalThis.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+globalThis.axios.defaults.headers.common['Accept'] = 'application/json';
+
+globalThis.axios.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+
+    if (token && !config.headers?.Authorization) {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
