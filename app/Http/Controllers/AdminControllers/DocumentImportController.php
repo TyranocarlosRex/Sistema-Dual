@@ -22,7 +22,13 @@ class DocumentImportController extends Controller
         $postLimit = ini_get('post_max_size') ?: 'desconocido';
 
         $validated = $request->validate([
-            'file' => ['bail', 'required', 'file', 'max:' . self::MAX_IMPORT_FILE_KILOBYTES, 'mimes:txt,html,htm,docx,pdf'],
+            'file' => [
+                'bail',
+                'required',
+                'file',
+                'max:' . self::MAX_IMPORT_FILE_KILOBYTES, // NOSONAR: 7.5 MB is the intentional upload cap for document imports.
+                'mimes:txt,html,htm,docx,pdf',
+            ],
         ], [
             'file.required' => 'Selecciona un archivo antes de importarlo.',
             'file.uploaded' => "El archivo no pudo subirse. Revisa que no exceda " . self::MAX_IMPORT_FILE_LABEL . " y que PHP tenga upload_max_filesize={$uploadLimit} y post_max_size={$postLimit} o mayores.",

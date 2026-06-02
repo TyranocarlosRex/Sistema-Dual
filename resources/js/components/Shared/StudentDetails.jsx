@@ -532,7 +532,7 @@ export default function StudentDetailsPage() {
                       disabled={savingAssignment || (!editingAssignment && !canEditAssignment)}
                       style={{
                         fontSize: "0.82rem",
-                        color: editingAssignment ? "#2563eb" : "#2563eb",
+                        color: "#2563eb",
                       }}
                     >
                       {editingAssignment
