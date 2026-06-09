@@ -8,6 +8,7 @@ use App\Http\Requests\StoreReportRequest;
 use App\Http\Requests\UpdateReportRequest;
 use App\Models\Period;
 use App\Models\Report;
+use App\Models\ReportGeneratedAttachment;
 use App\Models\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -121,6 +122,10 @@ class ReportController extends Controller
         $query = Report::with([
             'evidence',
             'period',
+            'generatedAttachments' => function ($q) use ($student) {
+                $q->where('student_id', $student->id)
+                    ->latest();
+            },
             'submissions' => function ($q) use ($student) {
                 $q->where('student_id', $student->id)
                     ->latest();
@@ -142,6 +147,38 @@ class ReportController extends Controller
         $this->appendPreservedSubmissions($reports, $student->id, $period->id);
 
         return response()->json($reports);
+    }
+
+    public function downloadGeneratedAttachment(Request $request, ReportGeneratedAttachment $attachment)
+    {
+        $user = $request->user();
+        $student = $user?->student;
+
+        if ($student === null) {
+            return response()->json(['message' => 'No tienes perfil de estudiante.'], 403);
+        }
+
+        if ((int)$attachment->student_id !== (int)$student->id) {
+            return response()->json(['message' => 'No puedes acceder a documentos de otro estudiante.'], 403);
+        }
+
+        $attachment->loadMissing('report.evidence');
+
+        if ($forbidden = $this->forbidStudentFromUnavailableReport($request, $attachment->report)) {
+            return $forbidden;
+        }
+
+        $disk = Storage::disk('public');
+
+        if (!$attachment->file_path || !$disk->exists($attachment->file_path)) {
+            return response()->json(['message' => 'El documento generado no existe en el servidor.'], 404);
+        }
+
+        $downloadName = $this->sanitizeDownloadName((string)$attachment->original_name, 'documento-generado.pdf');
+
+        return response()->download($disk->path($attachment->file_path), $downloadName, [
+            'X-Download-Filename' => rawurlencode($downloadName),
+        ]);
     }
 
     public function update(UpdateReportRequest $request, Report $report)

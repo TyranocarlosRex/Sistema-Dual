@@ -145,6 +145,10 @@ class EvidenceController extends Controller
                 'reports' => function ($q) use ($student, $period) {
                     $q->where('periodo_id', $period->id)
                         ->with([
+                            'generatedAttachments' => function ($qq) use ($student) {
+                                $qq->where('student_id', $student->id)
+                                    ->latest();
+                            },
                             'submissions' => function ($qq) use ($student) {
                                 $qq->where('student_id', $student->id);
                             },

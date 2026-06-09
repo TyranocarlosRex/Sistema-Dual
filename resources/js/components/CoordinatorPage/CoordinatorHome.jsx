@@ -8,11 +8,6 @@ const CoordinatorHome = () => {
   const navigate = useNavigate();
   const [coordinator, setCoordinator] = useState(null);
   const [userEmail, setUserEmail] = useState("");
-  const [stats, setStats] = useState({
-    students: 0,
-    activeProcesses: 0,
-    pendingDocuments: 0,
-  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -36,13 +31,6 @@ const CoordinatorHome = () => {
           setUserEmail(data.user.email ?? "");
         }
 
-        if (data?.stats) {
-          setStats({
-            students: Number(data.stats.students ?? 0),
-            activeProcesses: Number(data.stats.activeProcesses ?? 0),
-            pendingDocuments: Number(data.stats.pendingDocuments ?? 0),
-          });
-        }
       })
       .catch((error) => console.error("Error al cargar datos:", error))
       .finally(() => setIsLoading(false));
@@ -85,30 +73,6 @@ const CoordinatorHome = () => {
         </div>
         <div className="text-end">
           <span className="badge bg-white text-dark px-3 py-2">Coordinador</span>
-        </div>
-      </div>
-
-      <div className="row g-3 mb-3">
-        <div className="col-12 col-md-4">
-          <div className="border rounded p-3 h-100 bg-light">
-            <p className="text-muted mb-1 small">Estudiantes</p>
-            <div className="h4 mb-0">{stats.students}</div>
-            <small className="text-secondary">Asignados a tu carrera</small>
-          </div>
-        </div>
-        <div className="col-12 col-md-4">
-          <div className="border rounded p-3 h-100 bg-light">
-            <p className="text-muted mb-1 small">Procesos activos</p>
-            <div className="h4 mb-0">{stats.activeProcesses}</div>
-            <small className="text-secondary">Seguimiento en curso</small>
-          </div>
-        </div>
-        <div className="col-12 col-md-4">
-          <div className="border rounded p-3 h-100 bg-light">
-            <p className="text-muted mb-1 small">Documentos pendientes</p>
-            <div className="h4 mb-0">{stats.pendingDocuments}</div>
-            <small className="text-secondary">Por validar</small>
-          </div>
         </div>
       </div>
 

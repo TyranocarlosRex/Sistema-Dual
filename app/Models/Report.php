@@ -53,6 +53,11 @@ class Report extends Model
         return $this->hasMany(Submission::class);
     }
 
+    public function generatedAttachments()
+    {
+        return $this->hasMany(ReportGeneratedAttachment::class);
+    }
+
     public function isVisibleToStudentAssignment(?StudentPeriod $assignment): bool
     {
         if ($assignment === null) {

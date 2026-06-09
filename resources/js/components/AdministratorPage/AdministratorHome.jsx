@@ -74,28 +74,6 @@ const AdministratorHome = () => {
     [navigate]
   );
 
-  const operationalNotes = useMemo(
-    () => [
-      {
-        label: 'Matrícula',
-        hint: 'Verifica altas y bajas de usuarios antes de iniciar un nuevo ciclo.',
-      },
-      {
-        label: 'Procesos activos',
-        hint: 'Confirma que cada proyecto tenga evidencias recientes y responsables asignados.',
-      },
-      {
-        label: 'Validaciones',
-        hint: 'Revisa los documentos pendientes para evitar retrasos en la certificación.',
-      },
-      {
-        label: 'Comunicación',
-        hint: 'Publica avisos clave en evidencias para mantener informados a los equipos.',
-      },
-    ],
-    []
-  );
-
   if (isLoading) {
     return (
       <div className="d-flex flex-column align-items-center justify-content-center" style={{ padding: '4rem 1rem' }}>
@@ -139,33 +117,6 @@ const AdministratorHome = () => {
           <p className="mb-0" style={{ maxWidth: '520px', opacity: 0.85 }}>
             Organiza usuarios, gestiona procesos duales y controla la comunicación desde una sola vista.
           </p>
-        </section>
-
-        <section className="mb-4">
-          <div className="row g-3">
-            {operationalNotes.map((note) => (
-              <div className="col-12 col-md-6 col-xl-3" key={note.label}>
-                <div
-                  className="h-100"
-                  style={{
-                    background: '#ffffff',
-                    padding: '1.2rem',
-                    borderRadius: '18px',
-                    boxShadow:
-                      '0 18px 35px -28px rgba(15, 23, 42, 0.65), 0 1px 0 rgba(255,255,255,0.8) inset',
-                    border: '1px solid #edf2ff',
-                  }}
-                >
-                  <p className="text-uppercase small mb-1" style={{ color: '#475569', letterSpacing: '0.08em' }}>
-                    {note.label}
-                  </p>
-                  <p className="mb-0" style={{ color: '#0f172a', fontSize: '0.95rem', lineHeight: 1.5 }}>
-                    {note.hint}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
         </section>
 
         <div className="row g-3">

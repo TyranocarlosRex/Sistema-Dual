@@ -25,6 +25,7 @@ import AdministratorEvidences from './components/AdministratorPage/Evidences/Adm
 import AdministratorDocumentImports from './components/AdministratorPage/Documents/AdministratorDocumentImports';
 import CoordinatorTracking from './components/CoordinatorPage/Tracking/CoordinatorTracking';
 import CoordinatorPending from './components/CoordinatorPage/Tracking/CoordinatorPending';
+import CoordinatorAdvertisements from './components/CoordinatorPage/Advertisements/CoordinatorAdvertisements';
 import AdministratirAdvertisements from "./components/AdministratorPage/Advertisements/AdministratirAdvertisements";
 import StudentDetails from './components/Shared/StudentDetails';
 import { ToastProvider } from "./components/Shared/ToastProvider";
@@ -125,6 +126,7 @@ if (root) {
             <Route path="/coordinator-users" element={<RedirectWithSearch to={APP_ROUTES.coordinator.users} />} />
             <Route path="/coordinator-tracking" element={<RedirectWithSearch to={APP_ROUTES.coordinator.tracking} />} />
             <Route path="/coordinator-pending" element={<RedirectWithSearch to={APP_ROUTES.coordinator.pending} />} />
+            <Route path="/coordinator-advertisements" element={<RedirectWithSearch to={APP_ROUTES.coordinator.advertisements} />} />
             <Route path="/student-details/:id" element={<RedirectStudentDetails to={APP_ROUTES.coordinator.studentDetails} />} />
             <Route path="/administrator-home" element={<RedirectWithSearch to={APP_ROUTES.admin.home} />} />
             <Route path="/administrator-periods" element={<RedirectWithSearch to={APP_ROUTES.admin.periods} />} />
@@ -146,6 +148,7 @@ if (root) {
               <Route path={APP_ROUTES.coordinator.users} element={<CoordinatorUsers />} />
               <Route path={APP_ROUTES.coordinator.tracking} element={<CoordinatorTracking />} />
               <Route path={APP_ROUTES.coordinator.pending} element={<CoordinatorPending />} />
+              <Route path={APP_ROUTES.coordinator.advertisements} element={<CoordinatorAdvertisements />} />
               <Route path={APP_ROUTES.coordinator.studentDetails()} element={<StudentDetails />} />
             </Route>
             <Route element={<RequireAdmin><AdminLayout/></RequireAdmin>}>

@@ -26,6 +26,23 @@ const hasAttachment = (report) => {
   return report?.has_attachment === true || report?.has_attachment === 1 || report?.has_attachment === "1";
 };
 
+const createAttachState = () => ({
+  documentId: "",
+  scope: "all",
+  career: "",
+  search: "",
+  studentId: "",
+  careers: [],
+  students: [],
+  studentsTotal: 0,
+  optionsLoading: false,
+  attaching: false,
+  error: "",
+  success: "",
+});
+
+const getReportPeriodId = (report) => report?.periodo_id || report?.period?.id || "";
+
 export default function AdministratorReports({
   embedded = false,
   evidenceId = null,
@@ -46,8 +63,36 @@ export default function AdministratorReports({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [savedDocuments, setSavedDocuments] = useState([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentsError, setDocumentsError] = useState("");
+  const [attachReportId, setAttachReportId] = useState(null);
+  const [attachStates, setAttachStates] = useState({});
 
   const activeEvidenceId = fixedEvidenceId || selectedEvidenceId;
+
+  const getAttachState = (reportId) => ({
+    ...createAttachState(),
+    ...(attachStates[reportId] || {}),
+  });
+
+  const updateAttachState = (reportId, updater) => {
+    setAttachStates((prev) => {
+      const current = {
+        ...createAttachState(),
+        ...(prev[reportId] || {}),
+      };
+      const next = typeof updater === "function" ? updater(current) : updater;
+
+      return {
+        ...prev,
+        [reportId]: {
+          ...current,
+          ...next,
+        },
+      };
+    });
+  };
 
   const loadEvidences = async () => {
     try {
@@ -55,6 +100,21 @@ export default function AdministratorReports({
       setEvidences(res.data);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const loadSavedDocuments = async () => {
+    try {
+      setDocumentsLoading(true);
+      setDocumentsError("");
+
+      const res = await axios.get("/api/documents", buildAuthConfig());
+      setSavedDocuments(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error(err.response?.status, err.response?.data);
+      setDocumentsError(getApiErrorMessage(err, "No pudimos cargar los documentos guardados."));
+    } finally {
+      setDocumentsLoading(false);
     }
   };
 
@@ -74,6 +134,75 @@ export default function AdministratorReports({
     }
   };
 
+  const loadDocumentOptions = async (report, overrides = {}) => {
+    const reportId = report?.id;
+    const periodId = getReportPeriodId(report);
+
+    if (!reportId || !periodId) {
+      if (reportId) {
+        updateAttachState(reportId, {
+          error: "Este reporte no tiene periodo asignado.",
+        });
+      }
+      return;
+    }
+
+    const current = {
+      ...getAttachState(reportId),
+      ...overrides,
+    };
+
+    updateAttachState(reportId, {
+      ...overrides,
+      optionsLoading: true,
+      error: "",
+      success: "",
+    });
+
+    try {
+      const response = await axios.get(
+        "/api/document-generations/options",
+        buildAuthConfig({
+          params: {
+            periodo_id: Number(periodId),
+            limit: 25,
+            ...(current.scope === "student" && current.search.trim() ? { search: current.search.trim() } : {}),
+            ...(current.scope === "career" && current.career ? { career: current.career } : {}),
+          },
+        })
+      );
+
+      const data = response.data || {};
+      const students = Array.isArray(data.students) ? data.students : [];
+      const careers = Array.isArray(data.careers) ? data.careers : [];
+
+      updateAttachState(reportId, (state) => ({
+        optionsLoading: false,
+        students,
+        careers,
+        studentsTotal: Number(data.students_total || 0),
+        studentId:
+          state.studentId && students.some((student) => String(student.id) === String(state.studentId))
+            ? state.studentId
+            : students[0]?.id
+              ? String(students[0].id)
+              : "",
+        career:
+          state.career && careers.includes(state.career)
+            ? state.career
+            : careers[0] || "",
+      }));
+    } catch (err) {
+      console.error(err.response?.status, err.response?.data);
+      updateAttachState(reportId, {
+        optionsLoading: false,
+        students: [],
+        studentsTotal: 0,
+        error: getApiErrorMessage(err, "No pudimos cargar alumnos y carreras para este reporte."),
+      });
+    }
+  };
+
   useEffect(() => {
     if (fixedEvidenceId) {
       setSelectedEvidenceId(fixedEvidenceId);
@@ -89,6 +218,10 @@ export default function AdministratorReports({
   useEffect(() => {
     loadReports();
   }, [fixedEvidenceId, selectedEvidenceId]);
+
+  useEffect(() => {
+    loadSavedDocuments();
+  }, []);
 
   const resetForm = () => {
     setTitulo("");
@@ -137,7 +270,7 @@ export default function AdministratorReports({
         url = `/api/reports/${editingId}`;
       }
 
-      await axios.post(
+      const response = await axios.post(
         url,
         formData,
         buildAuthConfig({
@@ -146,9 +279,16 @@ export default function AdministratorReports({
           },
         })
       );
+      const savedReport = response.data || {};
 
       resetForm();
       await loadReports(activeEvidenceId);
+      if (!isEditing && savedReport.id) {
+        const defaultDocumentId = savedDocuments[0]?.id ? String(savedDocuments[0].id) : "";
+        setAttachReportId(savedReport.id);
+        updateAttachState(savedReport.id, { documentId: defaultDocumentId, error: "", success: "" });
+        loadDocumentOptions(savedReport, { documentId: defaultDocumentId });
+      }
       if (onChange) {
         await onChange();
       }
@@ -184,6 +324,99 @@ export default function AdministratorReports({
     resetForm();
     setError("");
     setSuccess("");
+  };
+
+  const toggleAttachPanel = (report) => {
+    const reportId = report.id;
+    const willOpen = attachReportId !== reportId;
+
+    setAttachReportId(willOpen ? reportId : null);
+
+    if (!willOpen) {
+      return;
+    }
+
+    const current = getAttachState(reportId);
+    const documentId = current.documentId || (savedDocuments[0]?.id ? String(savedDocuments[0].id) : "");
+
+    updateAttachState(reportId, { documentId, error: "", success: "" });
+
+    if (current.careers.length === 0 && current.students.length === 0) {
+      loadDocumentOptions(report, { documentId });
+    }
+  };
+
+  const handleAttachScopeChange = (report, scope) => {
+    updateAttachState(report.id, {
+      scope,
+      search: "",
+      studentId: "",
+      error: "",
+      success: "",
+    });
+    loadDocumentOptions(report, { scope, search: "", studentId: "" });
+  };
+
+  const attachSavedDocument = async (report) => {
+    const reportId = report.id;
+    const periodId = getReportPeriodId(report);
+    const state = getAttachState(reportId);
+
+    if (!state.documentId) {
+      updateAttachState(reportId, { error: "Selecciona un documento guardado." });
+      return;
+    }
+
+    if (!periodId) {
+      updateAttachState(reportId, { error: "Este reporte no tiene periodo asignado." });
+      return;
+    }
+
+    if (state.scope === "career" && !state.career) {
+      updateAttachState(reportId, { error: "Selecciona una carrera." });
+      return;
+    }
+
+    if (state.scope === "student" && !state.studentId) {
+      updateAttachState(reportId, { error: "Selecciona un alumno." });
+      return;
+    }
+
+    updateAttachState(reportId, { attaching: true, error: "", success: "" });
+
+    try {
+      const payload = {
+        report_id: Number(reportId),
+        periodo_id: Number(periodId),
+        scope: state.scope,
+      };
+
+      if (state.scope === "career") {
+        payload.career = state.career;
+      }
+
+      if (state.scope === "student") {
+        payload.student_id = Number(state.studentId);
+      }
+
+      const response = await axios.post(
+        `/api/documents/${state.documentId}/attach-to-report`,
+        payload,
+        buildAuthConfig()
+      );
+      const count = Number(response.data?.attached_count || 0);
+
+      updateAttachState(reportId, {
+        attaching: false,
+        success: `${count} documento(s) adjuntado(s) al reporte.`,
+      });
+    } catch (err) {
+      console.error(err.response?.status, err.response?.data);
+      updateAttachState(reportId, {
+        attaching: false,
+        error: getApiErrorMessage(err, "No pudimos adjuntar el documento al reporte."),
+      });
+    }
   };
 
   const deleteReport = async (id) => {
@@ -358,56 +591,236 @@ export default function AdministratorReports({
               ) : reports.length === 0 ? (
                 <p className="text-muted">
                   {activeEvidenceId
-                    ? "No hay reportes en este espacio."
+                    ? "No hay reportes en este espacio. Crea un reporte y se abrira la opcion para traer un documento guardado."
                     : "No hay reportes aun."}
                 </p>
               ) : (
                 <div className="d-grid gap-3">
-                  {reports.map((report) => (
-                    <div key={report.id} className="border rounded p-3 bg-white">
-                      <div className="d-flex justify-content-between align-items-start gap-2">
-                        <div>
-                          <div className="fw-semibold">{report.titulo}</div>
-                          <div className="small text-muted">
-                            {hasAttachment(report) ? "Tiene archivo base" : "Sin archivo base"}
-                          </div>
-                          {!fixedEvidenceId && report.evidence?.titulo && (
+                  {reports.map((report) => {
+                    const isAttachPanelOpen = attachReportId === report.id;
+                    const attachState = getAttachState(report.id);
+                    const reportPeriodId = getReportPeriodId(report);
+
+                    return (
+                      <div key={report.id} className="border rounded p-3 bg-white">
+                        <div className="d-flex justify-content-between align-items-start gap-2">
+                          <div>
+                            <div className="fw-semibold">{report.titulo}</div>
                             <div className="small text-muted">
-                              Espacio: {report.evidence.titulo}
+                              {hasAttachment(report) ? "Tiene archivo base" : "Sin archivo base"}
                             </div>
-                          )}
+                            {!fixedEvidenceId && report.evidence?.titulo && (
+                              <div className="small text-muted">
+                                Espacio: {report.evidence.titulo}
+                              </div>
+                            )}
+                          </div>
+                          <div className="d-flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-secondary"
+                              onClick={() => toggleAttachPanel(report)}
+                              disabled={documentsLoading || deletingId === report.id}
+                            >
+                              {isAttachPanelOpen ? "Ocultar documentos" : "Traer documento"}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-primary"
+                              onClick={() => startEdit(report)}
+                              disabled={deletingId === report.id}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-danger"
+                              onClick={() => deleteReport(report.id)}
+                              disabled={deletingId === report.id}
+                            >
+                              {deletingId === report.id
+                                ? "Eliminando..."
+                                : "Eliminar"}
+                            </button>
+                          </div>
                         </div>
-                        <div className="d-flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => startEdit(report)}
-                            disabled={deletingId === report.id}
+                        {report.descripcion && (
+                          <p
+                            className="mb-0 mt-2 text-muted"
+                            style={{ whiteSpace: "pre-line" }}
                           >
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => deleteReport(report.id)}
-                            disabled={deletingId === report.id}
-                          >
-                            {deletingId === report.id
-                              ? "Eliminando..."
-                              : "Eliminar"}
-                          </button>
-                        </div>
+                            {report.descripcion}
+                          </p>
+                        )}
+
+                        {isAttachPanelOpen && (
+                          <div className="border-top mt-3 pt-3">
+                            <div className="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-2">
+                              <div>
+                                <div className="fw-semibold small">Documento guardado</div>
+                                <div className="small text-muted">
+                                  Selecciona una plantilla guardada para generar PDFs y dejarlos disponibles a los estudiantes en este reporte.
+                                </div>
+                              </div>
+                              {documentsLoading && <span className="badge text-bg-light border">Cargando documentos...</span>}
+                            </div>
+
+                            {documentsError && <div className="alert alert-warning py-2">{documentsError}</div>}
+                            {attachState.error && <div className="alert alert-danger py-2">{attachState.error}</div>}
+                            {attachState.success && <div className="alert alert-success py-2">{attachState.success}</div>}
+
+                            <div className="row g-2 align-items-end">
+                              <div className="col-12 col-lg-6">
+                                <label className="form-label small">Documento</label>
+                                <select
+                                  className="form-select"
+                                  value={attachState.documentId}
+                                  onChange={(event) => updateAttachState(report.id, {
+                                    documentId: event.target.value,
+                                    error: "",
+                                    success: "",
+                                  })}
+                                  disabled={documentsLoading || savedDocuments.length === 0}
+                                >
+                                  {savedDocuments.length === 0 ? (
+                                    <option value="">No hay documentos guardados</option>
+                                  ) : (
+                                    savedDocuments.map((documentItem) => (
+                                      <option key={documentItem.id} value={documentItem.id}>
+                                        {documentItem.titulo}
+                                      </option>
+                                    ))
+                                  )}
+                                </select>
+                              </div>
+
+                              <div className="col-12 col-lg-6">
+                                <label className="form-label small">Adjuntar para</label>
+                                <select
+                                  className="form-select"
+                                  value={attachState.scope}
+                                  onChange={(event) => handleAttachScopeChange(report, event.target.value)}
+                                  disabled={!reportPeriodId || attachState.optionsLoading}
+                                >
+                                  <option value="all">Todos los alumnos del periodo</option>
+                                  <option value="career">Una carrera</option>
+                                  <option value="student">Un alumno</option>
+                                </select>
+                              </div>
+
+                              {attachState.scope === "career" && (
+                                <div className="col-12 col-lg-7">
+                                  <label className="form-label small">Carrera</label>
+                                  <select
+                                    className="form-select"
+                                    value={attachState.career}
+                                    onChange={(event) => updateAttachState(report.id, {
+                                      career: event.target.value,
+                                      error: "",
+                                      success: "",
+                                    })}
+                                    disabled={attachState.optionsLoading || attachState.careers.length === 0}
+                                  >
+                                    {attachState.careers.length === 0 ? (
+                                      <option value="">No hay carreras disponibles</option>
+                                    ) : (
+                                      attachState.careers.map((career) => (
+                                        <option key={career} value={career}>
+                                          {career}
+                                        </option>
+                                      ))
+                                    )}
+                                  </select>
+                                </div>
+                              )}
+
+                              {attachState.scope === "student" && (
+                                <>
+                                  <div className="col-12 col-lg-5">
+                                    <label className="form-label small">Buscar alumno</label>
+                                    <div className="input-group">
+                                      <input
+                                        type="search"
+                                        className="form-control"
+                                        value={attachState.search}
+                                        onChange={(event) => updateAttachState(report.id, {
+                                          search: event.target.value,
+                                          error: "",
+                                          success: "",
+                                        })}
+                                        placeholder="Nombre o control"
+                                      />
+                                      <button
+                                        type="button"
+                                        className="btn btn-outline-secondary"
+                                        onClick={() => loadDocumentOptions(report)}
+                                        disabled={attachState.optionsLoading}
+                                      >
+                                        Buscar
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <div className="col-12 col-lg-7">
+                                    <label className="form-label small">Alumno</label>
+                                    <select
+                                      className="form-select"
+                                      value={attachState.studentId}
+                                      onChange={(event) => updateAttachState(report.id, {
+                                        studentId: event.target.value,
+                                        error: "",
+                                        success: "",
+                                      })}
+                                      disabled={attachState.optionsLoading || attachState.students.length === 0}
+                                    >
+                                      {attachState.students.length === 0 ? (
+                                        <option value="">No hay alumnos disponibles</option>
+                                      ) : (
+                                        attachState.students.map((student) => (
+                                          <option key={student.id} value={student.id}>
+                                            {student.nombre_completo} - {student.no_control}
+                                          </option>
+                                        ))
+                                      )}
+                                    </select>
+                                  </div>
+                                </>
+                              )}
+
+                              <div className="col-12">
+                                <div className="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                                  <div className="small text-muted">
+                                    {attachState.optionsLoading
+                                      ? "Consultando alumnos..."
+                                      : reportPeriodId
+                                        ? attachState.scope === "career"
+                                          ? "Se adjuntara a los alumnos de la carrera seleccionada."
+                                          : attachState.scope === "student"
+                                            ? `${attachState.studentsTotal} alumno(s) encontrados.`
+                                            : `${attachState.studentsTotal} alumno(s) disponibles para el periodo del reporte.`
+                                        : "Este reporte no tiene periodo asignado."}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-primary"
+                                    onClick={() => attachSavedDocument(report)}
+                                    disabled={
+                                      attachState.attaching ||
+                                      documentsLoading ||
+                                      savedDocuments.length === 0 ||
+                                      !reportPeriodId ||
+                                      attachState.optionsLoading
+                                    }
+                                  >
+                                    {attachState.attaching ? "Adjuntando..." : "Adjuntar documento"}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      {report.descripcion && (
-                        <p
-                          className="mb-0 mt-2 text-muted"
-                          style={{ whiteSpace: "pre-line" }}
-                        >
-                          {report.descripcion}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -47,6 +47,7 @@ const MENU_LINKS = [
   { label: "Usuarios", to: APP_ROUTES.coordinator.users },
   { label: "Seguimiento", to: APP_ROUTES.coordinator.tracking },
   { label: "Pendientes", to: APP_ROUTES.coordinator.pending },
+  { label: "Anuncios", to: APP_ROUTES.coordinator.advertisements },
 ];
 
 export default function Sidebar() {

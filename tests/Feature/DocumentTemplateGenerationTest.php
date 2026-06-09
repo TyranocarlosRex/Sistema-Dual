@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\DocumentTemplate;
+use App\Models\Evidence;
 use App\Models\Period;
+use App\Models\Report;
 use App\Models\Student;
 use App\Models\StudentPeriod;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -82,6 +85,95 @@ class DocumentTemplateGenerationTest extends TestCase
         $pdfResponse->assertOk();
         $this->assertStringStartsWith('application/pdf', (string) $pdfResponse->headers->get('content-type'));
         $this->assertStringStartsWith('%PDF', (string) $pdfResponse->getContent());
+    }
+
+    public function test_pdf_with_images_preserves_letterhead_when_gd_is_available(): void
+    {
+        [$admin, $period, $document, $carlos] = $this->seedGenerationScenario();
+
+        $document->update([
+            'header_html' => '<div class="docx-paragraph"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=" alt="Membrete"></div>',
+        ]);
+
+        Sanctum::actingAs($admin, ['admin']);
+
+        $response = $this->post("/api/documents/{$document->id}/download-pdf", [
+            'student_id' => $carlos->id,
+            'periodo_id' => $period->id,
+        ]);
+
+        if (!extension_loaded('gd')) {
+            $response
+                ->assertStatus(422)
+                ->assertJsonPath('message', 'El servidor necesita la extension GD de PHP para generar PDFs con membrete. Activa GD y vuelve a intentar.');
+
+            return;
+        }
+
+        $response->assertOk();
+        $this->assertStringStartsWith('application/pdf', (string) $response->headers->get('content-type'));
+        $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
+    public function test_admin_can_attach_generated_document_to_report_for_student(): void
+    {
+        Storage::fake('public');
+
+        [$admin, $period, $document, $carlos] = $this->seedGenerationScenario();
+        $evidence = Evidence::query()->create([
+            'titulo' => 'Documentos personalizados',
+            'descripcion' => 'Formatos generados por alumno',
+            'tipo' => 'inscripcion',
+            'is_active' => true,
+            'created_by' => $admin->id,
+        ]);
+        $report = Report::query()->create([
+            'evidence_id' => $evidence->id,
+            'periodo_id' => $period->id,
+            'titulo' => 'Carta generada',
+            'descripcion' => 'Descarga tu carta generada y subela firmada.',
+            'has_attachment' => false,
+            'created_by' => $admin->id,
+        ]);
+
+        Sanctum::actingAs($admin, ['admin']);
+
+        $response = $this->postJson("/api/documents/{$document->id}/attach-to-report", [
+            'report_id' => $report->id,
+            'periodo_id' => $period->id,
+            'scope' => 'student',
+            'student_id' => $carlos->id,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('attached_count', 1)
+            ->assertJsonPath('attachments.0.student_id', $carlos->id)
+            ->assertJsonPath('attachments.0.report_id', $report->id)
+            ->assertJsonPath('attachments.0.original_name', 'carta-de-presentacion-22330406.pdf');
+
+        $attachmentId = (int) $response->json('attachments.0.id');
+
+        $this->assertDatabaseHas('report_generated_attachments', [
+            'id' => $attachmentId,
+            'report_id' => $report->id,
+            'student_id' => $carlos->id,
+            'document_template_id' => $document->id,
+        ]);
+
+        $studentUser = $carlos->user()->firstOrFail();
+        Sanctum::actingAs($studentUser, ['student']);
+
+        $this->getJson("/api/student/evidences?periodo_id={$period->id}")
+            ->assertOk()
+            ->assertJsonPath('0.reports.0.generated_attachments.0.id', $attachmentId)
+            ->assertJsonPath('0.reports.0.generated_attachments.0.original_name', 'carta-de-presentacion-22330406.pdf');
+
+        $download = $this->get("/api/student/report-generated-attachments/{$attachmentId}/download");
+
+        $download->assertOk();
+        $this->assertStringStartsWith('application/pdf', (string) $download->headers->get('content-type'));
+        $download->assertHeader('x-download-filename', 'carta-de-presentacion-22330406.pdf');
     }
 
     private function seedGenerationScenario(): array

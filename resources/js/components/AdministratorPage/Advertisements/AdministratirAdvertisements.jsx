@@ -39,7 +39,7 @@ export default function AdministratirAdvertisements() {
     try {
       setLoading(true);
       setError("");
-      const { data } = await axios.get("/api/advertisements", {
+      const { data } = await axios.get("/api/advertisements?scope=outbox", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAnuncios(Array.isArray(data) ? data : []);

@@ -38,6 +38,7 @@ Route::middleware(['auth:sanctum', 'abilities:student', 'student.semester'])->gr
     Route::get('/student/submissions/history', [SubmissionController::class, 'historyForStudent']);
     Route::get('/student/submissions/{submission}/download', [SubmissionController::class, 'downloadOwnSubmission']);
     Route::get('/student/reports/{report}/attachment', [ReportController::class, 'downloadAttachment']);
+    Route::get('/student/report-generated-attachments/{attachment}/download', [ReportController::class, 'downloadGeneratedAttachment']);
     Route::post('/student/reports/{report}/submit',[SubmissionController::class, 'storeForStudent']);
 });
 
@@ -102,6 +103,7 @@ Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
     Route::delete('/documents/{document}', [DocumentTemplateController::class, 'destroy']);
     Route::post('/documents/{document}/generate', [DocumentTemplateGenerationController::class, 'generate']);
     Route::post('/documents/{document}/download-pdf', [DocumentTemplateGenerationController::class, 'downloadPdf']);
+    Route::post('/documents/{document}/attach-to-report', [DocumentTemplateGenerationController::class, 'attachToReport']);
 
     Route::get('/periods/{period}', [PeriodController::class, 'show']);
     Route::get('/periods/{period}/statistics', [PeriodController::class, 'statistics']);
@@ -123,6 +125,5 @@ Route::middleware(['auth:sanctum', 'ability:admin,coordinator'])->post(
     '/advertisements',
     [AdvertisementController::class, 'store']
 );
-
 
 

@@ -13,6 +13,7 @@ export const APP_ROUTES = {
     users: "/coordinador/usuarios",
     tracking: "/coordinador/seguimiento",
     pending: "/coordinador/pendientes",
+    advertisements: "/coordinador/anuncios",
     studentDetails: (id = ":id") => `/coordinador/estudiantes/${id}`,
   },
   admin: {

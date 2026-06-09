@@ -146,6 +146,7 @@ export default function StudentReports() {
   const [downloadingAttachment, setDownloadingAttachment] = useState({});
   const [downloadError, setDownloadError] = useState({});
   const [downloadingHistoricalId, setDownloadingHistoricalId] = useState(null);
+  const [downloadingGeneratedAttachmentId, setDownloadingGeneratedAttachmentId] = useState(null);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -218,20 +219,28 @@ export default function StudentReports() {
     activeTab === "asignado"
       ? evidences
       : evidences.filter((ev) => evidenceStatus(ev) === activeTab);
+  const historicalEvidenceGroups = buildHistoricalEvidenceGroups(historicalSubmissions);
+  const shouldShowHistoryTab = historicalEvidenceGroups.length > 0;
   const TABS = [
     { key: "asignado", label: "Asignado" },
     { key: "sinentregar", label: "Sin entregar" },
     { key: "completada", label: "Completada" },
-    { key: "anteriores", label: "Primer periodo" },
+    ...(shouldShowHistoryTab ? [{ key: "anteriores", label: "Primer periodo" }] : []),
   ];
   const isHistoryTab = activeTab === "anteriores";
-  const historicalEvidenceGroups = buildHistoricalEvidenceGroups(historicalSubmissions);
   const selectedHistoricalEvidence = selectedHistoricalEvidenceKey
     ? historicalEvidenceGroups.find((ev) => ev.key === selectedHistoricalEvidenceKey)
     : null;
   const activeEvidence = selectedHistoricalEvidence || selectedEvidence;
   const isHistoricalEvidenceView = Boolean(selectedHistoricalEvidence);
   const reports = activeEvidence?.reports ?? [];
+
+  useEffect(() => {
+    if (activeTab === "anteriores" && !historyLoading && !shouldShowHistoryTab) {
+      setActiveTab("asignado");
+      setSelectedHistoricalEvidenceKey(null);
+    }
+  }, [activeTab, historyLoading, shouldShowHistoryTab]);
 
   const handleFileChange = (reportId, file) => {
     setSelectedFiles((prev) => ({
@@ -384,6 +393,40 @@ export default function StudentReports() {
       setHistoryError(getApiErrorMessage(err, "No pudimos descargar esa entrega."));
     } finally {
       setDownloadingHistoricalId(null);
+    }
+  };
+
+  const handleDownloadGeneratedAttachment = async (attachment) => {
+    try {
+      setDownloadingGeneratedAttachmentId(attachment.id);
+      setDownloadError((prev) => ({ ...prev, [`generated-${attachment.id}`]: "" }));
+
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/student/report-generated-attachments/${attachment.id}/download`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob",
+          withCredentials: true,
+        }
+      );
+
+      downloadResponseBlob(
+        response.data,
+        response.headers,
+        attachment.original_name || `documento-generado-${attachment.id}.pdf`
+      );
+    } catch (err) {
+      console.error(err);
+      const message = getApiErrorMessage(err, "No pudimos descargar el documento generado.");
+      setDownloadError((prev) => ({
+        ...prev,
+        [`generated-${attachment.id}`]: message,
+      }));
+    } finally {
+      setDownloadingGeneratedAttachmentId(null);
     }
   };
 
@@ -615,6 +658,9 @@ export default function StudentReports() {
       <div className="row">
         {reports.map((report) => {
           const mySubmission = getLatestSubmission(report);
+          const generatedAttachments = Array.isArray(report.generated_attachments)
+            ? report.generated_attachments
+            : [];
           const selectedFile = selectedFiles[report.id] || null;
           const hasSelectedFile = !!selectedFile;
           const isHistoricalSubmission =
@@ -658,6 +704,35 @@ export default function StudentReports() {
                           {downloadError[report.id]}
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {generatedAttachments.length > 0 && (
+                    <div className="mb-2">
+                      <p className="mb-1">
+                        <strong>Documentos generados para ti: </strong>
+                      </p>
+                      <div className="d-grid gap-2">
+                        {generatedAttachments.map((attachment) => (
+                          <div key={attachment.id}>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-primary"
+                              onClick={() => handleDownloadGeneratedAttachment(attachment)}
+                              disabled={downloadingGeneratedAttachmentId === attachment.id}
+                            >
+                              {downloadingGeneratedAttachmentId === attachment.id
+                                ? "Descargando..."
+                                : attachment.original_name || "Descargar documento"}
+                            </button>
+                            {downloadError[`generated-${attachment.id}`] && (
+                              <div className="text-danger small mt-1">
+                                {downloadError[`generated-${attachment.id}`]}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 

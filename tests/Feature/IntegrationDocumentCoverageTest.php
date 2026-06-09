@@ -168,6 +168,55 @@ class IntegrationDocumentCoverageTest extends TestCase
         Storage::disk('public')->assertExists((string) $response->json('attachment_path'));
     }
 
+    public function test_coordinator_advertisements_are_forced_to_own_career(): void
+    {
+        $coordinator = $this->makeCoordinator('Ingenieria Industrial', [
+            'email' => 'career-scoped-announcement@example.test',
+        ]);
+
+        Sanctum::actingAs($coordinator, ['coordinator']);
+
+        $this->postJson('/api/advertisements', [
+            'titulo' => 'Aviso sin carrera enviada',
+            'mensaje' => 'La carrera debe salir del perfil del coordinador.',
+            'target_role' => 'student',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('target_role', 'student')
+            ->assertJsonPath('target_carrera', 'Ingenieria Industrial');
+
+        $this->postJson('/api/advertisements', [
+            'titulo' => 'Aviso para otra carrera',
+            'mensaje' => 'No debe permitirse.',
+            'target_role' => 'student',
+            'target_carrera' => 'Ingenieria Mecanica',
+        ])
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Solo puedes publicar anuncios para estudiantes de tu carrera.');
+
+        $this->postJson('/api/advertisements', [
+            'titulo' => 'Aviso para coordinadores',
+            'mensaje' => 'No debe permitirse.',
+            'target_role' => 'coordinator',
+            'target_carrera' => 'Ingenieria Industrial',
+        ])
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Solo puedes publicar anuncios para estudiantes de tu carrera.');
+
+        $this->getJson('/api/advertisements?scope=outbox')
+            ->assertOk()
+            ->assertJsonCount(1)
+            ->assertJsonPath('0.titulo', 'Aviso sin carrera enviada')
+            ->assertJsonPath('0.target_carrera', 'Ingenieria Industrial');
+
+        $this->assertDatabaseMissing('advertisements', [
+            'titulo' => 'Aviso para otra carrera',
+        ]);
+        $this->assertDatabaseMissing('advertisements', [
+            'titulo' => 'Aviso para coordinadores',
+        ]);
+    }
+
     public function test_admin_document_import_rejects_invalid_file_type(): void
     {
         $admin = $this->makeAdmin([
