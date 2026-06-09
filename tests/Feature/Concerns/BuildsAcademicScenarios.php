@@ -118,7 +118,10 @@ trait BuildsAcademicScenarios
         return Evidence::query()->create(array_merge([
             'titulo' => $type === 'inscripcion' ? 'Documentos de ingreso' : 'Programa dual',
             'descripcion' => 'Espacio de prueba',
+            'fecha_limite' => null,
             'tipo' => $type,
+            'is_active' => true,
+            'preserve_submissions_between_periods' => false,
             'created_by' => $creator->id,
         ], $overrides));
     }
@@ -130,7 +133,6 @@ trait BuildsAcademicScenarios
             'periodo_id' => $period->id,
             'titulo' => 'Entrega de prueba',
             'descripcion' => 'Sube el documento solicitado',
-            'fecha_limite' => $period->fecha_fin?->toDateString(),
             'has_attachment' => false,
             'attachment_path' => null,
             'created_by' => $creator->id,

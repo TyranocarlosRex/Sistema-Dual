@@ -33,6 +33,7 @@ class DomainModelConfigurationTest extends TestCase
         $evidence = Evidence::query()->create([
             'titulo' => 'Inscripcion',
             'descripcion' => 'Documentos iniciales',
+            'fecha_limite' => '2026-05-30',
             'tipo' => 'inscripcion',
             'created_by' => $admin->id,
         ]);
@@ -41,7 +42,6 @@ class DomainModelConfigurationTest extends TestCase
             'periodo_id' => $period->id,
             'titulo' => 'Carta de presentacion',
             'descripcion' => 'Subir carta',
-            'fecha_limite' => '2026-05-30',
             'has_attachment' => true,
             'attachment_path' => 'reports/carta.pdf',
             'created_by' => $admin->id,

@@ -19,7 +19,6 @@ class StoreReportRequest extends FormRequest
             'period_id'   => ['nullable', 'exists:periods,id'],
             'titulo'       => ['required', 'string', 'max:255'],
             'descripcion'  => ['nullable', 'string'],
-            'fecha_limite' => ['nullable', 'date'],
             'attachment'   => ['nullable', 'file', 'max:4096'],
         ];
     }

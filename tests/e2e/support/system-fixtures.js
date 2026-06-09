@@ -68,7 +68,6 @@ export function createMockState() {
             evidence_id: 11,
             titulo: 'Reporte bimestral 1',
             descripcion: 'Formato de avance del primer bimestre.',
-            fecha_limite: '2026-06-10',
             tipo: 'programa',
             has_attachment: true,
             attachment_original_name: 'formato-reporte.pdf',
@@ -79,7 +78,6 @@ export function createMockState() {
             evidence_id: 11,
             titulo: 'Reporte bimestral 2',
             descripcion: 'Seguimiento del segundo bimestre.',
-            fecha_limite: '2026-07-10',
             tipo: 'programa',
             has_attachment: false,
             submissions: [
@@ -102,6 +100,7 @@ export function createMockState() {
             titulo: 'Reportes bimestrales',
             tipo: 'programa',
             descripcion: 'Entregables del programa dual.',
+            fecha_limite: '2026-07-10',
             reports: reports.map((report) => ({ ...report })),
         },
         {
@@ -109,6 +108,7 @@ export function createMockState() {
             titulo: 'Inscripcion',
             tipo: 'inscripcion',
             descripcion: 'Documentos de inicio del programa.',
+            fecha_limite: '2026-06-10',
             reports: [],
         },
     ];
@@ -190,6 +190,56 @@ export function createMockState() {
                 calificacion: null,
                 feedback: '',
                 created_at: '2026-05-20T10:00:00Z',
+            },
+        ],
+        historicalSubmissions: [
+            {
+                id: 502,
+                report_id: 91,
+                periodo_id: 2,
+                report: {
+                    id: 91,
+                    titulo: 'Plan de actividades anterior',
+                    descripcion: 'Formato de avance del periodo anterior.',
+                    evidence: {
+                        id: 11,
+                        titulo: 'Reportes bimestrales',
+                        tipo: 'programa',
+                        descripcion: 'Entregables del programa dual.',
+                    },
+                    period: { id: 2, codigo: '2025-2' },
+                },
+                period: { id: 2, codigo: '2025-2' },
+                student: { ...student },
+                status: 'aceptado',
+                original_name: 'plan-periodo-anterior.pdf',
+                calificacion: 95,
+                feedback: '',
+                created_at: '2025-11-20T10:00:00Z',
+            },
+            {
+                id: 503,
+                report_id: 92,
+                periodo_id: 2,
+                report: {
+                    id: 92,
+                    titulo: 'Cierre anterior',
+                    descripcion: 'Entrega final del periodo anterior.',
+                    evidence: {
+                        id: 11,
+                        titulo: 'Reportes bimestrales',
+                        tipo: 'programa',
+                        descripcion: 'Entregables del programa dual.',
+                    },
+                    period: { id: 2, codigo: '2025-2' },
+                },
+                period: { id: 2, codigo: '2025-2' },
+                student: { ...student },
+                status: 'aceptado',
+                original_name: 'cierre-periodo-anterior.pdf',
+                calificacion: 98,
+                feedback: '',
+                created_at: '2025-12-10T10:00:00Z',
             },
         ],
         documents: [
@@ -292,6 +342,16 @@ export async function mockSystemApi(page, state = createMockState()) {
 
         if (path === '/api/student/evidences' && method === 'GET') {
             return json(route, state.evidences);
+        }
+
+        if (path === '/api/student/submissions/history' && method === 'GET') {
+            return json(route, state.historicalSubmissions);
+        }
+
+        if (/^\/api\/student\/submissions\/\d+\/download$/.test(path) && method === 'GET') {
+            const id = Number(path.match(/\d+/)?.[0]);
+            const submission = state.historicalSubmissions.find((item) => Number(item.id) === id);
+            return pdf(route, submission?.original_name || 'entrega-anterior.pdf');
         }
 
         if (/^\/api\/student\/reports\/\d+\/attachment$/.test(path) && method === 'GET') {
@@ -417,6 +477,7 @@ export async function mockSystemApi(page, state = createMockState()) {
                 titulo: body.titulo || 'Evidencia E2E',
                 tipo: body.tipo || 'inscripcion',
                 descripcion: body.descripcion || '',
+                fecha_limite: body.fecha_limite || null,
                 reports: [],
             };
             state.evidences.push(created);
@@ -453,7 +514,6 @@ export async function mockSystemApi(page, state = createMockState()) {
                 evidence_id: Number(readMultipartValue(raw, 'evidence_id')) || state.evidences[0]?.id,
                 titulo: readMultipartValue(raw, 'titulo') || 'Reporte E2E',
                 descripcion: readMultipartValue(raw, 'descripcion') || '',
-                fecha_limite: readMultipartValue(raw, 'fecha_limite') || null,
                 tipo: readMultipartValue(raw, 'tipo') || 'programa',
                 has_attachment: raw.includes('filename='),
                 submissions: [],
@@ -473,7 +533,6 @@ export async function mockSystemApi(page, state = createMockState()) {
             const updated = {
                 titulo: readMultipartValue(raw, 'titulo') || 'Reporte actualizado E2E',
                 descripcion: readMultipartValue(raw, 'descripcion') || '',
-                fecha_limite: readMultipartValue(raw, 'fecha_limite') || null,
                 tipo: readMultipartValue(raw, 'tipo') || 'programa',
             };
             state.reports = state.reports.map((report) =>

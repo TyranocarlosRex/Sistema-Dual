@@ -10,6 +10,7 @@ class Student extends Model
     public const STATUS_ACTIVO = 'Activo';
     public const STATUS_INACTIVO = 'Inactivo';
     public const STATUS_BAJA = 'Baja';
+    public const MINIMUM_ACCESS_SEMESTER = 7;
 
     /**
      * @var array<int, string>
@@ -126,5 +127,22 @@ class Student extends Model
     public function statusForPeriod(?int $periodId): ?string
     {
         return $this->enrollmentForPeriod($periodId)?->Estatus;
+    }
+
+    public function hasMinimumAccessSemester(?int $periodId): bool
+    {
+        return $this->accessSemesterForPeriod($periodId) >= self::MINIMUM_ACCESS_SEMESTER;
+    }
+
+    public function accessSemesterForPeriod(?int $periodId): int
+    {
+        $assignment = $this->enrollmentForPeriod($periodId);
+        $semester = $assignment?->Semestre;
+
+        if (blank($semester)) {
+            $semester = $this->Semestre ?? null;
+        }
+
+        return is_numeric($semester) ? (int)$semester : 0;
     }
 }

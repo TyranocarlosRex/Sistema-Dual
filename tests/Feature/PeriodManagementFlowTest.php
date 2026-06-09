@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Period;
+use App\Models\Report;
 use App\Models\Student;
 use App\Models\StudentPeriod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -43,6 +44,12 @@ class PeriodManagementFlowTest extends TestCase
             'Motivo_baja' => 'Cambio de residencia',
             'Fecha_baja' => '2025-04-01',
         ]);
+        $sourceEvidence = $this->makeEvidence($admin, 'inscripcion', [
+            'titulo' => 'Documentos clonables',
+        ]);
+        $this->makeReport($sourceEvidence, $source, $admin, [
+            'titulo' => 'Reporte clonado',
+        ]);
 
         Sanctum::actingAs($admin, ['admin']);
 
@@ -62,6 +69,11 @@ class PeriodManagementFlowTest extends TestCase
 
         $period = Period::query()->where('codigo', '2026-1')->firstOrFail();
         $this->assertSame(2, StudentPeriod::query()->where('periodo_id', $period->id)->count());
+        $this->assertDatabaseHas('reports', [
+            'periodo_id' => $period->id,
+            'evidence_id' => $sourceEvidence->id,
+            'titulo' => 'Reporte clonado',
+        ]);
 
         $this->putJson("/api/periods/{$period->id}", [
             'anio' => 2026,
@@ -126,8 +138,10 @@ class PeriodManagementFlowTest extends TestCase
         $this->assertSame('2026-02-03 12:30:00', $syncedAssignment->Ultimo_login_at?->format('Y-m-d H:i:s'));
         $this->assertSame('login', $syncedAssignment->Origen_login);
 
-        $evidence = $this->makeEvidence($admin, 'inscripcion');
-        $report = $this->makeReport($evidence, $period, $admin);
+        $report = Report::query()
+            ->where('periodo_id', $period->id)
+            ->where('titulo', 'Reporte clonado')
+            ->firstOrFail();
         $this->makeSubmission($report, $student, [
             'status' => 'aceptado',
         ]);

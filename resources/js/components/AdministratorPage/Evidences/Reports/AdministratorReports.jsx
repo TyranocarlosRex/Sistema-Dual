@@ -35,9 +35,7 @@ export default function AdministratorReports({
 
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [fechaLimite, setFechaLimite] = useState("");
   const [attachment, setAttachment] = useState(null);
-  const [tipo, setTipo] = useState("programa");
   const [selectedEvidenceId, setSelectedEvidenceId] = useState(fixedEvidenceId);
 
   const [evidences, setEvidences] = useState([]);
@@ -95,9 +93,7 @@ export default function AdministratorReports({
   const resetForm = () => {
     setTitulo("");
     setDescripcion("");
-    setFechaLimite("");
     setAttachment(null);
-    setTipo("programa");
     setEditingId(null);
   };
 
@@ -123,13 +119,10 @@ export default function AdministratorReports({
       const formData = new FormData();
       formData.append("evidence_id", activeEvidenceId);
       formData.append("titulo", field("titulo", titulo));
-      formData.append("tipo", field("tipo", tipo));
 
       const descripcionValue = field("descripcion", descripcion);
-      const fechaLimiteValue = field("fecha_limite", fechaLimite);
 
       if (descripcionValue) formData.append("descripcion", descripcionValue);
-      if (fechaLimiteValue) formData.append("fecha_limite", fechaLimiteValue);
       if (attachmentFile instanceof File && attachmentFile.size > 0) {
         formData.append("attachment", attachmentFile);
       } else if (attachment) {
@@ -177,8 +170,6 @@ export default function AdministratorReports({
     setEditingId(report.id);
     setTitulo(report.titulo);
     setDescripcion(report.descripcion || "");
-    setFechaLimite(report.fecha_limite || "");
-    setTipo(report.tipo || "programa");
     setAttachment(null);
 
     if (!fixedEvidenceId && report.evidence_id) {
@@ -301,31 +292,6 @@ export default function AdministratorReports({
                   />
                 </div>
 
-                <div className="row g-2">
-                  <div className="col-md-6">
-                    <label className="form-label">Fecha limite</label>
-                    <input
-                      name="fecha_limite"
-                      type="date"
-                      className="form-control"
-                      value={fechaLimite}
-                      onChange={(e) => setFechaLimite(e.target.value)}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Tipo</label>
-                    <select
-                      name="tipo"
-                      className="form-select"
-                      value={tipo}
-                      onChange={(e) => setTipo(e.target.value)}
-                    >
-                      <option value="inscripcion">Inscripcion (todos)</option>
-                      <option value="programa">Programa (activos)</option>
-                    </select>
-                  </div>
-                </div>
-
                 <div>
                   <label className="form-label">Archivo base (opcional)</label>
                   <input
@@ -403,10 +369,7 @@ export default function AdministratorReports({
                         <div>
                           <div className="fw-semibold">{report.titulo}</div>
                           <div className="small text-muted">
-                            {report.tipo && `[${report.tipo}]`}{" "}
-                            {report.fecha_limite &&
-                              `- Limite: ${report.fecha_limite}`}{" "}
-                            {hasAttachment(report) ? "- Tiene archivo base" : ""}
+                            {hasAttachment(report) ? "Tiene archivo base" : "Sin archivo base"}
                           </div>
                           {!fixedEvidenceId && report.evidence?.titulo && (
                             <div className="small text-muted">

@@ -27,6 +27,11 @@ const normalizeOptionalText = (value) => {
   return trimmed === "" ? null : trimmed;
 };
 
+const periodStatusLabel = (status) => {
+  const value = String(status ?? "").trim();
+  return value ? ` (${value})` : "";
+};
+
 export default function StudentDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -37,6 +42,8 @@ export default function StudentDetailsPage() {
     : "/api/coordinator/report-submissions";
 
   const [period, setPeriod] = useState(null);
+  const [periods, setPeriods] = useState([]);
+  const [selectedPeriodId, setSelectedPeriodId] = useState("");
   const [student, setStudent] = useState(null);
   const [evidences, setEvidences] = useState({ spaces: [], sent: [], missing: [] });
   const [grades, setGrades] = useState({});
@@ -51,12 +58,35 @@ export default function StudentDetailsPage() {
   const [savingAssignment, setSavingAssignment] = useState(false);
 
   useEffect(() => {
+    const fetchPeriods = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const { data } = await axios.get("/api/periods", {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+
+        setPeriods(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchPeriods();
+  }, []);
+
+  useEffect(() => {
     const fetchDetails = async () => {
       try {
         setLoading(true);
+        setError(null);
 
         const token = localStorage.getItem("token");
         const { data } = await axios.get(`/api/students/${id}/details`, {
+          params: selectedPeriodId ? { periodo_id: selectedPeriodId } : undefined,
           withCredentials: true,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -65,6 +95,9 @@ export default function StudentDetailsPage() {
         });
 
         setPeriod(data.period ?? null);
+        if (!selectedPeriodId && data.period?.id) {
+          setSelectedPeriodId(String(data.period.id));
+        }
         setStudent(data.student);
         setAssignmentForm(buildAssignmentForm(data.student));
         setEditingAssignment(false);
@@ -96,7 +129,7 @@ export default function StudentDetailsPage() {
     };
 
     fetchDetails();
-  }, [id]);
+  }, [id, selectedPeriodId]);
 
   if (loading) {
     return <div className="container mt-4">Cargando...</div>;
@@ -160,7 +193,13 @@ export default function StudentDetailsPage() {
       : student.Estatus && student.Estatus.toLowerCase() === "baja"
       ? "warning text-dark"
       : "secondary";
-  const canEditAssignment = isAdmin && Boolean(period?.id);
+  const isSelectedPeriodClosed =
+    String(period?.estatus ?? "").toLowerCase() === "cerrado";
+  const canEditAssignment = isAdmin && Boolean(period?.id) && !isSelectedPeriodClosed;
+  const selectedPeriodValue = selectedPeriodId || (period?.id ? String(period.id) : "");
+  const selectedPeriodInList = periods.some(
+    (item) => String(item.id) === selectedPeriodValue
+  );
   const assignmentCardStyle = editingAssignment
     ? {
         background: "#ffffff",
@@ -182,10 +221,21 @@ export default function StudentDetailsPage() {
   const handleSaveAssignment = async () => {
     if (!isAdmin) return;
 
-    if (!period?.id) {
+    const targetPeriodId = selectedPeriodId || period?.id;
+
+    if (!targetPeriodId) {
       showToast({
         title: "Periodo no disponible",
         message: "Necesitas un periodo activo o seleccionado para cambiar la empresa.",
+        variant: "warning",
+      });
+      return;
+    }
+
+    if (isSelectedPeriodClosed) {
+      showToast({
+        title: "Periodo cerrado",
+        message: "Este periodo solo permite consulta.",
         variant: "warning",
       });
       return;
@@ -220,6 +270,7 @@ export default function StudentDetailsPage() {
       const { data } = await axios.patch(
         `/api/students/${id}/estatus`,
         {
+          periodo_id: Number(targetPeriodId),
           empresa,
           numero_convenio: numeroConvenio,
         },
@@ -349,11 +400,44 @@ export default function StudentDetailsPage() {
   return (
     <>
       <div className="container py-4">
-      <div className="d-flex align-items-center gap-2 mb-3">
-        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(-1)}>
-          Regresar
-        </button>
-        <span className="text-muted small">Estudiante #{student.id}</span>
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <div className="d-flex align-items-center gap-2">
+          <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(-1)}>
+            Regresar
+          </button>
+          <span className="text-muted small">Estudiante #{student.id}</span>
+        </div>
+
+        <div className="d-flex flex-wrap align-items-center gap-2">
+          <label htmlFor="student-period-select" className="text-muted small mb-0">
+            Periodo
+          </label>
+          <select
+            id="student-period-select"
+            className="form-select form-select-sm"
+            value={selectedPeriodValue}
+            onChange={(event) => {
+              setEditingAssignment(false);
+              setSelectedPeriodId(event.target.value);
+            }}
+            disabled={periods.length === 0 && !selectedPeriodValue}
+            style={{ minWidth: "170px" }}
+          >
+            {!selectedPeriodValue && <option value="">Periodo activo</option>}
+            {selectedPeriodValue && !selectedPeriodInList && (
+              <option value={selectedPeriodValue}>
+                {period?.codigo || "Periodo seleccionado"}
+                {periodStatusLabel(period?.estatus)}
+              </option>
+            )}
+            {periods.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.codigo || `Periodo ${item.id}`}
+                {periodStatusLabel(item.estatus)}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="mb-4" style={HERO_STYLE}>
@@ -390,43 +474,6 @@ export default function StudentDetailsPage() {
               <div className="text-light text-opacity-75 small mb-0">Evidencias faltantes</div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="card border-0 shadow-sm mb-4">
-        <div className="card-header bg-transparent border-0">
-          <h6 className="mb-0">Espacios de evidencia</h6>
-          <p className="text-muted small mb-0">
-            Evidencias visibles para este estudiante en el periodo actual
-          </p>
-        </div>
-        <div className="card-body">
-          {evidences.spaces.length === 0 ? (
-            <div className="alert alert-light mb-0">
-              No hay espacios de evidencia configurados para este estudiante.
-            </div>
-          ) : (
-            <div className="row g-3">
-              {evidences.spaces.map((space) => (
-                <div key={space.id} className="col-12 col-md-6">
-                  <div className="p-3 border rounded-3 h-100 bg-light">
-                    <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
-                      <div className="fw-semibold">{space.titulo}</div>
-                      <span className="badge bg-info text-dark text-uppercase">
-                        {space.tipo || "evidencia"}
-                      </span>
-                    </div>
-                    <div className="text-muted small mb-2">
-                      {space.descripcion || "Sin descripcion"}
-                    </div>
-                    <div className="small">
-                      Reportes configurados en el periodo: {space.period_reports_count ?? 0}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -510,7 +557,9 @@ export default function StudentDetailsPage() {
                     <div className="fw-semibold">{student.Empresa || "-"}</div>
                     {isAdmin && !canEditAssignment && (
                       <div className="text-muted small mt-2">
-                        No hay un periodo activo o seleccionado para editar.
+                        {isSelectedPeriodClosed
+                          ? "Este periodo esta cerrado; solo se puede consultar."
+                          : "No hay un periodo activo o seleccionado para editar."}
                       </div>
                     )}
                   </>

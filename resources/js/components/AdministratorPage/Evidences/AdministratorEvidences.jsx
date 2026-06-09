@@ -20,13 +20,20 @@ export default function AdminEvidences() {
   const [titulo, setTitulo] = useState("");
   const [tipo, setTipo] = useState("inscripcion");
   const [descripcion, setDescripcion] = useState("");
+  const [fechaLimite, setFechaLimite] = useState("");
+  const [isActive, setIsActive] = useState(false);
+  const [preserveSubmissions, setPreserveSubmissions] = useState(false);
 
   const [editingId, setEditingId] = useState(null);
   const [editTitulo, setEditTitulo] = useState("");
   const [editTipo, setEditTipo] = useState("inscripcion");
   const [editDescripcion, setEditDescripcion] = useState("");
+  const [editFechaLimite, setEditFechaLimite] = useState("");
+  const [editIsActive, setEditIsActive] = useState(false);
+  const [editPreserveSubmissions, setEditPreserveSubmissions] = useState(false);
   const [editError, setEditError] = useState("");
   const [deletingId, setDeletingId] = useState(null);
+  const [togglingId, setTogglingId] = useState(null);
 
   const [activeEvidenceId, setActiveEvidenceId] = useState(null);
 
@@ -40,6 +47,8 @@ export default function AdminEvidences() {
     },
     withCredentials: true,
   });
+
+  const toBool = (value) => value === true || value === 1 || value === "1";
 
   const cargarEvidences = async () => {
     try {
@@ -65,19 +74,28 @@ export default function AdminEvidences() {
     setSuccess("");
 
     try {
-      await axiosAuth.post("/evidences", {
+      const res = await axiosAuth.post("/evidences", {
         titulo,
         tipo,
         descripcion,
+        fecha_limite: fechaLimite || null,
+        is_active: isActive,
+        preserve_submissions_between_periods: preserveSubmissions,
       });
 
       setTitulo("");
       setDescripcion("");
+      setFechaLimite("");
       setTipo("inscripcion");
+      setIsActive(false);
+      setPreserveSubmissions(false);
       setShowCreateForm(false);
       setSuccess("Espacio creado.");
 
       await cargarEvidences();
+      if (res.data?.id) {
+        setActiveEvidenceId(res.data.id);
+      }
     } catch (err) {
       console.error(err);
       setError(getApiErrorMessage(err, "No pudimos crear el espacio. Revisa el titulo."));
@@ -89,6 +107,9 @@ export default function AdminEvidences() {
     setEditTitulo(ev.titulo || "");
     setEditTipo(ev.tipo || "inscripcion");
     setEditDescripcion(ev.descripcion || "");
+    setEditFechaLimite(ev.fecha_limite || "");
+    setEditIsActive(toBool(ev.is_active));
+    setEditPreserveSubmissions(toBool(ev.preserve_submissions_between_periods));
     setEditError("");
   };
 
@@ -97,6 +118,9 @@ export default function AdminEvidences() {
     setEditTitulo("");
     setEditTipo("inscripcion");
     setEditDescripcion("");
+    setEditFechaLimite("");
+    setEditIsActive(false);
+    setEditPreserveSubmissions(false);
     setEditError("");
   };
 
@@ -112,6 +136,9 @@ export default function AdminEvidences() {
         titulo: editTitulo,
         tipo: editTipo,
         descripcion: editDescripcion,
+        fecha_limite: editFechaLimite || null,
+        is_active: editIsActive,
+        preserve_submissions_between_periods: editPreserveSubmissions,
       });
 
       cancelarEdicion();
@@ -120,6 +147,32 @@ export default function AdminEvidences() {
     } catch (err) {
       console.error(err);
       setEditError(getApiErrorMessage(err, "No pudimos actualizar el espacio. Revisa los cambios."));
+    }
+  };
+
+  const handleToggleActive = async (ev) => {
+    setTogglingId(ev.id);
+    setError("");
+    setSuccess("");
+
+    try {
+      const nextActive = !toBool(ev.is_active);
+      await axiosAuth.put(`/evidences/${ev.id}`, {
+        titulo: ev.titulo,
+        tipo: ev.tipo,
+        descripcion: ev.descripcion || "",
+        fecha_limite: ev.fecha_limite || null,
+        is_active: nextActive,
+        preserve_submissions_between_periods: toBool(ev.preserve_submissions_between_periods),
+      });
+
+      setSuccess(nextActive ? "Espacio activado para estudiantes." : "Espacio desactivado para estudiantes.");
+      await cargarEvidences();
+    } catch (err) {
+      console.error(err);
+      setError(getApiErrorMessage(err, "No pudimos cambiar el estado del espacio. Intenta nuevamente."));
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -177,7 +230,8 @@ export default function AdminEvidences() {
       0
     );
     const conDescripcion = evidences.filter((ev) => ev.descripcion && ev.descripcion.trim() !== "").length;
-    return { total, totalReportes, conDescripcion };
+    const activos = evidences.filter((ev) => toBool(ev.is_active)).length;
+    return { total, totalReportes, conDescripcion, activos };
   }, [evidences]);
 
   return (
@@ -232,8 +286,8 @@ export default function AdminEvidences() {
           <div className="col-12 col-md-4">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
-                <p className="text-muted small mb-1">Con descripcion</p>
-                <h4 className="mb-0 text-success">{stats.conDescripcion}</h4>
+                <p className="text-muted small mb-1">Activos para estudiantes</p>
+                <h4 className="mb-0 text-success">{stats.activos}</h4>
               </div>
             </div>
           </div>
@@ -247,7 +301,7 @@ export default function AdminEvidences() {
             <div className="card-body">
               <h5 className="mb-3">Crear nuevo espacio</h5>
               <form onSubmit={handleCrearEvidence} className="row g-3">
-                <div className="col-12 col-md-6">
+                <div className="col-12 col-md-5">
                   <label className="form-label">Titulo del espacio</label>
                   <input
                     type="text"
@@ -258,7 +312,7 @@ export default function AdminEvidences() {
                     required
                   />
                 </div>
-                <div className="col-12 col-md-6">
+                <div className="col-12 col-md-4">
                   <label className="form-label">Tipo</label>
                   <select
                     className="form-select"
@@ -272,6 +326,16 @@ export default function AdminEvidences() {
                     ))}
                   </select>
                 </div>
+                <div className="col-12 col-md-3">
+                  <label className="form-label">Fecha limite</label>
+                  <input
+                    name="fecha_limite"
+                    type="date"
+                    className="form-control"
+                    value={fechaLimite}
+                    onChange={(e) => setFechaLimite(e.target.value)}
+                  />
+                </div>
                 <div className="col-12">
                   <label className="form-label">Descripcion</label>
                   <textarea
@@ -281,6 +345,34 @@ export default function AdminEvidences() {
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
                   />
+                </div>
+                <div className="col-12">
+                  <div className="d-flex flex-wrap gap-4">
+                    <div className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="evidence-active"
+                        checked={isActive}
+                        onChange={(e) => setIsActive(e.target.checked)}
+                      />
+                      <label className="form-check-label" htmlFor="evidence-active">
+                        Activar para estudiantes
+                      </label>
+                    </div>
+                    <div className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="evidence-preserve"
+                        checked={preserveSubmissions}
+                        onChange={(e) => setPreserveSubmissions(e.target.checked)}
+                      />
+                      <label className="form-check-label" htmlFor="evidence-preserve">
+                        Conservar entregas entre periodos
+                      </label>
+                    </div>
+                  </div>
                 </div>
                 <div className="col-12 d-flex gap-2">
                   <button type="submit" className="btn btn-primary">Guardar espacio</button>
@@ -309,8 +401,31 @@ export default function AdminEvidences() {
                         <div>
                           <div className="fw-semibold">{ev.titulo}</div>
                           <div className="text-muted small">Tipo: {ev.tipo} — ID: {ev.id}</div>
+                          <div className="text-muted small">
+                            Fecha limite: {ev.fecha_limite || "No definida"}
+                          </div>
+                          <div className="d-flex flex-wrap gap-2 mt-2">
+                            <span className={`badge ${toBool(ev.is_active) ? "bg-success" : "bg-secondary"}`}>
+                              {toBool(ev.is_active) ? "Activo" : "Desactivado"}
+                            </span>
+                            {toBool(ev.preserve_submissions_between_periods) && (
+                              <span className="badge bg-primary">Conserva entregas</span>
+                            )}
+                          </div>
                         </div>
                         <div className="d-flex gap-2">
+                          <button
+                            type="button"
+                            className={`btn btn-sm ${toBool(ev.is_active) ? "btn-outline-secondary" : "btn-outline-success"}`}
+                            onClick={() => handleToggleActive(ev)}
+                            disabled={deletingId === ev.id || togglingId === ev.id}
+                          >
+                            {togglingId === ev.id
+                              ? "Guardando..."
+                              : toBool(ev.is_active)
+                              ? "Desactivar"
+                              : "Activar"}
+                          </button>
                           <button
                             type="button"
                             className="btn btn-sm btn-outline-danger"
@@ -349,9 +464,6 @@ export default function AdminEvidences() {
                             {ev.reports.slice(0, 3).map((rep) => (
                               <li key={rep.id}>
                                 {rep.titulo}
-                                {rep.fecha_limite && (
-                                  <span className="text-secondary"> — limite: {rep.fecha_limite}</span>
-                                )}
                               </li>
                             ))}
                             {ev.reports.length > 3 && (
@@ -368,7 +480,7 @@ export default function AdminEvidences() {
                           <h6 className="mb-2">Editar espacio</h6>
                           {editError && <div className="alert alert-danger py-2">{editError}</div>}
                           <div className="row g-2">
-                            <div className="col-12 col-md-6">
+                            <div className="col-12 col-md-5">
                               <label className="form-label small">Titulo</label>
                               <input
                                 type="text"
@@ -378,7 +490,7 @@ export default function AdminEvidences() {
                                 required
                               />
                             </div>
-                            <div className="col-12 col-md-6">
+                            <div className="col-12 col-md-4">
                               <label className="form-label small">Tipo</label>
                               <select
                                 className="form-select form-select-sm"
@@ -392,6 +504,16 @@ export default function AdminEvidences() {
                                 ))}
                               </select>
                             </div>
+                            <div className="col-12 col-md-3">
+                              <label className="form-label small">Fecha limite</label>
+                              <input
+                                name="fecha_limite"
+                                type="date"
+                                className="form-control form-control-sm"
+                                value={editFechaLimite}
+                                onChange={(e) => setEditFechaLimite(e.target.value)}
+                              />
+                            </div>
                             <div className="col-12">
                               <label className="form-label small">Descripcion</label>
                               <textarea
@@ -400,6 +522,34 @@ export default function AdminEvidences() {
                                 value={editDescripcion}
                                 onChange={(e) => setEditDescripcion(e.target.value)}
                               />
+                            </div>
+                            <div className="col-12">
+                              <div className="d-flex flex-wrap gap-4">
+                                <div className="form-check form-switch">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id={`edit-active-${ev.id}`}
+                                    checked={editIsActive}
+                                    onChange={(e) => setEditIsActive(e.target.checked)}
+                                  />
+                                  <label className="form-check-label small" htmlFor={`edit-active-${ev.id}`}>
+                                    Activar para estudiantes
+                                  </label>
+                                </div>
+                                <div className="form-check form-switch">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id={`edit-preserve-${ev.id}`}
+                                    checked={editPreserveSubmissions}
+                                    onChange={(e) => setEditPreserveSubmissions(e.target.checked)}
+                                  />
+                                  <label className="form-check-label small" htmlFor={`edit-preserve-${ev.id}`}>
+                                    Conservar entregas entre periodos
+                                  </label>
+                                </div>
+                              </div>
                             </div>
                           </div>
                           <div className="d-flex gap-2 mt-2">

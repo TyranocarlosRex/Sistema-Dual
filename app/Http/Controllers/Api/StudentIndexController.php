@@ -276,7 +276,8 @@ class StudentIndexController extends Controller
         return Report::query()
             ->where('periodo_id', $periodId)
             ->whereHas('evidence', function ($q) use ($tipo) {
-                $q->whereRaw('LOWER(tipo) = ?', [mb_strtolower($tipo)]);
+                $q->where('is_active', true)
+                    ->whereRaw('LOWER(tipo) = ?', [mb_strtolower($tipo)]);
             })
             ->count();
     }

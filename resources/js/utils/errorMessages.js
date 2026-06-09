@@ -110,6 +110,10 @@ export const getLoginErrorMessage = (error) => {
     return "Completa usuario y contrasena para iniciar sesion.";
   }
 
+  if (status === 403 && normalized.includes("septimo") && normalized.includes("semestre")) {
+    return "No pudimos iniciar sesion";
+  }
+
   if (
     status === 401 ||
     status === 404 ||

@@ -24,16 +24,24 @@
   min-height: 42px;
   height: auto;
   line-height: 1.2;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  gap: 0.5rem;
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 
 .app-sidebar-links a > span:first-child {
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.app-sidebar-links .badge {
+.app-sidebar-active-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: currentColor;
   flex-shrink: 0;
+  opacity: 0.8;
 }
 
 .dual-navbar {
@@ -85,7 +93,8 @@
     text-align: center;
   }
 
-  .app-sidebar-links .badge {
+  .app-sidebar-links .badge,
+  .app-sidebar-active-dot {
     display: none;
   }
 

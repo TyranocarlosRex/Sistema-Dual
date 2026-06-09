@@ -65,9 +65,7 @@ export default function Sidebar() {
               return (
                 <NavLink key={link.to} to={link.to} style={linkStyle}>
                   <span>{link.label}</span>
-                  {isActive && (
-                    <span className="badge bg-info text-dark ms-auto">Activo</span>
-                  )}
+                  {isActive && <span className="app-sidebar-active-dot ms-auto" aria-hidden="true" />}
                 </NavLink>
               );
             })}

@@ -24,6 +24,7 @@ export default function AdministratorTracking() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [evidences, setEvidences] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [subsLoading, setSubsLoading] = useState(true);
   const [subsError, setSubsError] = useState("");
@@ -32,6 +33,7 @@ export default function AdministratorTracking() {
   const [updatingId, setUpdatingId] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
   const [previewFile, setPreviewFile] = useState(null);
+  const [expandedEvidenceKeys, setExpandedEvidenceKeys] = useState([]);
 
   const [filterCarrera, setFilterCarrera] = useState("todos");
   const [filterEstatus, setFilterEstatus] = useState("todos");
@@ -73,12 +75,19 @@ export default function AdministratorTracking() {
         setSubsError("");
 
         const token = localStorage.getItem("token");
-        const { data } = await axios.get("/api/admin/report-submissions", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const [submissionsResponse, evidencesResponse] = await Promise.all([
+          axios.get("/api/admin/report-submissions", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("/api/evidences", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { with_reports: 1, only_with_reports: 1 },
+          }),
+        ]);
 
-        const list = data ?? [];
+        const list = submissionsResponse.data ?? [];
         setSubmissions(list);
+        setEvidences(evidencesResponse.data ?? []);
 
         const initialGrades = {};
         list.forEach((s) => {
@@ -106,6 +115,37 @@ export default function AdministratorTracking() {
     return `${nombre} ${apellidos}`.trim() || "Sin nombre";
   };
   const getNoControl = (s) => s.No_control ?? s.no_control ?? s.noControl ?? "";
+  const getEvidence = (submission) => submission?.report?.evidence ?? submission?.evidence ?? {};
+  const parseDateValue = (value) => {
+    if (!value) return null;
+    const date =
+      typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
+        ? new Date(`${value}T00:00:00`)
+        : new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  };
+  const formatDate = (value) => {
+    const date = parseDateValue(value);
+    return date ? date.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" }) : "";
+  };
+  const formatDateTime = (value) => {
+    const date = parseDateValue(value);
+    return date ? date.toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+  };
+  const statusBadgeClass = (status) => {
+    if (status === "aceptado") return "badge bg-success";
+    if (status === "rechazado") return "badge bg-danger";
+    return "badge bg-warning text-dark";
+  };
+  const getAssignedStudentsCount = (evidence) => {
+    const value = Number(
+      evidence?.assigned_students_count ??
+        evidence?.visible_students_count ??
+        evidence?.assignedStudentsCount ??
+        evidence?.assigned_count
+    );
+    return Number.isFinite(value) ? value : null;
+  };
   const getPeriodo = (s) => {
     const period = s.periodo ?? s.Periodo ?? s.period ?? null;
 
@@ -272,6 +312,93 @@ export default function AdministratorTracking() {
     const bajas = filteredStudents.filter((s) => getStatusKey(s) === "baja").length;
     return { total, activos, inactivos, bajas };
   }, [filteredStudents]);
+
+  const groupedSubmissions = useMemo(() => {
+    const groups = new Map();
+
+    evidences.forEach((evidence) => {
+      const title = evidence?.titulo || evidence?.title || "Sin evidencia";
+      const key = evidence?.id ? `evidence-${evidence.id}` : `evidence-${title}`;
+      const reports = Array.isArray(evidence?.reports) ? evidence.reports : [];
+
+      if (!groups.has(key)) {
+        groups.set(key, {
+          key,
+          title,
+          type: evidence?.tipo || evidence?.type || "",
+          deadline: evidence?.fecha_limite || evidence?.deadline || "",
+          createdAt: evidence?.created_at || evidence?.createdAt || reports[0]?.created_at,
+          assignedStudentsCount: getAssignedStudentsCount(evidence),
+          reportIds: new Set(),
+          submissions: [],
+        });
+      }
+
+      const group = groups.get(key);
+      reports.forEach((report) => {
+        if (report?.id) {
+          group.reportIds.add(report.id);
+        }
+      });
+    });
+
+    submissions.forEach((submission) => {
+      const evidence = getEvidence(submission);
+      const title = evidence?.titulo || evidence?.title || "Sin evidencia";
+      const key = evidence?.id ? `evidence-${evidence.id}` : `evidence-${title}`;
+
+      if (!groups.has(key)) {
+        groups.set(key, {
+          key,
+          title,
+          type: evidence?.tipo || evidence?.type || "",
+          deadline: evidence?.fecha_limite || evidence?.deadline || "",
+          createdAt: evidence?.created_at || evidence?.createdAt || submission?.report?.created_at || submission?.created_at,
+          assignedStudentsCount: getAssignedStudentsCount(evidence),
+          reportIds: new Set(),
+          submissions: [],
+        });
+      }
+
+      const group = groups.get(key);
+      const assignedStudentsCount = getAssignedStudentsCount(evidence);
+      if (assignedStudentsCount !== null) {
+        group.assignedStudentsCount = Math.max(group.assignedStudentsCount ?? 0, assignedStudentsCount);
+      }
+      if (submission?.report?.id) {
+        group.reportIds.add(submission.report.id);
+      }
+      group.submissions.push(submission);
+    });
+
+    return Array.from(groups.values())
+      .map((group) => {
+        const fallbackCount = group.reportIds.size || group.submissions.length;
+        return {
+          ...group,
+          assignedCount: group.assignedStudentsCount ?? fallbackCount,
+        };
+      })
+      .sort((a, b) => {
+        const aTime = parseDateValue(a.createdAt)?.getTime() ?? 0;
+        const bTime = parseDateValue(b.createdAt)?.getTime() ?? 0;
+        if (aTime !== bTime) return bTime - aTime;
+        return a.title.localeCompare(b.title);
+      });
+  }, [evidences, submissions]);
+
+  const allGroupsExpanded =
+    groupedSubmissions.length > 0 && groupedSubmissions.every((group) => expandedEvidenceKeys.includes(group.key));
+
+  const toggleEvidenceGroup = (key) => {
+    setExpandedEvidenceKeys((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
+    );
+  };
+
+  const toggleAllGroups = () => {
+    setExpandedEvidenceKeys(allGroupsExpanded ? [] : groupedSubmissions.map((group) => group.key));
+  };
 
   return (
     <>
@@ -547,10 +674,10 @@ export default function AdministratorTracking() {
           <div className="card-header bg-light d-flex justify-content-between align-items-center">
             <div>
               <p className="text-muted mb-0 small">Revision de entregas</p>
-              <h5 className="mb-0">Reportes enviados por estudiantes</h5>
+              <h5 className="mb-0">Entregas pendientes por evidencia</h5>
             </div>
             <small className="text-muted">
-              {subsLoading ? "Cargando..." : `${submissions.length} registros`}
+              {subsLoading ? "Cargando..." : `${groupedSubmissions.length} evidencias, ${submissions.length} registros`}
             </small>
           </div>
           <div className="card-body p-0">
@@ -560,128 +687,192 @@ export default function AdministratorTracking() {
 
             {subsLoading ? (
               <div className="p-3 text-center text-muted">Cargando...</div>
-            ) : submissions.length === 0 ? (
-              <div className="p-3 text-center text-muted">Sin entregas aun.</div>
+            ) : groupedSubmissions.length === 0 ? (
+              <div className="p-3 text-center text-muted">No hay evidencias configuradas para el periodo actual.</div>
             ) : (
-              <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0">
-                  <thead className="table-light">
-                    <tr>
-                      <th>Reporte</th>
-                      <th>Estudiante</th>
-                      <th>Fecha</th>
-                      <th>Archivo</th>
-                      <th>Estado</th>
-                      <th>Calificacion</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {submissions.map((sub) => {
-                      const student = sub.student || {};
-                      const report = sub.report || {};
-                      const evidence = report.evidence || {};
-                      const submissionPeriod = report.period || {};
-                      const estado = sub.status || "enviado";
-                      const badge = estado === "aceptado" ? "success" : estado === "rechazado" ? "danger" : "warning";
+              <div className="p-3">
+                <div className="d-flex justify-content-end mb-2">
+                  <button type="button" className="btn btn-link btn-sm text-decoration-none" onClick={toggleAllGroups}>
+                    {allGroupsExpanded ? "Contraer todo" : "Expandir todo"}
+                  </button>
+                </div>
+                <div className="d-grid gap-3">
+                  {groupedSubmissions.map((group) => {
+                    const isOpen = expandedEvidenceKeys.includes(group.key);
 
-                      return (
-                        <tr key={sub.id}>
-                          <td>
-                            <div className="fw-semibold">
-                              {report.titulo || `Entrega #${sub.id}`}
-                            </div>
-                            <div className="small text-muted">
-                              Reporte
-                              {submissionPeriod?.codigo ? ` - ${submissionPeriod.codigo}` : ""}
-                            </div>
-                          </td>
-                          <td>
-                            <div className="fw-semibold">{student.Nombre || ""} {student.Apellidos || ""}</div>
-                            <div className="small text-muted">{student.No_control || student.id || ""}</div>
-                          </td>
-                          <td className="small text-muted">
-                            {sub.created_at ? new Date(sub.created_at).toLocaleString() : "N/D"}
-                          </td>
-                          <td>
-                          <div className="small">{sub.original_name || "Archivo enviado"}</div>
-                          <div className="d-flex flex-wrap gap-2 mt-1">
-                            <button
-                              className="btn btn-sm btn-outline-secondary"
-                              onClick={() => previewSubmission(sub)}
-                                disabled={downloadingId === sub.id}
-                              >
-                                {downloadingId === sub.id ? "Abriendo..." : "Ver"}
-                              </button>
-                              <button
-                                className="btn btn-sm btn-outline-primary mt-1"
-                              onClick={() => downloadSubmission(sub)}
-                              disabled={downloadingId === sub.id}
-                            >
-                              {downloadingId === sub.id ? "Descargando..." : "Descargar"}
-                            </button>
+                    return (
+                      <div key={group.key} className="border rounded-3 overflow-hidden" style={{ background: "#eef2f7" }}>
+                        <div className="d-flex flex-wrap align-items-center gap-3 p-3 border-bottom">
+                          <div
+                            className="d-flex align-items-center justify-content-center rounded-3 text-primary"
+                            style={{ width: "36px", height: "36px", background: "#dbeafe" }}
+                          >
+                            <span className="fw-bold">E</span>
                           </div>
-                          </td>
-                          <td>
-                            <span className={`badge text-bg-${badge}`}>{estado}</span>
-                          </td>
-                          <td style={{ minWidth: "140px" }}>
-                            <input
-                              type="number"
-                              className="form-control form-control-sm"
-                              placeholder="0 - 100"
-                              min="0"
-                              max="100"
-                              step="0.5"
-                              value={
-                                grades[sub.id] === undefined ? "" : grades[sub.id]
-                              }
-                              onChange={(e) =>
-                                setGrades((prev) => ({
-                                  ...prev,
-                                  [sub.id]: e.target.value === "" ? "" : Number(e.target.value),
-                                }))
-                              }
-                            />
-                          </td>
-                          <td className="d-flex flex-wrap gap-2">
-                            <input
-                              type="text"
-                              className="form-control form-control-sm"
-                              placeholder="Feedback (opcional)"
-                              value={feedback[sub.id] || ""}
-                              onChange={(e) =>
-                                setFeedback((prev) => ({ ...prev, [sub.id]: e.target.value }))
-                              }
-                              style={{ minWidth: "180px" }}
-                            />
-                            <button
-                              className="btn btn-sm btn-outline-success"
-                              disabled={updatingId === sub.id}
-                              onClick={() => handleStatusChange(sub.id, "aceptado")}
-                            >
-                              Aceptar
-                            </button>
-                            <button
-                              className="btn btn-sm btn-outline-danger"
-                              disabled={updatingId === sub.id}
-                              onClick={() => handleStatusChange(sub.id, "rechazado")}
-                            >
-                              Rechazar
-                            </button>
-                            <button
-                              className="btn btn-sm btn-primary"
-                              disabled={updatingId === sub.id}
-                              onClick={() => handleStatusChange(sub.id, sub.status)}
-                            >
-                              Guardar
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                          <div className="flex-grow-1">
+                            <div className="fw-semibold">{group.title}</div>
+                            <div className="text-muted small">
+                              {group.createdAt ? `Publicado: ${formatDateTime(group.createdAt)}` : "Publicado: N/D"}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-link text-dark text-decoration-none"
+                            aria-expanded={isOpen}
+                            onClick={() => toggleEvidenceGroup(group.key)}
+                          >
+                            {isOpen ? "^" : "v"}
+                          </button>
+                        </div>
+
+                        <div className="d-flex flex-wrap justify-content-between gap-3 p-3">
+                          <div>
+                            <div className="fw-semibold small">
+                              {group.deadline ? `Fecha limite: ${formatDate(group.deadline)}` : "Sin fecha limite"}
+                            </div>
+                            {group.type && <div className="text-muted small mt-1">Tipo: {group.type}</div>}
+                          </div>
+                          <div className="d-flex align-items-center gap-3">
+                            <div className="text-center border-start ps-3">
+                              <div className="fs-4 lh-1">{group.submissions.length}</div>
+                              <div className="small text-muted">Entregadas</div>
+                            </div>
+                            <div className="text-center border-start ps-3">
+                              <div className="fs-4 lh-1">{group.assignedCount}</div>
+                              <div className="small text-muted">Asignados</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-3 border-top">
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary rounded-pill px-4"
+                            onClick={() => toggleEvidenceGroup(group.key)}
+                          >
+                            {isOpen ? "Ocultar entregas" : "Ver entregas"}
+                          </button>
+                        </div>
+
+                        {isOpen && (
+                          <div className="bg-white border-top p-3">
+                            <div className="d-grid gap-3">
+                              {group.submissions.length === 0 && (
+                                <div className="border rounded p-3 text-muted small">
+                                  Todavia no hay entregas registradas para esta evidencia.
+                                </div>
+                              )}
+                              {group.submissions.map((sub) => {
+                                const student = sub.student || {};
+                                const report = sub.report || {};
+                                const estado = sub.status || "enviado";
+
+                                return (
+                                  <div key={sub.id} className="border rounded p-3">
+                                    <div className="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                                      <div>
+                                        <div className="fw-semibold">{getNombreCompleto(student)}</div>
+                                        <div className="text-muted small">
+                                          {getNoControl(student) || "Sin numero de control"}
+                                        </div>
+                                      </div>
+                                      <span className={statusBadgeClass(estado)}>{estado}</span>
+                                    </div>
+                                    <div className="row g-3">
+                                      <div className="col-12 col-lg-4">
+                                        <div className="small text-muted">Reporte</div>
+                                        <div className="fw-semibold">{report.titulo || `Entrega #${sub.id}`}</div>
+                                        <div className="small text-muted">{getPeriodo(report)}</div>
+                                        <div className="small text-muted mt-2">
+                                          {sub.created_at ? `Enviado: ${formatDateTime(sub.created_at)}` : "Fecha no disponible"}
+                                        </div>
+                                      </div>
+                                      <div className="col-12 col-lg-4">
+                                        <div className="small text-muted mb-1">
+                                          {sub.original_name || report.archivo || sub.file_path || "Sin archivo"}
+                                        </div>
+                                        <div className="btn-group btn-group-sm" role="group">
+                                          <button
+                                            type="button"
+                                            className="btn btn-outline-secondary"
+                                            onClick={() => previewSubmission(sub)}
+                                            disabled={downloadingId === sub.id}
+                                          >
+                                            {downloadingId === sub.id ? "Abriendo..." : "Ver"}
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="btn btn-outline-primary"
+                                            onClick={() => downloadSubmission(sub)}
+                                            disabled={downloadingId === sub.id}
+                                          >
+                                            {downloadingId === sub.id ? "Descargando..." : "Descargar"}
+                                          </button>
+                                        </div>
+                                      </div>
+                                      <div className="col-12 col-lg-4">
+                                        <input
+                                          type="number"
+                                          className="form-control form-control-sm mb-2"
+                                          placeholder="Calificacion 0 - 100"
+                                          min="0"
+                                          max="100"
+                                          step="0.5"
+                                          value={grades[sub.id] === undefined ? "" : grades[sub.id]}
+                                          onChange={(e) =>
+                                            setGrades((prev) => ({
+                                              ...prev,
+                                              [sub.id]: e.target.value === "" ? "" : Number(e.target.value),
+                                            }))
+                                          }
+                                        />
+                                        <textarea
+                                          className="form-control form-control-sm mb-2"
+                                          placeholder="Feedback (opcional)"
+                                          rows={2}
+                                          value={feedback[sub.id] || ""}
+                                          onChange={(e) =>
+                                            setFeedback((prev) => ({ ...prev, [sub.id]: e.target.value }))
+                                          }
+                                        />
+                                        <div className="d-flex flex-wrap gap-2">
+                                          <button
+                                            type="button"
+                                            className="btn btn-success btn-sm"
+                                            disabled={updatingId === sub.id}
+                                            onClick={() => handleStatusChange(sub.id, "aceptado")}
+                                          >
+                                            Aceptar
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="btn btn-danger btn-sm"
+                                            disabled={updatingId === sub.id}
+                                            onClick={() => handleStatusChange(sub.id, "rechazado")}
+                                          >
+                                            Rechazar
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="btn btn-primary btn-sm"
+                                            disabled={updatingId === sub.id}
+                                            onClick={() => handleStatusChange(sub.id, sub.status)}
+                                          >
+                                            Guardar
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

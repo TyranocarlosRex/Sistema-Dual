@@ -27,20 +27,18 @@ class FormRequestValidationBehaviorTest extends TestCase
             'periodo_id' => $period->id,
             'titulo' => 'Reporte semanal',
             'descripcion' => 'Descripcion',
-            'fecha_limite' => '2026-06-30',
         ], $rules);
 
         $invalid = Validator::make([
             'evidence_id' => 999999,
             'titulo' => '',
-            'fecha_limite' => 'no-es-fecha',
         ], $rules);
 
         $this->assertFalse($valid->fails());
         $this->assertTrue($invalid->fails());
         $this->assertArrayHasKey('evidence_id', $invalid->errors()->toArray());
         $this->assertArrayHasKey('titulo', $invalid->errors()->toArray());
-        $this->assertArrayHasKey('fecha_limite', $invalid->errors()->toArray());
+        $this->assertArrayNotHasKey('fecha_limite', $invalid->errors()->toArray());
         $this->assertSame('admin', $admin->role);
     }
 

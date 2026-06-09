@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 
 use App\Http\Middleware\AddContentLengthForHtml;
 use App\Http\Middleware\UseAuthTokenCookie;
+use App\Http\Middleware\EnsureStudentMinimumSemester;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 
@@ -36,6 +37,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             // Sanctum abilities (AQUÍ lo importante)
             'abilities' => CheckAbilities::class,
             'ability'   => CheckForAnyAbility::class,
+            'student.semester' => EnsureStudentMinimumSemester::class,
         ]);
 
         $middleware->group('api', [

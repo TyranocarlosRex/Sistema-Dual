@@ -83,7 +83,9 @@ class ReportVisibilityTest extends TestCase
         return Evidence::query()->create([
             'titulo' => 'Evidencia ' . $type,
             'descripcion' => 'Descripcion',
+            'fecha_limite' => '2026-06-01',
             'tipo' => $type,
+            'is_active' => true,
             'created_by' => $admin->id,
         ]);
     }
@@ -95,7 +97,6 @@ class ReportVisibilityTest extends TestCase
             'periodo_id' => $period->id,
             'titulo' => 'Reporte visible',
             'descripcion' => 'Descripcion',
-            'fecha_limite' => '2026-06-01',
             'created_by' => $admin->id,
         ]);
     }

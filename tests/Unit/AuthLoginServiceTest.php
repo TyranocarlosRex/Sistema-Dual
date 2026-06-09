@@ -4,7 +4,9 @@ namespace Tests\Unit;
 
 use App\Contracts\Auth\PasswordVerifier;
 use App\Contracts\Auth\TokenIssuer;
+use App\Models\Period;
 use App\Models\Student;
+use App\Models\StudentPeriod;
 use App\Models\User;
 use App\Services\Auth\AdminLogin;
 use App\Services\Auth\CoordinatorLogin;
@@ -140,6 +142,41 @@ class AuthLoginServiceTest extends TestCase
             ]),
             401,
             'Credenciales invalidas'
+        );
+    }
+
+    public function test_student_login_rejects_students_below_seventh_semester(): void
+    {
+        $period = Period::query()->create([
+            'anio' => 2026,
+            'numero' => 1,
+            'codigo' => '2026-1',
+            'estatus' => Period::ESTATUS_ACTIVO,
+            'fecha_inicio' => '2026-01-15',
+            'fecha_fin' => '2026-06-30',
+        ]);
+
+        [$user, $student] = $this->makeStudent(22334004);
+
+        StudentPeriod::query()->create([
+            'student_id' => $student->id,
+            'periodo_id' => $period->id,
+            'Estatus' => Student::STATUS_ACTIVO,
+            'Semestre' => 6,
+            'Carrera' => 'Ingenieria Industrial',
+            'Fecha_alta' => '2026-01-15',
+        ]);
+
+        $passwords = $this->passwordsThatAccept('secret123', $user->password);
+        $tokens = $this->tokensThatShouldNotIssue();
+
+        $this->assertJsonFailure(
+            fn () => $this->studentLogin($passwords, $tokens)->login([
+                'no_control' => (string) $student->No_control,
+                'password' => 'secret123',
+            ]),
+            403,
+            'Solo estudiantes de septimo semestre en adelante pueden acceder.'
         );
     }
 

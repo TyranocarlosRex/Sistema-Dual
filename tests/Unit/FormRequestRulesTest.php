@@ -28,7 +28,7 @@ class FormRequestRulesTest extends TestCase
         $this->assertSame(['required', 'string', 'min:4'], $studentRules['password']);
     }
 
-    public function test_report_requests_validate_evidence_dates_and_attachments(): void
+    public function test_report_requests_validate_evidence_context_and_attachments(): void
     {
         $storeRules = (new StoreReportRequest())->rules();
         $updateRules = (new UpdateReportRequest())->rules();
@@ -36,10 +36,11 @@ class FormRequestRulesTest extends TestCase
         $this->assertSame(['required', 'exists:evidences,id'], $storeRules['evidence_id']);
         $this->assertSame(['nullable', 'exists:periods,id'], $storeRules['periodo_id']);
         $this->assertSame(['required', 'string', 'max:255'], $storeRules['titulo']);
-        $this->assertSame(['nullable', 'date'], $storeRules['fecha_limite']);
+        $this->assertArrayNotHasKey('fecha_limite', $storeRules);
         $this->assertSame(['nullable', 'file', 'max:4096'], $storeRules['attachment']);
 
         $this->assertSame(['sometimes', 'required', 'exists:evidences,id'], $updateRules['evidence_id']);
+        $this->assertArrayNotHasKey('fecha_limite', $updateRules);
         $this->assertSame(['nullable', 'boolean'], $updateRules['remove_attachment']);
     }
 

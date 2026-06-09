@@ -6,6 +6,8 @@ import { APP_ROUTES } from '../../routes';
 import { getLoginErrorMessage } from '../../utils/errorMessages';
 import { startAuthSession } from '../../utils/authSession';
 
+const LOGIN_ERROR_TITLE = 'No pudimos iniciar sesion';
+
 const StudentLogin = () => {
   const [noControl, setNoControl] = useState('');
   const [password, setPassword] = useState('');
@@ -61,8 +63,8 @@ const StudentLogin = () => {
 
           {error && (
             <div className="login-error" role="alert">
-              <strong>No pudimos iniciar sesion</strong>
-              <span>{error}</span>
+              <strong>{LOGIN_ERROR_TITLE}</strong>
+              {error !== LOGIN_ERROR_TITLE && <span>{error}</span>}
             </div>
           )}
 

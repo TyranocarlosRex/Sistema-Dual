@@ -159,6 +159,7 @@ class StudentDetailsController extends Controller
                     'id' => $evidence->id,
                     'titulo' => $evidence->titulo,
                     'descripcion' => $evidence->descripcion,
+                    'fecha_limite' => $evidence->fecha_limite,
                     'tipo' => $evidence->tipo,
                     'period_reports_count' => (int) ($evidence->period_reports_count ?? 0),
                 ];
@@ -197,7 +198,7 @@ class StudentDetailsController extends Controller
                             'id' => $sub->report->id,
                             'titulo' => $sub->report->titulo,
                             'descripcion' => $sub->report->descripcion,
-                            'fecha_limite' => $sub->report->fecha_limite,
+                            'fecha_limite' => $sub->report->evidence?->fecha_limite,
                             'has_attachment' => $sub->report->has_attachment,
                             'attachment_path' => $sub->report->attachment_path,
                             'period' => $sub->report->period ? [
@@ -207,6 +208,7 @@ class StudentDetailsController extends Controller
                             'evidence' => $sub->report->evidence ? [
                                 'id' => $sub->report->evidence->id,
                                 'titulo' => $sub->report->evidence->titulo,
+                                'fecha_limite' => $sub->report->evidence->fecha_limite,
                                 'tipo' => $sub->report->evidence->tipo,
                             ] : null,
                         ] : null,
@@ -217,7 +219,7 @@ class StudentDetailsController extends Controller
                         'id' => $rep->id,
                         'titulo' => $rep->titulo,
                         'descripcion' => $rep->descripcion,
-                        'fecha_limite' => $rep->fecha_limite,
+                        'fecha_limite' => $rep->evidence?->fecha_limite,
                         'period' => $rep->period ? [
                             'id' => $rep->period->id,
                             'codigo' => $rep->period->codigo,
@@ -225,6 +227,7 @@ class StudentDetailsController extends Controller
                         'evidence' => $rep->evidence ? [
                             'id' => $rep->evidence->id,
                             'titulo' => $rep->evidence->titulo,
+                            'fecha_limite' => $rep->evidence->fecha_limite,
                             'tipo' => $rep->evidence->tipo,
                         ] : null,
                     ];

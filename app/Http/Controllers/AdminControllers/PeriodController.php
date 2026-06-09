@@ -5,12 +5,15 @@ namespace App\Http\Controllers\AdminControllers;
 use App\Http\Controllers\Concerns\ResolvesPeriodContext;
 use App\Http\Controllers\Controller;
 use App\Models\Period;
+use App\Models\Report;
 use App\Models\Student;
 use App\Models\StudentPeriod;
 use App\Models\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class PeriodController extends Controller
@@ -118,11 +121,15 @@ class PeriodController extends Controller
             ]);
 
             if (!empty($validated['clonar_estudiantes_desde_periodo_id'])) {
+                $sourcePeriodId = (int)$validated['clonar_estudiantes_desde_periodo_id'];
+
                 $this->cloneStudentsIntoPeriod(
                     $period,
-                    (int)$validated['clonar_estudiantes_desde_periodo_id'],
+                    $sourcePeriodId,
                     false
                 );
+
+                $this->cloneReportsIntoPeriod($period, $sourcePeriodId, false);
             }
 
             return $period;
@@ -487,5 +494,61 @@ class PeriodController extends Controller
 
             StudentPeriod::query()->firstOrCreate($attributes, $values);
         }
+    }
+
+    private function cloneReportsIntoPeriod(Period $targetPeriod, int $sourcePeriodId, bool $overwriteExisting): void
+    {
+        $sourceReports = Report::query()
+            ->where('periodo_id', $sourcePeriodId)
+            ->orderBy('created_at')
+            ->get();
+
+        foreach ($sourceReports as $sourceReport) {
+            $attributes = [
+                'periodo_id' => $targetPeriod->id,
+                'evidence_id' => $sourceReport->evidence_id,
+                'titulo' => $sourceReport->titulo,
+            ];
+
+            $existing = Report::query()->where($attributes)->first();
+            if ($existing && !$overwriteExisting) {
+                continue;
+            }
+
+            $attachmentPath = $this->cloneReportAttachmentPath($sourceReport, $targetPeriod);
+            $values = [
+                'descripcion' => $sourceReport->descripcion,
+                'has_attachment' => $attachmentPath !== null,
+                'attachment_path' => $attachmentPath,
+                'created_by' => $sourceReport->created_by,
+            ];
+
+            if ($existing) {
+                $existing->update($values);
+                continue;
+            }
+
+            Report::query()->create(array_merge($attributes, $values));
+        }
+    }
+
+    private function cloneReportAttachmentPath(Report $sourceReport, Period $targetPeriod): ?string
+    {
+        if (!$sourceReport->has_attachment || blank($sourceReport->attachment_path)) {
+            return null;
+        }
+
+        $disk = Storage::disk('public');
+        $sourcePath = (string)$sourceReport->attachment_path;
+
+        if (!$disk->exists($sourcePath)) {
+            return null;
+        }
+
+        $filename = basename(str_replace('\\', '/', $sourcePath));
+        $filename = $filename !== '' ? $filename : 'reporte-adjunto';
+        $targetPath = 'reports/period-' . $targetPeriod->id . '/' . Str::uuid() . '_' . $filename;
+
+        return $disk->copy($sourcePath, $targetPath) ? $targetPath : null;
     }
 }

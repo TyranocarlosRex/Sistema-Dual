@@ -106,8 +106,21 @@ test.describe('Plan de pruebas de sistema CP-SIS', () => {
         await page.goto('/estudiante/evidencias');
         await expect(page.getByRole('heading', { name: /Mis evidencias/i })).toBeVisible();
         await expect(page.getByText('Reportes bimestrales')).toBeVisible();
+        await page.getByRole('button', { name: 'Primer periodo' }).click();
+        await page.getByRole('button', { name: 'Abrir evidencia' }).click();
+        await expect(page.getByText('plan-periodo-anterior.pdf')).toBeVisible();
+        await expect(page.getByText('cierre-periodo-anterior.pdf')).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Descargar archivo' })).toHaveCount(2);
+        await expect(page.getByRole('button', { name: 'Enviar archivo' })).toHaveCount(2);
+        await expect(page.getByRole('button', { name: 'Enviar archivo' }).first()).toBeDisabled();
+        const historicalDownloadPromise = page.waitForEvent('download');
+        await page.getByRole('button', { name: 'Descargar archivo' }).first().click();
+        const historicalDownload = await historicalDownloadPromise;
+        expect(historicalDownload.suggestedFilename()).toBe('cierre-periodo-anterior.pdf');
+        await page.getByRole('button', { name: 'Volver a evidencias' }).click();
+        await page.getByRole('button', { name: 'Asignado' }).click();
         await page.getByRole('button', { name: 'Abrir evidencia' }).first().click();
-        await expect(page.getByRole('heading', { name: /Mis reportes - Reportes bimestrales/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Reportes bimestrales/i })).toBeVisible();
 
         await expect(page.getByRole('button', { name: 'Enviar archivo' })).toBeDisabled();
 
@@ -142,28 +155,27 @@ test.describe('Plan de pruebas de sistema CP-SIS', () => {
         await expect(page.getByRole('heading', { name: /Espacios de evidencias/i })).toBeVisible();
         await page.getByRole('button', { name: 'Nuevo espacio' }).click();
         await page.getByPlaceholder('Ej. Inscripcion, Reportes bimestrales').fill('Evidencia final E2E');
+        await page.locator('input[name="fecha_limite"]').fill('2026-06-20');
         await page.getByPlaceholder('Describe que documentos iran en este espacio').fill('Documentos finales del ciclo.');
         await page.getByRole('button', { name: 'Guardar espacio' }).click();
         await expect(page.getByText(/Espacio creado correctamente/i)).toBeVisible();
-        await expect(page.getByText('Evidencia final E2E')).toBeVisible();
 
-        await page.getByRole('button', { name: 'Agregar reporte' }).last().click();
         await expect(page.getByRole('heading', { name: /Agregar reporte/i })).toBeVisible();
+        await expect(page.getByText(/Para el espacio: Evidencia final E2E/i)).toBeVisible();
         await page.locator('input[name="titulo"]').fill('Reporte E2E');
         await page.locator('textarea[name="descripcion"]').fill('Reporte de prueba de sistema.');
-        await page.locator('input[name="fecha_limite"]').fill('2026-06-20');
         await page.getByRole('button', { name: 'Crear reporte' }).click();
         await expect(page.getByText(/Reporte creado correctamente/i)).toBeVisible();
-        await expect(page.getByText('Reporte E2E', { exact: true })).toBeVisible();
 
         const reportCard = page.locator('.border.rounded.p-3.bg-white').filter({
             has: page.locator('.fw-semibold', { hasText: /^Reporte E2E$/ }),
         });
+        await expect(reportCard).toBeVisible();
         await reportCard.getByRole('button', { name: 'Editar' }).click();
         await page.locator('input[name="titulo"]').fill('Reporte E2E actualizado');
         await page.getByRole('button', { name: 'Guardar cambios' }).click();
         await expect(page.getByText(/Reporte actualizado correctamente/i)).toBeVisible();
-        await expect(page.getByText('Reporte E2E actualizado', { exact: true })).toBeVisible();
+        await expect(page.locator('.fw-semibold', { hasText: /^Reporte E2E actualizado$/ })).toBeVisible();
 
         page.once('dialog', (dialog) => dialog.accept());
         await page
@@ -244,9 +256,11 @@ test.describe('Plan de pruebas de sistema CP-SIS', () => {
         await expect(page.locator('h2').filter({ hasText: '2027-1' })).toBeVisible();
 
         const newPeriodCard = page.locator('.card').filter({ hasText: '2027-1' });
+        await newPeriodCard.getByRole('button', { name: /Opciones del periodo 2027-1/i }).click();
         await newPeriodCard.getByRole('button', { name: 'Activar' }).click();
         await expect(page.getByText(/Periodo 2027-1 activado/i)).toBeVisible();
 
+        await newPeriodCard.getByRole('button', { name: /Opciones del periodo 2027-1/i }).click();
         await newPeriodCard.getByRole('button', { name: 'Ver estadisticas' }).click();
         const statsModal = page.locator('.position-fixed').filter({ hasText: 'Estadisticas del periodo' });
         await expect(statsModal.locator('h2').filter({ hasText: '2027-1' })).toBeVisible();

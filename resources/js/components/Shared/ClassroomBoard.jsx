@@ -29,13 +29,8 @@ const toTimestamp = (value) => {
   return Number.isNaN(time) ? null : time;
 };
 
-const nextReportLabel = (reports = []) => {
-  if ((reports || []).length === 0) return "Sin reportes";
-  const conFecha = (reports || []).filter((r) => r.fecha_limite);
-  if (conFecha.length === 0) return "Sin fecha limite";
-  const sorted = [...conFecha].sort((a, b) => toTimestamp(a.fecha_limite) - toTimestamp(b.fecha_limite));
-  const primero = sorted[0];
-  return `${primero.titulo} - limite ${primero.fecha_limite}`;
+const evidenceDeadlineLabel = (fechaLimite) => {
+  return fechaLimite ? `Limite del espacio ${fechaLimite}` : "Sin fecha limite";
 };
 
 const submissionTime = (submission) => {
@@ -134,6 +129,7 @@ export default function ClassroomBoard({
         meta: {
           id: ev.id,
           tipo: ev.tipo,
+          fechaLimite: ev.fecha_limite,
           reports: ev.reports || [],
         },
       });
@@ -267,7 +263,7 @@ export default function ClassroomBoard({
                     return (
                       <>
                         <span className="text-muted small">
-                          {progress.submitted} de {progress.total} entregados - {nextReportLabel(item.meta.reports || [])}
+                          {progress.submitted} de {progress.total} entregados - {evidenceDeadlineLabel(item.meta.fechaLimite)}
                         </span>
                         {progress.latestSubmission && (
                           <span className="badge bg-success-subtle text-success">
@@ -314,7 +310,7 @@ export default function ClassroomBoard({
                     <h6 className="mb-1">{ev.titulo}</h6>
                     {ev.descripcion && <p className="text-muted small mb-2">{ev.descripcion}</p>}
                     <div className="text-muted small">
-                      {progress.submitted} de {progress.total} entregados - {nextReportLabel(ev.reports || [])}
+                      {progress.submitted} de {progress.total} entregados - {evidenceDeadlineLabel(ev.fecha_limite)}
                     </div>
                     {progress.latestSubmission && (
                       <div className="small mt-1">

@@ -29,12 +29,14 @@ Route::prefix('auth')->group(function () {
 Route::middleware(['auth:sanctum'])->post('/logout', [AuthController::class, 'logout']);
 
 // Estudiante
-Route::middleware(['auth:sanctum', 'abilities:student'])->group(function () {
+Route::middleware(['auth:sanctum', 'abilities:student', 'student.semester'])->group(function () {
 
     Route::get('/student/me', [StudentDetailsController::class, 'me']);
     Route::patch('/student/me', [StudentDetailsController::class, 'updateOwnProfile']);
     Route::get('/student/evidences', [EvidenceController::class, 'indexForStudent']);
     Route::get('/student/reports', [ReportController::class, 'indexForStudent']);
+    Route::get('/student/submissions/history', [SubmissionController::class, 'historyForStudent']);
+    Route::get('/student/submissions/{submission}/download', [SubmissionController::class, 'downloadOwnSubmission']);
     Route::get('/student/reports/{report}/attachment', [ReportController::class, 'downloadAttachment']);
     Route::post('/student/reports/{report}/submit',[SubmissionController::class, 'storeForStudent']);
 });
@@ -42,6 +44,7 @@ Route::middleware(['auth:sanctum', 'abilities:student'])->group(function () {
 // Coordinador (y admin puede ver detalles de estudiantes)
 Route::middleware(['auth:sanctum', 'ability:coordinator,admin'])->group(function () {
     Route::get('/coordinator/report-submissions',[SubmissionController::class, 'indexForStaff']);
+    Route::get('/coordinator/evidences', [EvidenceController::class, 'index']);
     Route::get('/coordinator/report-submissions/{submission}/preview',[SubmissionController::class, 'preview']);
     Route::get('/coordinator/report-submissions/{submission}/download',[SubmissionController::class, 'download']);
     Route::patch('/coordinator/report-submissions/{submission}',[SubmissionController::class, 'updateStatus']);
@@ -60,6 +63,7 @@ Route::middleware(['auth:sanctum', 'abilities:coordinator'])->group(function () 
 Route::middleware(['auth:sanctum', 'ability:admin,coordinator'])->group(function () {
     Route::get('/students', [StudentIndexController::class, 'index']);
     Route::patch('/students/{student}/estatus', [StudentIndexController::class, 'updateEstatus']);
+    Route::get('/periods', [PeriodController::class, 'index']);
 });
 
 Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
@@ -69,7 +73,7 @@ Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
 });
 
 // Rutas comunes autenticadas
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', 'student.semester'])->group(function () {
     Route::get('/advertisements', [AdvertisementController::class, 'index']);
 });
 
@@ -99,7 +103,6 @@ Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
     Route::post('/documents/{document}/generate', [DocumentTemplateGenerationController::class, 'generate']);
     Route::post('/documents/{document}/download-pdf', [DocumentTemplateGenerationController::class, 'downloadPdf']);
 
-    Route::get('/periods', [PeriodController::class, 'index']);
     Route::get('/periods/{period}', [PeriodController::class, 'show']);
     Route::get('/periods/{period}/statistics', [PeriodController::class, 'statistics']);
     Route::post('/periods', [PeriodController::class, 'store']);

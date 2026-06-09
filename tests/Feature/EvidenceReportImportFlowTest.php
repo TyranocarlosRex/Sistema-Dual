@@ -30,12 +30,14 @@ class EvidenceReportImportFlowTest extends TestCase
         $evidenceResponse = $this->postJson('/api/evidences', [
             'titulo' => 'Expediente inicial',
             'descripcion' => 'Documentos de ingreso',
+            'fecha_limite' => '2026-05-10',
             'tipo' => 'inscripcion',
         ]);
 
         $evidenceResponse
             ->assertCreated()
             ->assertJsonPath('titulo', 'Expediente inicial')
+            ->assertJsonPath('fecha_limite', '2026-05-10')
             ->assertJsonPath('created_by', $admin->id);
 
         $evidenceId = $evidenceResponse->json('id');
@@ -43,10 +45,12 @@ class EvidenceReportImportFlowTest extends TestCase
         $this->putJson("/api/evidences/{$evidenceId}", [
             'titulo' => 'Expediente actualizado',
             'descripcion' => 'Documentos obligatorios',
+            'fecha_limite' => '2026-05-15',
             'tipo' => 'programa',
         ])
             ->assertOk()
             ->assertJsonPath('titulo', 'Expediente actualizado')
+            ->assertJsonPath('fecha_limite', '2026-05-15')
             ->assertJsonPath('tipo', 'programa');
 
         $this->getJson("/api/evidences/{$evidenceId}")
@@ -59,7 +63,6 @@ class EvidenceReportImportFlowTest extends TestCase
             'period_id' => $period->id,
             'titulo' => 'Formato de convenio',
             'descripcion' => 'Subir convenio firmado',
-            'fecha_limite' => '2026-05-10',
             'attachment' => UploadedFile::fake()->create('convenio.pdf', 12),
         ]);
 
@@ -87,7 +90,6 @@ class EvidenceReportImportFlowTest extends TestCase
             'periodo_id' => $period->id,
             'titulo' => 'Formato sin adjunto',
             'descripcion' => 'Ya no requiere archivo base',
-            'fecha_limite' => '2026-05-15',
             'remove_attachment' => true,
         ])
             ->assertOk()

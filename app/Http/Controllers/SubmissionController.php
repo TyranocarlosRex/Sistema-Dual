@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesPeriodContext;
+use App\Models\Period;
 use App\Models\Report;
+use App\Models\Student;
+use App\Models\StudentPeriod;
 use App\Models\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -124,7 +127,43 @@ class SubmissionController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $this->attachVisibleStudentCounts($submissions, $period?->id, $role, $user);
+
         return response()->json($submissions);
+    }
+
+    public function historyForStudent(Request $request)
+    {
+        $user = $request->user();
+        $student = $user?->student;
+
+        if (!$student) {
+            return response()->json(['message' => 'No tienes perfil de estudiante.'], 403);
+        }
+
+        $period = $this->resolvePeriodFromRequest($request);
+
+        $query = Submission::with(['report.evidence', 'report.period', 'period'])
+            ->where('student_id', $student->id)
+            ->whereNotNull('report_id');
+
+        if ($period) {
+            $query->where(function ($q) use ($period) {
+                $q->whereHas('period', function ($periodQuery) use ($period) {
+                    $this->constrainToPreviousPeriods($periodQuery, $period);
+                })->orWhere(function ($fallbackQuery) use ($period) {
+                    $fallbackQuery
+                        ->whereNull('periodo_id')
+                        ->whereHas('report.period', function ($periodQuery) use ($period) {
+                            $this->constrainToPreviousPeriods($periodQuery, $period);
+                        });
+                });
+            });
+        }
+
+        return response()->json(
+            $query->orderByDesc('created_at')->get()
+        );
     }
 
     public function updateStatus(Request $request, Submission $submission)
@@ -175,6 +214,22 @@ class SubmissionController extends Controller
         return $this->submissionFileResponse($submission, false);
     }
 
+    public function downloadOwnSubmission(Request $request, Submission $submission)
+    {
+        $user = $request->user();
+        $student = $user?->student;
+
+        if (!$student) {
+            return response()->json(['message' => 'No tienes perfil de estudiante.'], 403);
+        }
+
+        if ((int)$submission->student_id !== (int)$student->id) {
+            return response()->json(['message' => 'No puedes acceder a entregas de otro estudiante.'], 403);
+        }
+
+        return $this->submissionFileResponse($submission, true);
+    }
+
     private function forbidCoordinatorFromOtherCareer(Request $request, Submission $submission)
     {
         $user = $request->user();
@@ -216,6 +271,79 @@ class SubmissionController extends Controller
         $request->validate([
             'file' => ['required', 'file', 'max:4096'],
         ]);
+    }
+
+    private function attachVisibleStudentCounts($submissions, ?int $periodId, string $role, $user): void
+    {
+        if ($periodId === null || $submissions->isEmpty()) {
+            return;
+        }
+
+        $countsByType = [];
+
+        $submissions->each(function (Submission $submission) use (&$countsByType, $periodId, $role, $user) {
+            $evidence = $submission->report?->evidence;
+            if ($evidence === null) {
+                return;
+            }
+
+            $type = mb_strtolower(trim((string)$evidence->tipo));
+            if ($type === '') {
+                return;
+            }
+
+            if (!array_key_exists($type, $countsByType)) {
+                $countsByType[$type] = $this->countVisibleStudentsForEvidenceType($type, $periodId, $role, $user);
+            }
+
+            $evidence->setAttribute('assigned_students_count', $countsByType[$type]);
+            $evidence->setAttribute('visible_students_count', $countsByType[$type]);
+        });
+    }
+
+    private function constrainToPreviousPeriods($query, Period $period)
+    {
+        return $query
+            ->where(Period::COLUMN_YEAR, '<', $period->anio)
+            ->orWhere(function ($q) use ($period) {
+                $q->where(Period::COLUMN_YEAR, $period->anio)
+                    ->where('numero', '<', $period->numero);
+            });
+    }
+
+    private function countVisibleStudentsForEvidenceType(string $type, int $periodId, string $role, $user): int
+    {
+        if (!in_array($type, ['inscripcion', 'programa'], true)) {
+            return 0;
+        }
+
+        $query = StudentPeriod::query()
+            ->join('students', 'students.id', '=', 'students_period.student_id')
+            ->where('students_period.periodo_id', $periodId)
+            ->where(function ($q) {
+                $q->where('students_period.Semestre', '>=', Student::MINIMUM_ACCESS_SEMESTER)
+                    ->orWhere(function ($qq) {
+                        $qq->whereNull('students_period.Semestre')
+                            ->where('students.Semestre', '>=', Student::MINIMUM_ACCESS_SEMESTER);
+                    });
+            });
+
+        if ($type === 'programa') {
+            $query->where('students_period.Estatus', Student::STATUS_ACTIVO);
+        }
+
+        if ($role === 'coordinator') {
+            $user->loadMissing('coordinator');
+            $coordinatorCareer = mb_strtolower(trim((string)($user->coordinator->Carrera ?? '')));
+
+            if ($coordinatorCareer === '') {
+                return 0;
+            }
+
+            $query->whereRaw('LOWER(students_period.Carrera) = ?', [$coordinatorCareer]);
+        }
+
+        return (int)$query->distinct('students_period.student_id')->count('students_period.student_id');
     }
 
     private function resolveStudentAssignmentForPeriod($student, ?int $periodId)

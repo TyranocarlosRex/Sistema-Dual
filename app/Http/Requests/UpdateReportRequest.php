@@ -19,7 +19,6 @@ class UpdateReportRequest extends FormRequest
             'period_id'   => ['sometimes', 'nullable', 'exists:periods,id'],
             'titulo'       => ['required', 'string', 'max:255'],
             'descripcion'  => ['nullable', 'string'],
-            'fecha_limite' => ['nullable', 'date'],
             'attachment'   => ['nullable', 'file', 'max:4096'],
             'remove_attachment' => ['nullable', 'boolean'],
         ];

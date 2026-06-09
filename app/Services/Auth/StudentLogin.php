@@ -50,6 +50,11 @@ final class StudentLogin implements LoginService
         }
 
         $periodoActivo = Period::current();
+
+        if (!$student->hasMinimumAccessSemester($periodoActivo?->id)) {
+            $this->fail('Solo estudiantes de septimo semestre en adelante pueden acceder.', 403);
+        }
+
         $registroPeriodo = $student->ensureEnrollmentForPeriod($periodoActivo?->id);
 
         $abilities = ['student'];

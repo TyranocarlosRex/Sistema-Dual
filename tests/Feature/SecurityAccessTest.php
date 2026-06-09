@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Evidence;
+use App\Models\Period;
 use App\Models\Report;
+use App\Models\Student;
+use App\Models\StudentPeriod;
 use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -80,6 +83,47 @@ class SecurityAccessTest extends TestCase
         ]);
         $this->assertSame(0, Submission::count());
         $this->assertEmpty(Storage::disk('public')->allFiles());
+    }
+
+    public function test_student_below_seventh_semester_cannot_use_existing_token(): void
+    {
+        $user = User::factory()->create(['role' => 'student']);
+        $student = Student::query()->forceCreate([
+            'user_id' => $user->id,
+            'Nombre' => 'Alumno',
+            'Apellidos' => 'Sexto',
+            'No_control' => 22330005,
+            'Semestre' => 8,
+            'Carrera' => 'Ingenieria Industrial',
+            'Correo_institucional' => '22330005@example.test',
+        ]);
+        $period = Period::query()->create([
+            'anio' => 2026,
+            'numero' => 1,
+            'codigo' => '2026-1',
+            'estatus' => Period::ESTATUS_ACTIVO,
+            'fecha_inicio' => '2026-01-15',
+            'fecha_fin' => '2026-06-30',
+        ]);
+
+        StudentPeriod::query()->create([
+            'student_id' => $student->id,
+            'periodo_id' => $period->id,
+            'Estatus' => Student::STATUS_ACTIVO,
+            'Semestre' => 6,
+            'Carrera' => 'Ingenieria Industrial',
+            'Fecha_alta' => '2026-01-15',
+        ]);
+
+        Sanctum::actingAs($user, ['student']);
+
+        $this->getJson('/api/student/me')
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Solo estudiantes de septimo semestre en adelante pueden acceder.');
+
+        $this->getJson('/api/advertisements')
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Solo estudiantes de septimo semestre en adelante pueden acceder.');
     }
 
     public function test_role_mismatch_token_is_blocked_from_publishing_advertisement(): void

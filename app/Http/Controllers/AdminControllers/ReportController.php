@@ -8,6 +8,7 @@ use App\Http\Requests\StoreReportRequest;
 use App\Http\Requests\UpdateReportRequest;
 use App\Models\Period;
 use App\Models\Report;
+use App\Models\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -127,13 +128,18 @@ class ReportController extends Controller
         ])
             ->where('periodo_id', $period->id)
             ->whereHas('evidence', function ($q) use ($assignment) {
-                $q->where('tipo', 'inscripcion');
-                if (mb_strtolower(trim((string)$assignment->Estatus)) === 'activo') {
-                    $q->orWhere('tipo', 'programa');
-                }
+                $q->where('is_active', true)
+                    ->where(function ($typeQuery) use ($assignment) {
+                        $typeQuery->where('tipo', 'inscripcion');
+
+                        if (mb_strtolower(trim((string)$assignment->Estatus)) === 'activo') {
+                            $typeQuery->orWhere('tipo', 'programa');
+                        }
+                    });
             });
 
-        $reports = $query->orderBy('fecha_limite', 'asc')->get();
+        $reports = $query->orderBy('created_at', 'asc')->get();
+        $this->appendPreservedSubmissions($reports, $student->id, $period->id);
 
         return response()->json($reports);
     }
@@ -266,5 +272,63 @@ class ReportController extends Controller
         $clean = trim((string)preg_replace('/[\x00-\x1F\x7F]/u', '', $name));
 
         return $clean !== '' ? $clean : $fallback;
+    }
+
+    private function appendPreservedSubmissions($reports, int $studentId, int $periodId): void
+    {
+        $preservedReports = $reports->filter(fn (Report $report) => (bool)$report->evidence?->preserve_submissions_between_periods);
+        if ($preservedReports->isEmpty()) {
+            return;
+        }
+
+        $evidenceIds = $preservedReports->pluck('evidence_id')->filter()->unique()->values();
+        $titles = $preservedReports
+            ->pluck('titulo')
+            ->map(fn ($title) => trim((string)$title))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($evidenceIds->isEmpty() || $titles->isEmpty()) {
+            return;
+        }
+
+        $previousSubmissions = Submission::query()
+            ->with(['report.period', 'period'])
+            ->where('student_id', $studentId)
+            ->whereIn('evidence_id', $evidenceIds->all())
+            ->where(function ($query) use ($periodId) {
+                $query->whereNull('periodo_id')
+                    ->orWhere('periodo_id', '<', $periodId);
+            })
+            ->whereHas('report', function ($query) use ($titles) {
+                $query->whereIn('titulo', $titles->all());
+            })
+            ->latest()
+            ->get()
+            ->groupBy(fn (Submission $submission) => $submission->evidence_id . '|' . trim((string)$submission->report?->titulo));
+
+        $preservedReports->each(function (Report $report) use ($previousSubmissions) {
+            $currentSubmissions = $report->relationLoaded('submissions')
+                ? $report->submissions
+                : collect();
+            $historicalSubmissions = $previousSubmissions->get($report->evidence_id . '|' . trim((string)$report->titulo), collect())
+                ->map(function (Submission $submission) {
+                    $submission->setAttribute('is_historical', true);
+                    return $submission;
+                });
+
+            if ($historicalSubmissions->isEmpty()) {
+                return;
+            }
+
+            $report->setRelation(
+                'submissions',
+                $currentSubmissions
+                    ->concat($historicalSubmissions)
+                    ->sortByDesc(fn (Submission $submission) => $submission->created_at)
+                    ->values()
+            );
+        });
     }
 }

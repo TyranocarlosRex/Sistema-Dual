@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { getApiErrorMessage } from "../../../utils/errorMessages";
 
@@ -102,7 +102,9 @@ export default function AdministratorPeriods() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [actingId, setActingId] = useState(null);
   const [editingPeriodId, setEditingPeriodId] = useState(null);
+  const [openActionsMenuId, setOpenActionsMenuId] = useState(null);
   const [statisticsModal, setStatisticsModal] = useState(EMPTY_STATISTICS_MODAL);
+  const actionsMenuRef = useRef(null);
 
   const token = localStorage.getItem("token");
 
@@ -143,6 +145,17 @@ export default function AdministratorPeriods() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (actionsMenuRef.current && !actionsMenuRef.current.contains(event.target)) {
+        setOpenActionsMenuId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const resumen = useMemo(() => {
     const total = periodos.length;
     const activos = periodos.filter((p) => p.estatus === "activo").length;
@@ -176,12 +189,14 @@ export default function AdministratorPeriods() {
   };
 
   const openCreateForm = () => {
+    setOpenActionsMenuId(null);
     setEditingPeriodId(null);
     resetForm();
     setShowForm(true);
   };
 
   const openEditForm = (periodo) => {
+    setOpenActionsMenuId(null);
     setEditingPeriodId(periodo.id);
     setForm(createFormFromPeriod(periodo));
     setShowForm(true);
@@ -192,6 +207,17 @@ export default function AdministratorPeriods() {
     setShowForm(false);
     setEditingPeriodId(null);
     resetForm();
+  };
+
+  const usePeriodAsSource = (periodo) => {
+    setOpenActionsMenuId(null);
+    setEditingPeriodId(null);
+    setShowForm(true);
+    setForm({
+      ...INITIAL_FORM,
+      clonar_estudiantes_desde_periodo_id: String(periodo.id),
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const closeStatisticsModal = () => {
@@ -510,7 +536,7 @@ export default function AdministratorPeriods() {
                     </select>
                   </div>
                   <div className="col-md-4">
-                    <label className="form-label">Clonar alumnos desde</label>
+                    <label className="form-label">Clonar alumnos y reportes desde</label>
                     <select
                       className="form-select"
                       name="clonar_estudiantes_desde_periodo_id"
@@ -653,54 +679,78 @@ export default function AdministratorPeriods() {
                         </div>
                       </div>
 
-                      <div className="d-flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-sm"
-                          onClick={() => openEditForm(periodo)}
-                          disabled={!puedeEditar || isActing}
+                      <div className="d-flex justify-content-end">
+                        <div
+                          className="dropdown position-relative"
+                          ref={openActionsMenuId === periodo.id ? actionsMenuRef : null}
                         >
-                          Modificar
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-outline-primary btn-sm"
-                          onClick={() => activarPeriodo(periodo)}
-                          disabled={!puedeActivar || isActing}
-                        >
-                          {isActing && puedeActivar ? "Activando..." : "Activar"}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={() => cerrarPeriodo(periodo)}
-                          disabled={!puedeCerrar || isActing}
-                        >
-                          {isActing && puedeCerrar ? "Cerrando..." : "Cerrar"}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-outline-dark btn-sm"
-                          onClick={() => openStatisticsModal(periodo)}
-                          disabled={isActing}
-                        >
-                          Ver estadisticas
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-outline-secondary btn-sm"
-                          onClick={() => {
-                            setEditingPeriodId(null);
-                            setShowForm(true);
-                            setForm((prev) => ({
-                              ...INITIAL_FORM,
-                              clonar_estudiantes_desde_periodo_id: String(periodo.id),
-                            }));
-                            window.scrollTo({ top: 0, behavior: "smooth" });
-                          }}
-                        >
-                          Usar como origen
-                        </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm px-3"
+                            aria-label={`Opciones del periodo ${periodo.codigo}`}
+                            aria-expanded={openActionsMenuId === periodo.id}
+                            aria-haspopup="true"
+                            onClick={() => setOpenActionsMenuId((prev) => (prev === periodo.id ? null : periodo.id))}
+                          >
+                            ...
+                          </button>
+                          {openActionsMenuId === periodo.id && (
+                            <div
+                              className="dropdown-menu dropdown-menu-end show mt-2"
+                              style={{ right: 0, left: "auto", minWidth: "190px", zIndex: 20 }}
+                            >
+                              <button
+                                type="button"
+                                className="dropdown-item"
+                                onClick={() => openEditForm(periodo)}
+                                disabled={!puedeEditar || isActing}
+                              >
+                                Modificar
+                              </button>
+                              <button
+                                type="button"
+                                className="dropdown-item"
+                                onClick={() => {
+                                  setOpenActionsMenuId(null);
+                                  activarPeriodo(periodo);
+                                }}
+                                disabled={!puedeActivar || isActing}
+                              >
+                                {isActing && puedeActivar ? "Activando..." : "Activar"}
+                              </button>
+                              <button
+                                type="button"
+                                className="dropdown-item text-danger"
+                                onClick={() => {
+                                  setOpenActionsMenuId(null);
+                                  cerrarPeriodo(periodo);
+                                }}
+                                disabled={!puedeCerrar || isActing}
+                              >
+                                {isActing && puedeCerrar ? "Cerrando..." : "Cerrar"}
+                              </button>
+                              <div className="dropdown-divider" />
+                              <button
+                                type="button"
+                                className="dropdown-item"
+                                onClick={() => {
+                                  setOpenActionsMenuId(null);
+                                  openStatisticsModal(periodo);
+                                }}
+                                disabled={isActing}
+                              >
+                                Ver estadisticas
+                              </button>
+                              <button
+                                type="button"
+                                className="dropdown-item"
+                                onClick={() => usePeriodAsSource(periodo)}
+                              >
+                                Usar como origen
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

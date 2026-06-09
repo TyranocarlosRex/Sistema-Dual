@@ -105,6 +105,36 @@ class AuthAndListingFlowTest extends TestCase
             ->assertJsonPath('message', 'Credenciales invalidas');
     }
 
+    public function test_student_login_endpoint_rejects_students_below_seventh_semester(): void
+    {
+        [, $student] = $this->makeStudent('Ingenieria Industrial', [
+            'email' => 'sixth-semester@example.test',
+        ], [
+            'No_control' => 22330004,
+            'Semestre' => 8,
+        ]);
+        $period = $this->makePeriod(2026, 3, Period::ESTATUS_ACTIVO);
+        $this->assignStudent($student, $period, [
+            'Semestre' => 6,
+        ]);
+
+        $this->postJson('/api/auth/login/student', [
+            'no_control' => '22330004',
+            'password' => 'secret123',
+        ])
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Solo estudiantes de septimo semestre en adelante pueden acceder.');
+
+        $assignment = StudentPeriod::query()
+            ->where('student_id', $student->id)
+            ->where('periodo_id', $period->id)
+            ->firstOrFail();
+
+        $this->assertNull($assignment->Primer_login_at);
+        $this->assertNull($assignment->Ultimo_login_at);
+        $this->assertDatabaseCount('personal_access_tokens', 0);
+    }
+
     public function test_authenticated_indexes_filter_students_coordinators_and_advertisements(): void
     {
         Storage::fake('public');
