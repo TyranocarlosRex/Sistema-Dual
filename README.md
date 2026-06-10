@@ -1,61 +1,228 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistema Dual
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Proyecto Laravel para administrar alumnos, coordinadores, periodos, evidencias, reportes, entregas, anuncios y documentos del programa dual.
 
-## About Laravel
+## Requisitos
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.2 o superior
+- Composer
+- Node.js y npm
+- MySQL/MariaDB
+- XAMPP, Laragon o un servidor equivalente
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Instalacion inicial
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. Instalar dependencias de PHP:
 
-## Learning Laravel
+```bash
+composer install
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+2. Instalar dependencias de frontend:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```bash
+npm install
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+3. Crear el archivo de ambiente:
 
-## Laravel Sponsors
+```bash
+copy .env.example .env
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+4. Generar la llave de Laravel:
 
-### Premium Partners
+```bash
+php artisan key:generate
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+5. Configurar la base de datos en `.env`:
 
-## Contributing
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=dual
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+6. Crear tablas y datos demo:
 
-## Code of Conduct
+```bash
+php artisan migrate --seed
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Si se quiere reiniciar la base desde cero:
 
-## Security Vulnerabilities
+```bash
+php artisan migrate:fresh --seed
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Usuarios demo
 
-## License
+El seeder crea estos accesos de prueba. Todos usan password `password`.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```text
+Admin:
+admin@dual.test
+
+Coordinadores:
+coordinador.industrial@dual.test
+coordinador.sistemas@dual.test
+
+Alumnos:
+22010001
+22010002
+22010003
+22010004
+```
+
+## Levantar el proyecto
+
+Servidor de Laravel:
+
+```bash
+php artisan serve
+```
+
+Frontend con Vite:
+
+```bash
+npm run dev
+```
+
+Compilar frontend para produccion:
+
+```bash
+npm run build
+```
+
+## Comandos PHP y Artisan mas usados
+
+Ver rutas registradas:
+
+```bash
+php artisan route:list
+```
+
+Filtrar rutas de API:
+
+```bash
+php artisan route:list | findstr api
+```
+
+Ejecutar migraciones pendientes:
+
+```bash
+php artisan migrate
+```
+
+Reiniciar migraciones y cargar seeders:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+Ejecutar solo los seeders:
+
+```bash
+php artisan db:seed
+```
+
+Ejecutar solo el seeder demo:
+
+```bash
+php artisan db:seed --class=DemoDataSeeder
+```
+
+Limpiar cache general:
+
+```bash
+php artisan optimize:clear
+```
+
+Limpiar cache de configuracion:
+
+```bash
+php artisan config:clear
+```
+
+Limpiar cache de rutas:
+
+```bash
+php artisan route:clear
+```
+
+Limpiar cache de vistas:
+
+```bash
+php artisan view:clear
+```
+
+Crear enlace publico para archivos de `storage`:
+
+```bash
+php artisan storage:link
+```
+
+Ejecutar pruebas:
+
+```bash
+php artisan test
+```
+
+Verificar sintaxis de un archivo PHP:
+
+```bash
+php -l app/Models/User.php
+```
+
+Regenerar autoload de Composer cuando se agregan clases nuevas:
+
+```bash
+composer dump-autoload
+```
+
+## Comandos utiles para desarrollo
+
+Crear un modelo:
+
+```bash
+php artisan make:model NombreModelo
+```
+
+Crear una migracion:
+
+```bash
+php artisan make:migration create_nombre_tabla_table
+```
+
+Crear un controlador:
+
+```bash
+php artisan make:controller NombreController
+```
+
+Crear un request de validacion:
+
+```bash
+php artisan make:request NombreRequest
+```
+
+Crear un seeder:
+
+```bash
+php artisan make:seeder NombreSeeder
+```
+
+## Notas para subir al servidor
+
+- Copiar el proyecto al servidor.
+- Ejecutar `composer install --no-dev --optimize-autoloader`.
+- Configurar `.env` con la base de datos real.
+- Ejecutar `php artisan key:generate` si no existe `APP_KEY`.
+- Ejecutar `php artisan migrate --seed` para crear tablas y datos demo.
+- Ejecutar `php artisan storage:link` si se usaran archivos publicos.
+- Ejecutar `npm run build` y subir/generar los assets de produccion.
+- Revisar permisos de `storage` y `bootstrap/cache`.
