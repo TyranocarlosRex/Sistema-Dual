@@ -23,7 +23,7 @@ class Evidence extends Model
     ];
 
     protected $casts = [
-        'fecha_limite' => 'date',
+        'fecha_limite' => 'date:Y-m-d',
         'is_active' => 'boolean',
         'preserve_submissions_between_periods' => 'boolean',
     ];
